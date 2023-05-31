@@ -1,5 +1,5 @@
 import 'package:caonalyzer/globals.dart';
-import 'package:caonalyzer/predictor.dart';
+import 'package:caonalyzer/detector.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
