@@ -1,11 +1,14 @@
+import 'package:caonalyzer/object_detectors/enums/preferred_mode.dart';
+import 'package:caonalyzer/object_detectors/object_detector.dart';
 import 'package:caonalyzer/globals.dart';
-import 'package:caonalyzer/detector.dart';
+import 'package:caonalyzer/object_detectors/models/object_detection_output.dart';
+import 'package:caonalyzer/screens/camera_screen.dart';
+import 'package:caonalyzer/screens/image_screen.dart';
+import 'package:caonalyzer/screens/settings_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:get/get.dart';
 import 'package:image/image.dart' as img;
-
-import 'camera_screen.dart';
-import 'settings_screen.dart';
+import 'package:image_picker/image_picker.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -15,7 +18,17 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  late ObjectDetector objectDetector;
   String message = '';
+  bool isBusy = false;
+  List<ObjectDetectionOutput> outputs = [];
+
+  @override
+  void initState() {
+    super.initState();
+
+    objectDetector = Get.find<PreferredMode>().objectDetector;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -57,10 +70,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 onPressed: pickImage,
                 child: const Text('Pick Image'),
               ),
-              Text(
-                message,
-                overflow: TextOverflow.visible,
-              ),
+              isBusy
+                  ? const CircularProgressIndicator()
+                  : const SizedBox.shrink(),
+              Text('Outputs count: ${outputs.length}'),
+              ...outputs.map(
+                  (output) => Text('${output.label} - ${output.confidence}')),
             ],
           ),
         ),
@@ -85,9 +100,40 @@ class _HomeScreenState extends State<HomeScreen> {
     if (image == null) return;
 
     final imageBytes = await image.readAsBytes();
-    final img.Image preImage = img.decodeImage(imageBytes)!;
+    final img.Image decodedImage = img.decodeImage(imageBytes)!;
+
     setState(() {
-      runInference(preImage).then((value) => message = value.toString());
+      isBusy = true;
     });
+
+    final prepImage = objectDetector.preProcessImage(decodedImage);
+
+    try {
+      objectDetector
+          .runInference(prepImage)
+          .then((value) => setState(() => outputs = value));
+      setState(() {
+        isBusy = false;
+      });
+    } on Exception catch (e) {
+      setState(() {
+        isBusy = false;
+      });
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString()),
+        ),
+      );
+
+      return;
+    }
+    if (!mounted) return;
+
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (context) => ImageScreen(prepImage.image, outputs),
+    ));
   }
 }
