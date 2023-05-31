@@ -2,8 +2,15 @@ import 'package:flutter/material.dart';
 
 import '../globals.dart';
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
+
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  bool onlineMode = true;
 
   @override
   Widget build(BuildContext context) {
@@ -13,13 +20,19 @@ class SettingsScreen extends StatelessWidget {
       ),
       body: Column(
         children: [
-          // host IP or domain name
+          // toggle online or offline mode
+          SwitchListTile(
+            title: const Text('Online mode'),
+            subtitle: const Text('Use a server to run inference'),
+            value: onlineMode,
+            onChanged: (value) {},
+          ),
           ListTile(
             title: const Text('IP or domain name'),
             subtitle: Text(host),
             trailing: const Icon(Icons.chevron_right),
+            enabled: onlineMode,
             onTap: () {
-              // modal
               showDialog(
                 context: context,
                 builder: (context) {
