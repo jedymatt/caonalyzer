@@ -1,6 +1,7 @@
+import 'package:caonalyzer/globals.dart';
 import 'package:flutter/material.dart';
 
-import '../globals.dart';
+import 'package:caonalyzer/object_detectors/enums/preferred_mode.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -10,8 +11,6 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  bool onlineMode = true;
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -24,24 +23,32 @@ class _SettingsScreenState extends State<SettingsScreen> {
           SwitchListTile(
             title: const Text('Online mode'),
             subtitle: const Text('Use a server to run inference'),
-            value: onlineMode,
-            onChanged: (value) {},
+            value: preferredMode.value == PreferredMode.online,
+            onChanged: null,
+            // onChanged: (value) {
+            //   setState(() {
+            //     preferredMode.value =
+            //         value ? PreferredMode.online : PreferredMode.offline;
+            //   });
+            // },
           ),
           ListTile(
-            title: const Text('IP or domain name'),
-            subtitle: Text(host),
+            title: const Text('Host'),
+            subtitle: Text(host.value),
             trailing: const Icon(Icons.chevron_right),
-            enabled: onlineMode,
+            enabled: preferredMode.value == PreferredMode.online,
             onTap: () {
+              String hostInput = host.value;
+
               showDialog(
                 context: context,
                 builder: (context) {
                   return AlertDialog(
-                    title: const Text('IP or domain name'),
+                    title: const Text('Host'),
                     content: TextField(
-                      controller: TextEditingController(text: host),
+                      controller: TextEditingController(text: hostInput),
                       onChanged: (value) {
-                        host = value;
+                        hostInput = value;
                       },
                     ),
                     actions: [
@@ -53,6 +60,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                       TextButton(
                         onPressed: () {
+                          setState(() {
+                            host.value = hostInput;
+                          });
+
                           Navigator.of(context).pop();
                         },
                         child: const Text('Save'),
