@@ -34,7 +34,7 @@ class ImageScreen extends StatelessWidget {
       final label = labels[output.detectionClasses[boxes.indexOf(box)]];
       final score = output.detectionScores[boxes.indexOf(box)];
 
-      imgLib.drawString(
+      imgLib.drawStringWrap(
         image,
         imgLib.arial_14,
         box.left.toInt(),
