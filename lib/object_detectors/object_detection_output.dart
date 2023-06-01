@@ -30,7 +30,6 @@ class ObjectDetectionOutput {
     );
   }
 
-  // empty
   factory ObjectDetectionOutput.empty() {
     return ObjectDetectionOutput(
       numDetections: 0,
