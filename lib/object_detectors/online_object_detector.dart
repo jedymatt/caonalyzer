@@ -2,32 +2,30 @@ import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
-import 'package:caonalyzer/object_detectors/enums/object_label.dart';
-import 'package:caonalyzer/object_detectors/object_detector.dart';
-import 'package:caonalyzer/object_detectors/models/object_detection_output.dart';
+import 'package:caonalyzer/globals.dart';
+import 'package:caonalyzer/object_detectors/box_converter.dart';
 import 'package:http/http.dart' as http;
-import 'package:image/image.dart' as img;
+import 'package:tflite_flutter/tflite_flutter.dart';
 import 'package:tflite_flutter_helper_plus/tflite_flutter_helper_plus.dart';
 
-import 'package:caonalyzer/globals.dart';
+import './enums/object_label.dart';
+import './object_detectors.dart';
 
-class OnlineObjectDetector implements ObjectDetector {
+class OnlineObjectDetector extends ObjectDetector {
   @override
-  Future<List<ObjectDetectionOutput>> runInference(
-      TensorImage tensorImage) async {
+  Future<ObjectDetectionOutput> runInference(TensorImage tensorImage) async {
+    List reshaped = tensorImage
+        .getBuffer()
+        .asUint8List()
+        .reshape([1, tensorImage.height, tensorImage.width, 3]);
+
     final response = await http.post(
-      Uri.parse('http://$host:8501/v1/models/faster_rcnn:predict'),
+      Uri.parse('http://${host.value}:8501/v1/models/faster_rcnn:predict'),
       headers: {
         'content-type': 'application/json',
       },
       body: jsonEncode({
-        'inputs': {
-          'input_tensor': reshapeBytes(
-            tensorImage.getBuffer().asUint8List(),
-            tensorImage.width,
-            tensorImage.height,
-          ),
-        }
+        'inputs': {'input_tensor': reshaped}
       }),
     );
 
@@ -38,45 +36,9 @@ class OnlineObjectDetector implements ObjectDetector {
           'Error running inference HTTP request. See logs for details.');
     }
 
-    log(jsonDecode(response.body)['outputs']['num_detections']);
-    log(jsonDecode(response.body)['outputs']['detection_classes']);
-
     final Map<String, dynamic> result = Map.from(jsonDecode(response.body));
 
-    final List detections = result['outputs']['detection_boxes'][0];
-    final List labels = result['outputs']['detection_classes'][0];
-    final List scores = result['outputs']['detection_scores'][0];
-
-    List<ObjectDetectionOutput> outputs = [];
-
-    for (int i = 0; i < detections.length; i++) {
-      if (scores[i] > 0.5) {
-        outputs.add(
-          ObjectDetectionOutput(
-            ObjectLabel.from(labels[i]).toString(),
-            scores[i],
-            detections[i][1],
-            detections[i][0],
-            tensorImage.width.toDouble(),
-            tensorImage.height.toDouble(),
-          ),
-        );
-      }
-    }
-
-    return outputs;
-  }
-
-  @override
-  TensorImage preProcessImage(img.Image image) {
-    ImageProcessor imageProcessor = ImageProcessorBuilder()
-        .add(ResizeOp(640, 640, ResizeMethod.bilinear))
-        .build();
-
-    TensorImage tensorImage = TensorImage.fromImage(image);
-
-    // remove this if it will break the code
-    return imageProcessor.process(tensorImage);
+    return ObjectDetectionOutput.fromMap(result['outputs']);
   }
 
   List<List<List<List<int>>>> reshapeBytes(
