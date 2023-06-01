@@ -1,7 +1,7 @@
 import 'package:camera/camera.dart';
-import 'package:caonalyzer/screens/home_screen.dart';
+import 'package:caonalyzer/globals.dart';
+import 'package:caonalyzer/ui/screens/home/home_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
 void _logError(String code, String? message) {
   // ignore: avoid_print
@@ -12,7 +12,7 @@ Future<void> main() async {
   try {
     WidgetsFlutterBinding.ensureInitialized();
 
-    Get.put<List<CameraDescription>>(await availableCameras());
+    cameras.value = await availableCameras();
   } on CameraException catch (e) {
     _logError(e.code, e.description);
   }
