@@ -19,6 +19,7 @@ dependencies:
   image: ^3.3.0
   flutter_vision: ^1.1.1
   connectivity_plus: ^4.0.1
+  shared_preferences: ^2.1.1
 
 dev_dependencies:
   flutter_test:
