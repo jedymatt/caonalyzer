@@ -1,6 +1,6 @@
 import 'package:caonalyzer/object_detectors/object_detectors.dart';
 import 'package:image/image.dart'
-    show ChannelOrder, Image, Interpolation, copyResize;
+    show ChannelOrder, Image, Interpolation, copyResize, encodeBmp;
 import 'package:pytorch_lite/pigeon.dart';
 import 'package:pytorch_lite/pytorch_lite.dart';
 
@@ -9,6 +9,10 @@ class PytorchObjectDetector implements ObjectDetector {
 
   @override
   Image preProcessImage(Image image) {
+    if (image.width <= 640 || image.height <= 640) {
+      return image;
+    }
+
     if (image.width > image.height) {
       image = copyResize(
         image,
@@ -30,8 +34,7 @@ class PytorchObjectDetector implements ObjectDetector {
   Future<List<ObjectDetectionOutput>> runInference(Image image) async {
     final model = await getModel();
 
-    final results =
-        await model.getImagePrediction(image.getBytes(order: ChannelOrder.rgb));
+    final results = await model.getImagePrediction(encodeBmp(image));
 
     return results
         .map((e) => ObjectDetectionOutput(
@@ -54,6 +57,7 @@ class PytorchObjectDetector implements ObjectDetector {
       640,
       640,
       objectDetectionModelType: ObjectDetectionModelType.yolov8,
+      labelPath: 'assets/labels.txt',
     );
 
     return _model!;
