@@ -32,11 +32,12 @@ class ImageScreen extends StatelessWidget {
 
       image_lib.drawString(
         image,
+        '$label ${(score * 100).toStringAsFixed(2)}%',
         font: image_lib.arial14,
         x: box.left.toInt(),
         y: box.top.toInt(),
-        '$label ${(score * 100).toStringAsFixed(2)}%',
         color: image_lib.ColorRgb8(0, 255, 0),
+        wrap: true,
       );
     }
 
