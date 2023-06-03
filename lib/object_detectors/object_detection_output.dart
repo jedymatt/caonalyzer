@@ -10,4 +10,9 @@ class ObjectDetectionOutput {
     this.confidence,
     this.boundingBox,
   );
+
+  @override
+  String toString() {
+    return 'ObjectDetectionOutput{label: $label, confidence: $confidence, boundingBox: $boundingBox}';
+  }
 }
