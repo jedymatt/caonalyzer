@@ -3,7 +3,7 @@ import 'package:caonalyzer/object_detectors/object_detectors.dart';
 import 'package:caonalyzer/ui/screens/image_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:image/image.dart' as img;
+import 'package:image/image.dart' as image_lib;
 
 class MainView extends StatefulWidget {
   const MainView({super.key});
@@ -14,7 +14,7 @@ class MainView extends StatefulWidget {
 
 class _MainViewState extends State<MainView> {
   bool isBusy = false;
-  ObjectDetectionOutput objectDetectionOutput = ObjectDetectionOutput.empty();
+  List<ObjectDetectionOutput> outputs = [];
   late ObjectDetector objectDetector;
 
   @override
@@ -34,7 +34,7 @@ class _MainViewState extends State<MainView> {
             child: const Text('Pick Image'),
           ),
           isBusy ? const CircularProgressIndicator() : const SizedBox.shrink(),
-          Text('Outputs count: ${objectDetectionOutput.numDetections}'),
+          Text('Outputs count: ${outputs.length}'),
         ],
       ),
     );
@@ -47,7 +47,7 @@ class _MainViewState extends State<MainView> {
     if (fileImage == null) return;
 
     final imageBytes = await fileImage.readAsBytes();
-    final img.Image decodedImage = img.decodeImage(imageBytes)!;
+    final image_lib.Image decodedImage = image_lib.decodeImage(imageBytes)!;
 
     objectDetector = preferredMode.value.objectDetector;
 
@@ -57,7 +57,8 @@ class _MainViewState extends State<MainView> {
       setState(() {
         isBusy = true;
       });
-      objectDetectionOutput = await objectDetector.runInference(tensorImage);
+      outputs = await objectDetector.runInference(tensorImage);
+
       setState(() {
         isBusy = false;
       });
@@ -79,8 +80,8 @@ class _MainViewState extends State<MainView> {
 
     Navigator.of(context).push(MaterialPageRoute(
       builder: (context) => ImageScreen(
-        tensorImage.image.clone(),
-        objectDetectionOutput,
+        tensorImage.clone(),
+        outputs,
       ),
     ));
   }
