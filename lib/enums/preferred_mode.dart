@@ -1,3 +1,4 @@
+import 'package:caonalyzer/services/pytorch/pytorch_object_detector.dart';
 import 'package:caonalyzer/services/tf_serving/tf_serving_object_detector.dart';
 
 import 'package:caonalyzer/object_detectors/object_detectors.dart';
@@ -11,7 +12,7 @@ enum PreferredMode {
       case PreferredMode.online:
         return TfServingObjectDetector();
       case PreferredMode.offline:
-        throw UnimplementedError('Offline mode is not implemented yet');
+        return PytorchObjectDetector();
     }
   }
 }
