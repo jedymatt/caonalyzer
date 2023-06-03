@@ -8,7 +8,7 @@ class PytorchObjectDetector implements ObjectDetector {
   ModelObjectDetection? _model;
 
   @override
-  Image preProcessImage(Image image) {
+  Image preprocessImage(Image image) {
     if (image.width <= 640 || image.height <= 640) {
       return image;
     }

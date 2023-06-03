@@ -14,7 +14,7 @@ import 'object_detection_response.dart';
 
 class TfServingObjectDetector implements ObjectDetector {
   @override
-  Image preProcessImage(Image image) {
+  Image preprocessImage(Image image) {
     if (image.width > image.height) {
       image = copyResize(
         image,

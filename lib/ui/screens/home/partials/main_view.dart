@@ -51,7 +51,7 @@ class _MainViewState extends State<MainView> {
 
     objectDetector = preferredMode.value.objectDetector;
 
-    final tensorImage = objectDetector.preProcessImage(decodedImage);
+    final tensorImage = objectDetector.preprocessImage(decodedImage);
 
     try {
       setState(() {
