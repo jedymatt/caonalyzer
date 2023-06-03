@@ -31,11 +31,10 @@ class OnlineObjectDetector extends ObjectDetector {
       log(jsonDecode(response.body)['message']);
 
       throw Exception(
-          'Error running inference HTTP request. See logs for details.');
+        'Error running inference HTTP request. See logs for details.',
+      );
     }
 
-    final Map<String, dynamic> result = Map.from(jsonDecode(response.body));
-
-    return ObjectDetectionOutput.fromMap(result['outputs']);
+    return ObjectDetectionOutput.fromMap(Map.from(jsonDecode(response.body)));
   }
 }
