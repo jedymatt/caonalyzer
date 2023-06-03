@@ -1,6 +1,6 @@
 import 'package:caonalyzer/services/tf_serving/tf_serving_object_detector.dart';
 
-import 'package:caonalyzer/object_detectors/types/types.dart';
+import 'package:caonalyzer/object_detectors/object_detectors.dart';
 
 enum PreferredMode {
   online,
