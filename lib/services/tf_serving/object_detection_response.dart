@@ -1,8 +1,7 @@
 import 'dart:convert';
 
 import 'package:caonalyzer/globals.dart';
-import 'package:caonalyzer/object_detectors/types/bounding_box.dart';
-import 'package:caonalyzer/object_detectors/types/object_detection_output.dart';
+import 'package:caonalyzer/object_detectors/types/types.dart';
 
 class ObjectDetectionResponse {
   final int numDetections;
