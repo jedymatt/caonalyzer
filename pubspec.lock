@@ -440,6 +440,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.2.4"
+  pytorch_lite:
+    dependency: "direct main"
+    description:
+      name: pytorch_lite
+      sha256: "7e87dda2199954e9b81fad85cc7543fad31239e511209bb754a24106459e1a2b"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.5"
   quiver:
     dependency: transitive
     description:
@@ -569,10 +577,10 @@ packages:
     dependency: "direct main"
     description:
       name: tflite_flutter
-      sha256: "5356a4aa54096dd3ce0ee840c0c602db0cb9f45ce77c1cfe45ec7a39481068de"
+      sha256: d5acf30411b6a4ee299be25bad5a44e7fc103231fefaecb1c27f42df48251eb9
       url: "https://pub.dev"
     source: hosted
-    version: "0.10.0"
+    version: "0.10.1"
   tflite_flutter_helper_plus:
     dependency: "direct main"
     description:
