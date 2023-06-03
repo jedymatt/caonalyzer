@@ -252,10 +252,10 @@ packages:
     dependency: "direct main"
     description:
       name: image
-      sha256: "8e9d133755c3e84c73288363e6343157c383a0c6c56fc51afcc5d4d7180306d6"
+      sha256: a72242c9a0ffb65d03de1b7113bc4e189686fc07c7147b8b41811d0dd0e0d9bf
       url: "https://pub.dev"
     source: hosted
-    version: "3.3.0"
+    version: "4.0.17"
   image_picker:
     dependency: "direct main"
     description:
@@ -268,10 +268,10 @@ packages:
     dependency: transitive
     description:
       name: image_picker_android
-      sha256: c2f3c66400649bd132f721c88218945d6406f693092b2f741b79ae9cdb046e59
+      sha256: "3083c3a3245adf9f3eb7bacf0eaa6a1f087dd538fab73a13a2f7907602601692"
       url: "https://pub.dev"
     source: hosted
-    version: "0.8.6+16"
+    version: "0.8.6+19"
   image_picker_for_web:
     dependency: transitive
     description:
@@ -308,10 +308,10 @@ packages:
     dependency: transitive
     description:
       name: lints
-      sha256: "6b0206b0bf4f04961fc5438198ccb3a885685cd67d4d4a32cc20ad7f8adbe015"
+      sha256: "0a217c6c989d21039f1498c3ed9f3ed71b354e69873f13a8dfc3c9fe76f1b452"
       url: "https://pub.dev"
     source: hosted
-    version: "2.1.0"
+    version: "2.1.1"
   matcher:
     dependency: transitive
     description:
@@ -581,30 +581,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.10.1"
-  tflite_flutter_helper_plus:
-    dependency: "direct main"
-    description:
-      name: tflite_flutter_helper_plus
-      sha256: df46a79487efacf2bf9fe608fa935aaa3dce4be1af97442681975c3414eb6574
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.0.2"
-  tflite_flutter_plus:
-    dependency: transitive
-    description:
-      name: tflite_flutter_plus
-      sha256: "72c7363df4be932541b82f8bc7e544df343f6dea1f6e614a3efa2a7dd73dff2e"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.0.1"
-  tuple:
-    dependency: transitive
-    description:
-      name: tuple
-      sha256: "0ea99cd2f9352b2586583ab2ce6489d1f95a5f6de6fb9492faaf97ae2060f0aa"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.0.1"
   typed_data:
     dependency: transitive
     description:
