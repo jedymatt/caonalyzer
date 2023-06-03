@@ -1,11 +1,13 @@
+import 'dart:convert';
+import 'dart:developer';
+
 import 'package:caonalyzer/object_detectors/object_detectors.dart';
 import 'package:image/image.dart'
     show Image, Interpolation, copyResize, encodeBmp;
-import 'package:pytorch_lite/pigeon.dart';
-import 'package:pytorch_lite/pytorch_lite.dart';
+import 'package:flutter_vision/flutter_vision.dart';
 
 class PytorchObjectDetector implements ObjectDetector {
-  ModelObjectDetection? _model;
+  FlutterVision? _model;
 
   @override
   Image preprocessImage(Image image) {
@@ -34,31 +36,44 @@ class PytorchObjectDetector implements ObjectDetector {
   Future<List<ObjectDetectionOutput>> runInference(Image image) async {
     final model = await getModel();
 
-    final results = await model.getImagePrediction(encodeBmp(image));
+    final results = await model.yoloOnImage(
+      bytesList: encodeBmp(image),
+      imageHeight: image.height,
+      imageWidth: image.width,
+    );
 
-    return results
-        .map((e) => ObjectDetectionOutput(
-              e!.className ?? e.classIndex.toString(),
-              e.score,
-              BoundingBox(
-                left: e.rect.left,
-                top: e.rect.top,
-                right: e.rect.right,
-                bottom: e.rect.bottom,
-              ),
-            ))
-        .toList();
+    log(results[0].toString());
+
+    return results.map((e) {
+      final label = e['tag'];
+      final confidence = e['box'][4];
+      final rect = BoundingBox(
+        left: e['box'][0],
+        top: e['box'][1],
+        right: e['box'][2],
+        bottom: e['box'][3],
+      );
+
+      return ObjectDetectionOutput(
+        label,
+        confidence,
+        rect,
+      );
+    }).toList();
   }
 
-  Future<ModelObjectDetection> getModel() async {
-    _model ??= await PytorchLite.loadObjectDetectionModel(
-      'assets/yolov8n.torchscript.pt',
-      1,
-      640,
-      640,
-      objectDetectionModelType: ObjectDetectionModelType.yolov8,
-      labelPath: 'assets/labels.txt',
-    );
+  Future<FlutterVision> getModel() async {
+    if (_model == null) {
+      _model = FlutterVision();
+
+      await _model!.loadYoloModel(
+        modelPath: 'assets/yolov8n.tflite',
+        labels: 'assets/labels.txt',
+        modelVersion: 'yolov8',
+        numThreads: 1,
+        useGpu: false,
+      );
+    }
 
     return _model!;
   }
