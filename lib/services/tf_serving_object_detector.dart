@@ -36,18 +36,7 @@ class TfServingObjectDetector implements ObjectDetector {
         .getBytes(order: ChannelOrder.rgb)
         .reshape([1, image.height, image.width, 3]);
 
-    final uri =
-        Uri.parse('http://${host.value}:8501/v1/models/faster_rcnn:predict');
-
-    final response = await http.post(
-      uri,
-      headers: {
-        'content-type': 'application/json',
-      },
-      body: jsonEncode({
-        'inputs': {'input_tensor': reshaped}
-      }),
-    );
+    http.Response response = await requestTfServingPrediction(reshaped);
 
     if (response.statusCode != HttpStatus.ok) {
       log(jsonDecode(response.body)['message']);
@@ -63,6 +52,26 @@ class TfServingObjectDetector implements ObjectDetector {
       image.height,
       image.width,
     );
+  }
+
+  Future<http.Response> requestTfServingPrediction(
+    List<dynamic> reshaped,
+  ) async {
+    final uri = Uri.parse(
+      'http://${host.value}:8501/v1/models/faster_rcnn:predict',
+    );
+
+    final response = await http.post(
+      uri,
+      headers: {
+        'content-type': 'application/json',
+      },
+      body: jsonEncode({
+        'inputs': {'input_tensor': reshaped}
+      }),
+    );
+
+    return response;
   }
 }
 
