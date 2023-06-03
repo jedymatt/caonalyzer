@@ -61,6 +61,6 @@ class TfServingObjectDetector implements ObjectDetector {
 
     final output = ObjectDetectionResponse.fromJson(response.body);
 
-    return output.toObjectDetectionOutputs();
+    return output.toObjectDetectionOutputs(image.height, image.width);
   }
 }
