@@ -18,8 +18,8 @@ dependencies:
   connectivity_plus: ^4.0.1
   shared_preferences: ^2.1.1
   get_storage: ^2.1.1
-  pytorch_lite: ^2.0.5
   image: ^4.0.17
+  flutter_vision: ^1.1.1
 
 dev_dependencies:
   flutter_test:
@@ -33,3 +33,4 @@ flutter:
   assets:
     - ./assets/labels.txt
     - ./assets/yolov8n.torchscript.pt
+    - ./assets/yolov8n.tflite
