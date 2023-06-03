@@ -203,6 +203,14 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  flutter_vision:
+    dependency: "direct main"
+    description:
+      name: flutter_vision
+      sha256: "990701bbc7d0d17e75f121932f7fc7b9269b55804789fc4703df35d2c44a5700"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.1"
   flutter_web_plugins:
     dependency: transitive
     description: flutter
@@ -432,14 +440,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.2.4"
-  pytorch_lite:
-    dependency: "direct main"
-    description:
-      name: pytorch_lite
-      sha256: "7e87dda2199954e9b81fad85cc7543fad31239e511209bb754a24106459e1a2b"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.0.5"
   quiver:
     dependency: transitive
     description:
