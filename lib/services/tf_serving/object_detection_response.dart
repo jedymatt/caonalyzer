@@ -16,19 +16,20 @@ class ObjectDetectionResponse {
   });
 
   factory ObjectDetectionResponse.fromMap(Map<String, dynamic> map) {
-    final numDetections = (map['num_detections'][0] as double).toInt();
+    final outputs = map['outputs'] as Map<String, dynamic>;
+    final numDetections = (outputs['num_detections'][0] as double).toInt();
 
     return ObjectDetectionResponse(
       numDetections: numDetections,
-      detectionBoxes: (map['detection_boxes'][0] as List)
+      detectionBoxes: (outputs['detection_boxes'][0] as List)
           .map<List<double>>((e) => e.cast<double>())
           .toList()
           .sublist(0, numDetections),
-      detectionClasses: (map['detection_classes'][0] as List)
+      detectionClasses: (outputs['detection_classes'][0] as List)
           .map<int>((e) => e.toInt())
           .toList()
           .sublist(0, numDetections),
-      detectionScores: (map['detection_scores'][0] as List)
+      detectionScores: (outputs['detection_scores'][0] as List)
           .cast<double>()
           .sublist(0, numDetections),
     );
