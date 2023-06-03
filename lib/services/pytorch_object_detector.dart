@@ -41,7 +41,7 @@ class PytorchObjectDetector implements ObjectDetector {
       imageWidth: image.width,
     );
 
-    log(results[0].toString());
+    log(results.toString());
 
     return results.map((e) {
       final label = e['tag'];
