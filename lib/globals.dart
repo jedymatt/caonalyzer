@@ -1,4 +1,4 @@
-import 'package:caonalyzer/object_detectors/enums/preferred_mode.dart';
+import 'package:caonalyzer/enums/preferred_mode.dart';
 import 'package:get/get.dart';
 import 'package:camera/camera.dart';
 import 'package:get_storage/get_storage.dart';

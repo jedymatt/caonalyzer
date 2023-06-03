@@ -1,46 +1,43 @@
-import 'dart:typed_data';
-
-import 'package:caonalyzer/globals.dart';
-import 'package:caonalyzer/object_detectors/box_converter.dart';
-import 'package:caonalyzer/object_detectors/object_detection_output.dart';
+import 'package:caonalyzer/object_detectors/types/object_detection_output.dart';
 import 'package:flutter/material.dart';
 import 'package:image/image.dart' as image_lib;
 
 class ImageScreen extends StatelessWidget {
-  const ImageScreen(this.image, this.output, {super.key});
+  const ImageScreen(this.image, this.outputs, {super.key});
 
   final image_lib.Image image;
-  final ObjectDetectionOutput output;
+  final List<ObjectDetectionOutput> outputs;
 
   @override
   Widget build(BuildContext context) {
     // draw bounding boxes on image
-    final boxes = BoxConverter.convert(
-      output.detectionBoxes,
-      height: image.height,
-      width: image.width,
-    );
-
-    for (Rect box in boxes) {
-      image_lib.drawRect(
-        image,
-        box.left.toInt(),
-        box.top.toInt(),
-        box.right.toInt(),
-        box.bottom.toInt(),
-        image_lib.getColor(0, 255, 0),
+    for (var output in outputs) {
+      final box = output.boundingBox.toAbsoluteBoundingBox(
+        image.width,
+        image.height,
       );
 
-      final label = labels[output.detectionClasses[boxes.indexOf(box)]];
-      final score = output.detectionScores[boxes.indexOf(box)];
-
-      image_lib.drawStringWrap(
+      image_lib.drawRect(
         image,
-        image_lib.arial_14,
-        box.left.toInt(),
-        box.top.toInt(),
+        x1: box.left.toInt(),
+        y1: box.top.toInt(),
+        x2: box.right.toInt(),
+        y2: box.bottom.toInt(),
+        color: image_lib.ColorRgb8(0, 255, 0),
+        thickness: 2,
+      );
+
+      final label = output.label;
+      final score = output.confidence;
+
+      image_lib.drawString(
+        image,
         '$label ${(score * 100).toStringAsFixed(2)}%',
-        color: image_lib.getColor(0, 255, 0),
+        font: image_lib.arial14,
+        x: box.left.toInt(),
+        y: box.top.toInt(),
+        color: image_lib.ColorRgb8(0, 255, 0),
+        wrap: true,
       );
     }
 
@@ -51,9 +48,9 @@ class ImageScreen extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Center(
-              child: Image.memory(image_lib.encodePng(image) as Uint8List),
+              child: Image.memory(image_lib.encodePng(image)),
             ),
-            Text('Outputs count: ${output.numDetections}'),
+            Text('Outputs count: ${outputs.length}'),
           ],
         ),
       ),
