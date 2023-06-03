@@ -1,5 +1,6 @@
-import '../object_detector.dart';
-import '../online_object_detector.dart';
+import 'package:caonalyzer/tf_serving/tf_serving_object_detector.dart';
+
+import '../types/object_detector.dart';
 
 enum PreferredMode {
   online,
@@ -8,16 +9,9 @@ enum PreferredMode {
   ObjectDetector get objectDetector {
     switch (this) {
       case PreferredMode.online:
-        return OnlineObjectDetector();
+        return TfServingObjectDetector();
       case PreferredMode.offline:
         throw UnimplementedError('Offline mode is not implemented yet');
-      default:
-        return OnlineObjectDetector();
     }
-  }
-
-  // forceOffline
-  ObjectDetector get offlineObjectDetector {
-    throw UnimplementedError('Offline mode is not implemented yet');
   }
 }
