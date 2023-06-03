@@ -1,10 +1,9 @@
 import 'package:camera/camera.dart';
 import 'package:caonalyzer/globals.dart';
-import 'package:caonalyzer/object_detectors/box_converter.dart';
 import 'package:caonalyzer/object_detectors/object_detectors.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:image/image.dart' as imageLib;
+import 'package:image/image.dart' as image_lib;
 
 class CameraScreen extends StatefulWidget {
   const CameraScreen({super.key});
@@ -17,7 +16,7 @@ class _CameraScreenState extends State<CameraScreen>
     with WidgetsBindingObserver, TickerProviderStateMixin {
   late CameraController cameraController;
   late ObjectDetector objectDetector;
-  imageLib.Image? currentImage;
+  image_lib.Image? currentImage;
 
   @override
   void initState() {
@@ -129,55 +128,7 @@ class _CameraScreenState extends State<CameraScreen>
 
     final bytes = allBytes.done().buffer.asUint8List();
 
-    final Size imageSize =
-        Size(image.width.toDouble(), image.height.toDouble());
-
-    final imageLib.Image imageFromBytes = imageLib.Image.fromBytes(
-      imageSize.width.toInt(),
-      imageSize.height.toInt(),
-      bytes,
-      format: imageLib.Format.rgb,
-    );
-
-    final tensorImage = objectDetector.preProcessImage(imageFromBytes);
-
-    final output = await objectDetector.runInference(tensorImage);
-
-    final postProccessedImage = tensorImage.image.clone();
-
-    // draw bounding boxes on image
-    final boxes = BoxConverter.convert(
-      output.detectionBoxes,
-      height: image.height,
-      width: image.width,
-    );
-
-    for (Rect box in boxes) {
-      imageLib.drawRect(
-        postProccessedImage,
-        box.left.toInt(),
-        box.top.toInt(),
-        box.right.toInt(),
-        box.bottom.toInt(),
-        imageLib.getColor(0, 255, 0),
-      );
-
-      final label = labels[output.detectionClasses[boxes.indexOf(box)]];
-      final score = output.detectionScores[boxes.indexOf(box)];
-
-      imageLib.drawStringWrap(
-        postProccessedImage,
-        imageLib.arial_14,
-        box.left.toInt(),
-        box.top.toInt(),
-        '$label ${(score * 100).toStringAsFixed(2)}%',
-        color: imageLib.getColor(0, 255, 0),
-      );
-    }
-
-    setState(() {
-      currentImage = postProccessedImage;
-    });
+    // todo: run object detection
   }
 }
 
