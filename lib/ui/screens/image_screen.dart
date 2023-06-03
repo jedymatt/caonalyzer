@@ -12,17 +12,12 @@ class ImageScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     // draw bounding boxes on image
     for (var output in outputs) {
-      final box = output.boundingBox.toAbsoluteBoundingBox(
-        image.width,
-        image.height,
-      );
-
       image_lib.drawRect(
         image,
-        x1: box.left.toInt(),
-        y1: box.top.toInt(),
-        x2: box.right.toInt(),
-        y2: box.bottom.toInt(),
+        x1: output.boundingBox.left.toInt(),
+        y1: output.boundingBox.top.toInt(),
+        x2: output.boundingBox.right.toInt(),
+        y2: output.boundingBox.bottom.toInt(),
         color: image_lib.ColorRgb8(0, 255, 0),
         thickness: 2,
       );
@@ -34,8 +29,8 @@ class ImageScreen extends StatelessWidget {
         image,
         '$label ${(score * 100).toStringAsFixed(2)}%',
         font: image_lib.arial14,
-        x: box.left.toInt(),
-        y: box.top.toInt(),
+        x: output.boundingBox.left.toInt(),
+        y: output.boundingBox.top.toInt(),
         color: image_lib.ColorRgb8(0, 255, 0),
         wrap: true,
       );
