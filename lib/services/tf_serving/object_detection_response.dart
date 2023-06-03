@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:caonalyzer/globals.dart';
 import 'package:caonalyzer/object_detectors/types/bounding_box.dart';
 import 'package:caonalyzer/object_detectors/types/object_detection_output.dart';
@@ -15,8 +17,9 @@ class ObjectDetectionResponse {
     required this.detectionScores,
   });
 
-  factory ObjectDetectionResponse.fromMap(Map<String, dynamic> map) {
-    final outputs = map['outputs'] as Map<String, dynamic>;
+  factory ObjectDetectionResponse.fromJson(String json) {
+    final mappedJson = jsonDecode(json) as Map<String, dynamic>;
+    final outputs = mappedJson['outputs'] as Map<String, dynamic>;
     final numDetections = (outputs['num_detections'][0] as double).toInt();
 
     return ObjectDetectionResponse(
