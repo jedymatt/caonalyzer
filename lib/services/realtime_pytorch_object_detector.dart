@@ -2,8 +2,9 @@ import 'dart:typed_data';
 
 import 'package:caonalyzer/object_detectors/object_detectors.dart';
 import 'package:caonalyzer/services/pytorch_object_detector.dart';
+import 'package:image/image.dart';
 
-class RealtimePytorchObjectDetector {
+class RealtimePytorchObjectDetector implements ObjectDetector {
   final PytorchObjectDetector objectDetector = PytorchObjectDetector();
 
   Future<List<ObjectDetectionOutput>> runInferenceOnFrame(
@@ -35,5 +36,15 @@ class RealtimePytorchObjectDetector {
         rect,
       );
     }).toList();
+  }
+
+  @override
+  Image preprocessImage(Image image) {
+    return objectDetector.preprocessImage(image);
+  }
+
+  @override
+  Future<List<ObjectDetectionOutput>> runInference(Image image) {
+    return objectDetector.runInference(image);
   }
 }
