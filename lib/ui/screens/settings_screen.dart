@@ -1,7 +1,7 @@
 import 'package:caonalyzer/globals.dart';
 import 'package:flutter/material.dart';
 
-import 'package:caonalyzer/object_detectors/enums/preferred_mode.dart';
+import 'package:caonalyzer/enums/preferred_mode.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
