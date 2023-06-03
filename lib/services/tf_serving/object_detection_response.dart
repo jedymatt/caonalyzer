@@ -37,7 +37,8 @@ class ObjectDetectionResponse {
     );
   }
 
-  List<ObjectDetectionOutput> toObjectDetectionOutputs() {
+  List<ObjectDetectionOutput> toObjectDetectionOutputs(
+      int imageHeight, int imageWidth) {
     return List.generate(
       numDetections,
       (index) => ObjectDetectionOutput(
@@ -48,7 +49,7 @@ class ObjectDetectionResponse {
           top: detectionBoxes[index][0],
           right: detectionBoxes[index][3],
           bottom: detectionBoxes[index][2],
-        ),
+        ).toAbsoluteBoundingBox(imageHeight, imageWidth),
       ),
     );
   }
