@@ -11,17 +11,11 @@ class BoundingBox {
     required this.bottom,
   });
 
+  double get width => right - left;
+  double get height => bottom - top;
+
   @override
   String toString() {
     return 'BoundingBox{left: $left, top: $top, right: $right, bottom: $bottom}';
-  }
-
-  BoundingBox toAbsoluteBoundingBox(int imageHeight, int imageWidth) {
-    return BoundingBox(
-      left: left * imageWidth,
-      top: top * imageHeight,
-      right: right * imageWidth,
-      bottom: bottom * imageHeight,
-    );
   }
 }
