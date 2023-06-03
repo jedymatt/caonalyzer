@@ -59,8 +59,7 @@ class TfServingObjectDetector implements ObjectDetector {
       );
     }
 
-    final output =
-        ObjectDetectionResponse.fromMap(Map.from(jsonDecode(response.body)));
+    final output = ObjectDetectionResponse.fromJson(response.body);
 
     return output.toObjectDetectionOutputs();
   }
