@@ -4,12 +4,12 @@ import 'package:caonalyzer/globals.dart';
 import 'package:caonalyzer/object_detectors/box_converter.dart';
 import 'package:caonalyzer/object_detectors/object_detection_output.dart';
 import 'package:flutter/material.dart';
-import 'package:image/image.dart' as imgLib;
+import 'package:image/image.dart' as image_lib;
 
 class ImageScreen extends StatelessWidget {
   const ImageScreen(this.image, this.output, {super.key});
 
-  final imgLib.Image image;
+  final image_lib.Image image;
   final ObjectDetectionOutput output;
 
   @override
@@ -22,41 +22,39 @@ class ImageScreen extends StatelessWidget {
     );
 
     for (Rect box in boxes) {
-      imgLib.drawRect(
+      image_lib.drawRect(
         image,
         box.left.toInt(),
         box.top.toInt(),
         box.right.toInt(),
         box.bottom.toInt(),
-        imgLib.getColor(0, 255, 0),
+        image_lib.getColor(0, 255, 0),
       );
 
       final label = labels[output.detectionClasses[boxes.indexOf(box)]];
       final score = output.detectionScores[boxes.indexOf(box)];
 
-      imgLib.drawStringWrap(
+      image_lib.drawStringWrap(
         image,
-        imgLib.arial_14,
+        image_lib.arial_14,
         box.left.toInt(),
         box.top.toInt(),
         '$label ${(score * 100).toStringAsFixed(2)}%',
-        color: imgLib.getColor(0, 255, 0),
+        color: image_lib.getColor(0, 255, 0),
       );
     }
 
     return Scaffold(
       appBar: AppBar(),
-      body: Center(
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              Image.memory(imgLib.encodePng(image) as Uint8List),
-              const SizedBox.square(
-                dimension: 50,
-              ),
-              Text('${output.numDetections}'),
-            ],
-          ),
+      body: InteractiveViewer(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Center(
+              child: Image.memory(image_lib.encodePng(image) as Uint8List),
+            ),
+            Text('Outputs count: ${output.numDetections}'),
+          ],
         ),
       ),
     );
