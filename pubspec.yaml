@@ -15,7 +15,6 @@ dependencies:
   tflite_flutter: ^0.10.1
   camera: ^0.10.5+1
   get: ^4.6.5
-  flutter_vision: ^1.1.1
   connectivity_plus: ^4.0.1
   shared_preferences: ^2.1.1
   get_storage: ^2.1.1
@@ -33,3 +32,4 @@ flutter:
 
   assets:
     - ./assets/labels.txt
+    - ./assets/yolov8n.torchscript.pt

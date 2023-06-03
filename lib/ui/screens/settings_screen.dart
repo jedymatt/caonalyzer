@@ -24,13 +24,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
             title: const Text('Online mode'),
             subtitle: const Text('Use a server to run inference'),
             value: preferredMode.value == PreferredMode.online,
-            onChanged: null,
-            // onChanged: (value) {
-            //   setState(() {
-            //     preferredMode.value =
-            //         value ? PreferredMode.online : PreferredMode.offline;
-            //   });
-            // },
+            onChanged: (value) {
+              setState(() {
+                preferredMode.value =
+                    value ? PreferredMode.online : PreferredMode.offline;
+              });
+            },
           ),
           ListTile(
             title: const Text('Host'),
