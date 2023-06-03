@@ -16,7 +16,7 @@ class BoundingBox {
     return 'BoundingBox{left: $left, top: $top, right: $right, bottom: $bottom}';
   }
 
-  BoundingBox toAbsoluteBoundingBox(int imageWidth, int imageHeight) {
+  BoundingBox toAbsoluteBoundingBox(int imageHeight, int imageWidth) {
     return BoundingBox(
       left: left * imageWidth,
       top: top * imageHeight,
