@@ -1,9 +1,8 @@
 import 'package:camera/camera.dart';
 import 'package:caonalyzer/globals.dart';
 import 'package:caonalyzer/object_detectors/object_detectors.dart';
-import 'package:flutter/foundation.dart';
+import 'package:caonalyzer/services/realtime_pytorch_object_detector.dart';
 import 'package:flutter/material.dart';
-import 'package:image/image.dart' as image_lib;
 
 class CameraScreen extends StatefulWidget {
   const CameraScreen({super.key});
@@ -15,14 +14,14 @@ class CameraScreen extends StatefulWidget {
 class _CameraScreenState extends State<CameraScreen>
     with WidgetsBindingObserver, TickerProviderStateMixin {
   late CameraController cameraController;
-  late ObjectDetector objectDetector;
-  image_lib.Image? currentImage;
+  final objectDetector = RealtimePytorchObjectDetector();
+  CameraImage? _cameraImage;
+  List<ObjectDetectionOutput> outputs = [];
+  int iteration = 0;
 
   @override
   void initState() {
     super.initState();
-
-    objectDetector = preferredMode.value.objectDetector;
 
     _initializeCameraController(cameras[0]);
   }
@@ -50,8 +49,21 @@ class _CameraScreenState extends State<CameraScreen>
 
   @override
   Widget build(BuildContext context) {
+    if (!cameraController.value.isInitialized) {
+      return Container();
+    }
+
     return Scaffold(
-      body: ScaledCameraPreview(cameraController),
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          AspectRatio(
+            aspectRatio: cameraController.value.aspectRatio,
+            child: CameraPreview(cameraController),
+          ),
+          ...detectedObjects(MediaQuery.of(context).size),
+        ],
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: clickCamera,
         child: const Icon(Icons.camera),
@@ -70,10 +82,15 @@ class _CameraScreenState extends State<CameraScreen>
     );
 
     cameraController.initialize().then((_) {
-      if (!mounted) return;
+      if (cameraController.value.isStreamingImages) {
+        return;
+      }
 
       setState(() {
-        cameraController.startImageStream(_imageStream);
+        cameraController.startImageStream((image) {
+          _cameraImage = image;
+          _imageStream(image);
+        });
       });
     }).catchError((Object e) {
       if (e is CameraException) {
@@ -120,15 +137,61 @@ class _CameraScreenState extends State<CameraScreen>
   }
 
   void _imageStream(CameraImage image) async {
-    final WriteBuffer allBytes = WriteBuffer();
+    objectDetector
+        .runInferenceOnFrame(
+      image.planes.map((plane) => plane.bytes).toList(),
+      image.height,
+      image.width,
+    )
+        .then((value) {
+      if (value.isNotEmpty) {
+        setState(() {
+          outputs = value;
+        });
+      }
 
-    for (final Plane plane in image.planes) {
-      allBytes.putUint8List(plane.bytes);
-    }
+      if (value.isEmpty && iteration > 500) {
+        setState(() {
+          outputs = [];
+        });
 
-    final bytes = allBytes.done().buffer.asUint8List();
+        iteration = 0;
+      }
 
-    // todo: run object detection
+      iteration++;
+    });
+  }
+
+  List<Widget> detectedObjects(Size screen) {
+    if (outputs.isEmpty) return [];
+
+    Color colorPick = const Color.fromARGB(255, 50, 233, 30);
+
+    double factorX = screen.width / (_cameraImage?.height ?? 1);
+    double factorY = screen.height / (_cameraImage?.width ?? 1);
+
+    return outputs.map((result) {
+      return Positioned(
+        left: result.boundingBox.left * factorX,
+        top: result.boundingBox.top * factorY,
+        width: (result.boundingBox.right - result.boundingBox.left) * factorX,
+        height: (result.boundingBox.bottom - result.boundingBox.top) * factorY,
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: const BorderRadius.all(Radius.circular(10.0)),
+            border: Border.all(color: Colors.pink, width: 2.0),
+          ),
+          child: Text(
+            "${result.label} ${(result.confidence * 100).toStringAsFixed(0)}%",
+            style: TextStyle(
+              background: Paint()..color = colorPick,
+              color: Colors.white,
+              fontSize: 18.0,
+            ),
+          ),
+        ),
+      );
+    }).toList();
   }
 }
 
