@@ -1,4 +1,4 @@
-import 'package:caonalyzer/object_detectors/types/object_detection_output.dart';
+import 'package:caonalyzer/object_detectors/object_detectors.dart';
 import 'package:flutter/material.dart';
 import 'package:image/image.dart' as image_lib;
 
