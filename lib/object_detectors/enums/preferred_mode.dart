@@ -1,4 +1,4 @@
-import 'package:caonalyzer/tf_serving/tf_serving_object_detector.dart';
+import 'package:caonalyzer/services/tf_serving/tf_serving_object_detector.dart';
 
 import '../types/object_detector.dart';
 
