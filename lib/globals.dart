@@ -10,7 +10,7 @@ final box = GetStorage();
 
 RxList<CameraDescription> cameras = <CameraDescription>[].obs;
 RxString host = '192.168.1.8'.obs;
-Rx<PreferredMode> preferredMode = PreferredMode.online.obs;
+Rx<PreferredMode> preferredMode = PreferredMode.offline.obs;
 RxList<String> labels = <String>[].obs;
 
 Future<void> initGlobals() async {
