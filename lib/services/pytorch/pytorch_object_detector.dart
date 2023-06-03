@@ -1,6 +1,6 @@
 import 'package:caonalyzer/object_detectors/object_detectors.dart';
 import 'package:image/image.dart'
-    show ChannelOrder, Image, Interpolation, copyResize, encodeBmp;
+    show Image, Interpolation, copyResize, encodeBmp;
 import 'package:pytorch_lite/pigeon.dart';
 import 'package:pytorch_lite/pytorch_lite.dart';
 
