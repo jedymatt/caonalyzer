@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:developer';
 
 import 'package:caonalyzer/object_detectors/object_detectors.dart';
@@ -46,7 +45,7 @@ class PytorchObjectDetector implements ObjectDetector {
 
     return results.map((e) {
       final label = e['tag'];
-      final confidence = e['box'][4];
+      final confidence = e['box'][4]; // this is api bug
       final rect = BoundingBox(
         left: e['box'][0],
         top: e['box'][1],
