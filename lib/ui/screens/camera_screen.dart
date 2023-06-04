@@ -1,7 +1,6 @@
 import 'package:camera/camera.dart';
 import 'package:caonalyzer/globals.dart';
 import 'package:caonalyzer/object_detectors/object_detectors.dart';
-import 'package:caonalyzer/services/realtime_pytorch_object_detector.dart';
 import 'package:flutter/material.dart';
 
 class CameraScreen extends StatefulWidget {
@@ -14,7 +13,7 @@ class CameraScreen extends StatefulWidget {
 class _CameraScreenState extends State<CameraScreen>
     with WidgetsBindingObserver, TickerProviderStateMixin {
   late CameraController cameraController;
-  final objectDetector = RealtimePytorchObjectDetector();
+  late RealtimeObjectDetector objectDetector;
   CameraImage? _cameraImage;
   List<ObjectDetectionOutput> outputs = [];
   int iteration = 0;
@@ -23,13 +22,15 @@ class _CameraScreenState extends State<CameraScreen>
   void initState() {
     super.initState();
 
+    objectDetector = preferredMode.value.realtimeObjectDetector;
+
     _initializeCameraController(cameras[0]);
   }
 
   @override
   void dispose() {
     super.dispose();
-
+    cameraController.stopImageStream();
     cameraController.dispose();
   }
 
