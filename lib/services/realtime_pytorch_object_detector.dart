@@ -4,9 +4,10 @@ import 'package:caonalyzer/object_detectors/object_detectors.dart';
 import 'package:caonalyzer/services/pytorch_object_detector.dart';
 import 'package:image/image.dart';
 
-class RealtimePytorchObjectDetector implements ObjectDetector {
+class RealtimePytorchObjectDetector implements RealtimeObjectDetector {
   final PytorchObjectDetector objectDetector = PytorchObjectDetector();
 
+  @override
   Future<List<ObjectDetectionOutput>> runInferenceOnFrame(
     List<Uint8List> bytes,
     int imageHeight,
