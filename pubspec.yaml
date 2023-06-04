@@ -32,5 +32,5 @@ flutter:
 
   assets:
     - ./assets/labels.txt
-    - ./assets/yolov8n.torchscript.pt
+    # - ./assets/yolov8n.torchscript.pt
     - ./assets/yolov8n.tflite
