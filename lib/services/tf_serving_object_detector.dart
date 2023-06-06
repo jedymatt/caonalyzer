@@ -116,11 +116,11 @@ class ObjectDetectionResponse {
       (index) => ObjectDetectionOutput(
         labels[detectionClasses[index] - 1],
         detectionScores[index],
-        BoundingBox(
-          left: detectionBoxes[index][1] * imageWidth,
-          top: detectionBoxes[index][0] * imageHeight,
-          right: detectionBoxes[index][3] * imageWidth,
-          bottom: detectionBoxes[index][2] * imageHeight,
+        BoundingBox.fromPercent(
+          left: detectionBoxes[index][1],
+          top: detectionBoxes[index][0],
+          right: detectionBoxes[index][3],
+          bottom: detectionBoxes[index][2],
         ),
       ),
     );
