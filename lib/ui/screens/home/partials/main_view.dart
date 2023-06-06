@@ -1,6 +1,6 @@
 import 'package:caonalyzer/globals.dart';
 import 'package:caonalyzer/object_detectors/object_detectors.dart';
-import 'package:caonalyzer/ui/screens/image_screen.dart';
+import 'package:caonalyzer/ui/screens/gallery/image_view_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image/image.dart' as image_lib;
@@ -79,9 +79,9 @@ class _MainViewState extends State<MainView> {
     if (!mounted) return;
 
     Navigator.of(context).push(MaterialPageRoute(
-      builder: (context) => ImageScreen(
+      builder: (context) => ImagePreviewScreen(
         tensorImage.clone(),
-        outputs,
+        objectDetectionOutputs: outputs,
       ),
     ));
   }
