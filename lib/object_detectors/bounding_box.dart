@@ -15,7 +15,7 @@ class BoundingBox {
   double get height => bottom - top;
 
   BoundingBox toPixel(num imageHeight, num imageWidth) {
-    if (!isPercentage()) return this;
+    if (!_isPercentage()) return this;
 
     return BoundingBox(
       left: left * imageWidth,
@@ -41,7 +41,7 @@ class BoundingBox {
     );
   }
 
-  bool isPercentage() {
+  bool _isPercentage() {
     return left <= 1 && top <= 1 && right <= 1 && bottom <= 1;
   }
 
