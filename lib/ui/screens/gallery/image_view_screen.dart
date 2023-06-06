@@ -55,73 +55,66 @@ class _ImagePreviewScreenState extends State<ImagePreviewScreen> {
 
     return Scaffold(
       body: SafeArea(
-        child: GestureDetector(
-          onTap: () {
-            setState(() {
-              showOverlay = !showOverlay;
-            });
-          },
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              ExtendedImage.memory(
-                image_lib.encodeJpg(widget.image),
-                clearMemoryCacheWhenDispose: true,
-                clearMemoryCacheIfFailed: true,
-                onDoubleTap: (state) => {state.reset()},
-                mode: ExtendedImageMode.gesture,
-                initGestureConfigHandler: (state) {
-                  return GestureConfig(
-                    minScale: 1,
-                  );
-                },
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            ExtendedImage.memory(
+              image_lib.encodeJpg(widget.image),
+              clearMemoryCacheWhenDispose: true,
+              clearMemoryCacheIfFailed: true,
+              onDoubleTap: (state) => {state.reset()},
+              mode: ExtendedImageMode.gesture,
+              initGestureConfigHandler: (state) {
+                return GestureConfig(
+                  minScale: 1,
+                );
+              },
+            ),
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: Row(
+                children: [
+                  IconButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    icon: const Icon(Icons.arrow_back),
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    onPressed: () {},
+                    icon: const Icon(Icons.share),
+                  ),
+                  IconButton(
+                    onPressed: () {},
+                    icon: const Icon(Icons.download),
+                  ),
+                ],
               ),
-              Positioned(
-                top: 0,
-                left: 0,
-                right: 0,
-                child: Row(
-                  children: [
-                    IconButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      icon: const Icon(Icons.arrow_back),
-                    ),
-                    const Spacer(),
-                    IconButton(
-                      onPressed: () {},
-                      icon: const Icon(Icons.share),
-                    ),
-                    IconButton(
-                      onPressed: () {},
-                      icon: const Icon(Icons.download),
-                    ),
-                  ],
-                ),
+            ),
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: Row(
+                children: [
+                  IconButton(
+                    onPressed: () {},
+                    icon: const Icon(Icons.edit),
+                  ),
+                  IconButton(
+                    onPressed: () {},
+                    icon: const Icon(Icons.info),
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    onPressed: () {},
+                    icon: const Icon(Icons.delete),
+                  ),
+                ],
               ),
-              Positioned(
-                bottom: 0,
-                left: 0,
-                right: 0,
-                child: Row(
-                  children: [
-                    IconButton(
-                      onPressed: () {},
-                      icon: const Icon(Icons.edit),
-                    ),
-                    IconButton(
-                      onPressed: () {},
-                      icon: const Icon(Icons.info),
-                    ),
-                    const Spacer(),
-                    IconButton(
-                      onPressed: () {},
-                      icon: const Icon(Icons.delete),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
