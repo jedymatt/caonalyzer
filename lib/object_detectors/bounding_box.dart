@@ -41,6 +41,20 @@ class BoundingBox {
     );
   }
 
+  factory BoundingBox.fromPercent({
+    required double left,
+    required double top,
+    required double right,
+    required double bottom,
+  }) {
+    return BoundingBox(
+      left: left,
+      top: top,
+      right: right,
+      bottom: bottom,
+    );
+  }
+
   bool _isPercentage() {
     return left <= 1 && top <= 1 && right <= 1 && bottom <= 1;
   }
