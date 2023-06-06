@@ -18,41 +18,17 @@ class ImagePreviewScreen extends StatefulWidget {
 }
 
 class _ImagePreviewScreenState extends State<ImagePreviewScreen> {
-  bool showOverlay = false;
+  @override
+  void initState() {
+    super.initState();
+
+    if (widget.objectDetectionOutputs != null) {
+      drawBoundingBoxes(widget.image, widget.objectDetectionOutputs!);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    for (ObjectDetectionOutput output in widget.objectDetectionOutputs ?? []) {
-      BoundingBox boundingBox = output.boundingBox.toPixel(
-        widget.image.height,
-        widget.image.width,
-      );
-
-      image_lib.drawRect(
-        widget.image,
-        x1: boundingBox.left.toInt(),
-        y1: boundingBox.top.toInt(),
-        x2: boundingBox.right.toInt(),
-        y2: boundingBox.bottom.toInt(),
-        color: image_lib.ColorRgb8(0, 255, 0),
-        // thicknes should be relative to image size
-        thickness: widget.image.width ~/ 300,
-      );
-
-      final label = output.label;
-      final score = output.confidence;
-
-      image_lib.drawString(
-        widget.image,
-        '$label ${(score * 100).toStringAsFixed(2)}%',
-        font: image_lib.arial14,
-        x: boundingBox.left.toInt(),
-        y: boundingBox.top.toInt(),
-        color: image_lib.ColorRgb8(0, 255, 0),
-        wrap: true,
-      );
-    }
-
     return Scaffold(
       body: SafeArea(
         child: Stack(
@@ -118,5 +94,37 @@ class _ImagePreviewScreenState extends State<ImagePreviewScreen> {
         ),
       ),
     );
+  }
+
+  void drawBoundingBoxes(
+      image_lib.Image image, List<ObjectDetectionOutput> outputs) {
+    if (outputs.isEmpty) return;
+
+    for (final output in widget.objectDetectionOutputs!) {
+      final boundingBox = output.boundingBox.toPixel(
+        image.height,
+        image.width,
+      );
+
+      image_lib.drawRect(
+        image,
+        x1: boundingBox.left.toInt(),
+        y1: boundingBox.top.toInt(),
+        x2: boundingBox.right.toInt(),
+        y2: boundingBox.bottom.toInt(),
+        color: image_lib.ColorRgb8(0, 255, 0),
+        thickness: 2,
+      );
+
+      image_lib.drawString(
+        image,
+        '${output.label} ${(output.confidence * 100).toStringAsFixed(2)}%',
+        font: image_lib.arial14,
+        x: boundingBox.left.toInt(),
+        y: boundingBox.top.toInt(),
+        color: image_lib.ColorRgb8(0, 255, 0),
+        wrap: true,
+      );
+    }
   }
 }
