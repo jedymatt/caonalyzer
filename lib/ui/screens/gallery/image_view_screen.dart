@@ -23,14 +23,10 @@ class _ImagePreviewScreenState extends State<ImagePreviewScreen> {
   @override
   Widget build(BuildContext context) {
     for (ObjectDetectionOutput output in widget.objectDetectionOutputs ?? []) {
-      BoundingBox boundingBox = output.boundingBox;
-
-      if (boundingBox.isPercentage()) {
-        boundingBox = boundingBox.toPixel(
-          widget.image.height,
-          widget.image.width,
-        );
-      }
+      BoundingBox boundingBox = output.boundingBox.toPixel(
+        widget.image.height,
+        widget.image.width,
+      );
 
       image_lib.drawRect(
         widget.image,
