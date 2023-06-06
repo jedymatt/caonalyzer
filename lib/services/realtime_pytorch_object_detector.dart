@@ -24,11 +24,13 @@ class RealtimePytorchObjectDetector implements RealtimeObjectDetector {
     return results.map((e) {
       final label = e['tag'];
       final confidence = e['box'][4]; // this is api bug
-      final rect = BoundingBox(
+      final rect = BoundingBox.fromPixel(
         left: e['box'][0],
         top: e['box'][1],
         right: e['box'][2],
         bottom: e['box'][3],
+        imageHeight: imageHeight,
+        imageWidth: imageWidth,
       );
 
       return ObjectDetectionOutput(
