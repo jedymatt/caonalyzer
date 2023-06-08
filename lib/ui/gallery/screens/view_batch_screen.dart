@@ -1,8 +1,10 @@
 import 'package:caonalyzer/gallery/models/batch.dart';
 import 'package:caonalyzer/gallery/models/picture.dart';
 import 'package:caonalyzer/globals.dart';
+import 'package:caonalyzer/ui/gallery/screens/image_screen.dart';
 import 'package:caonalyzer/ui/screens/camera_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 class ViewBatchScreen extends StatefulWidget {
   const ViewBatchScreen(this.batch, {super.key});
@@ -29,7 +31,7 @@ class _ViewBatchScreenState extends State<ViewBatchScreen> {
           itemBuilder: (context, index) {
             return Padding(
               padding: const EdgeInsets.all(4),
-              child: GestureDetector(
+              child: InkWell(
                 onLongPress: _isSelecting
                     ? null
                     : () {
@@ -40,12 +42,15 @@ class _ViewBatchScreenState extends State<ViewBatchScreen> {
                       },
                 onTap: _isSelecting
                     ? () => toggleSelection(widget.batch.pictures[index])
-                    : null,
+                    : () => redirectToImageViewer(widget.batch.pictures[index]),
                 child: GridTile(
                   footer: Center(
                       child: Text(widget.batch.pictures[index].id.toString())),
-                  child: const Placeholder(
-                    child: Center(child: Text('Thumbnail')),
+                  child: Image.network(
+                    widget.batch.pictures[index].path,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) =>
+                        const Icon(Icons.error),
                   ),
                 ),
               ),
@@ -53,6 +58,15 @@ class _ViewBatchScreenState extends State<ViewBatchScreen> {
           },
         ),
         bottomNavigationBar: _buildBottomNavigationBar(context));
+  }
+
+  void redirectToImageViewer(Picture picture) {
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (context) => ImageScreen(
+        widget.batch.pictures,
+        initialIndex: widget.batch.pictures.indexOf(picture),
+      ),
+    ));
   }
 
   BottomNavigationBar? _buildBottomNavigationBar(BuildContext context) {
