@@ -4,14 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:image/image.dart' as image_lib;
 
 class ViewImageScreen extends StatefulWidget {
-  final image_lib.Image image;
-  final List<ObjectDetectionOutput>? objectDetectionOutputs;
-
   const ViewImageScreen(
     this.image, {
     super.key,
     this.objectDetectionOutputs,
   });
+
+  final image_lib.Image image;
+  final List<ObjectDetectionOutput>? objectDetectionOutputs;
 
   @override
   State<ViewImageScreen> createState() => _ViewImageScreenState();
