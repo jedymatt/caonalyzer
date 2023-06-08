@@ -1,13 +1,13 @@
 import 'package:caonalyzer/gallery/models/batch.dart';
 import 'package:caonalyzer/gallery/models/picture.dart';
+import 'package:caonalyzer/globals.dart';
 import 'package:caonalyzer/ui/screens/camera_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
 class ViewBatchScreen extends StatefulWidget {
-  final Batch batch;
-
   const ViewBatchScreen(this.batch, {super.key});
+
+  final Batch batch;
 
   @override
   State<ViewBatchScreen> createState() => _ViewBatchScreenState();
@@ -52,35 +52,65 @@ class _ViewBatchScreenState extends State<ViewBatchScreen> {
             );
           },
         ),
-        bottomNavigationBar: _isSelecting
-            ? null
-            : BottomNavigationBar(
-                items: const [
-                  BottomNavigationBarItem(
-                    activeIcon: Icon(Icons.add_circle),
-                    icon: Icon(Icons.add),
-                    label: 'Add',
-                  ),
-                  // detect moldy cacao beans
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.document_scanner),
-                    label: 'Scan',
-                  ),
-                ],
-                onTap: (index) {
-                  switch (index) {
-                    case 0:
-                      // add image
-                      Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => const CameraScreen(),
-                      ));
-                      break;
-                    case 1:
-                      // detect moldy cacao beans
-                      break;
-                  }
-                },
-              ));
+        bottomNavigationBar: _buildBottomNavigationBar(context));
+  }
+
+  BottomNavigationBar? _buildBottomNavigationBar(BuildContext context) {
+    if (_isSelecting && _selectedPictures.isEmpty) return null;
+
+    if (_isSelecting) {
+      return BottomNavigationBar(
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.delete),
+            label: 'Delete',
+          ),
+          // detect moldy cacao beans
+          BottomNavigationBarItem(
+            icon: Icon(Icons.document_scanner),
+            label: 'Scan',
+          ),
+        ],
+        onTap: (index) {
+          switch (index) {
+            case 0:
+              // todo: delete selected pictures
+              break;
+            case 1:
+              // todo: detect moldy cacao beans
+              break;
+          }
+        },
+      );
+    }
+
+    return BottomNavigationBar(
+      items: const [
+        BottomNavigationBarItem(
+          activeIcon: Icon(Icons.add_circle),
+          icon: Icon(Icons.add),
+          label: 'Add',
+        ),
+        // detect moldy cacao beans
+        BottomNavigationBarItem(
+          icon: Icon(Icons.document_scanner),
+          label: 'Scan',
+        ),
+      ],
+      onTap: (index) {
+        switch (index) {
+          case 0:
+            // add image
+            Navigator.of(context).push(MaterialPageRoute(
+              builder: (context) => const CameraScreen(),
+            ));
+            break;
+          case 1:
+            // detect moldy cacao beans
+            break;
+        }
+      },
+    );
   }
 
   void addToSelection(Picture picture) {
