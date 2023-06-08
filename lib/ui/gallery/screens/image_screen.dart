@@ -27,14 +27,16 @@ class _ImageScreenState extends State<ImageScreen> {
     currentIndex = widget.initialIndex;
     imageTitle = widget.pictures[widget.initialIndex].id.toString();
     _pageController = PageController(initialPage: widget.initialIndex);
-
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(imageTitle),
+        title: Text(
+          '${currentIndex + 1}/${widget.pictures.length}',
+        ),
+        centerTitle: true,
         bottom: widget.pictures.length > 1
             ? PreferredSize(
                 preferredSize: const Size.fromHeight(4.0),
@@ -52,6 +54,7 @@ class _ImageScreenState extends State<ImageScreen> {
                 imageProvider: NetworkImage(picture.path),
                 heroAttributes: PhotoViewHeroAttributes(tag: picture.id),
                 minScale: PhotoViewComputedScale.contained,
+                maxScale: PhotoViewComputedScale.covered * 2.0,
               ),
             )
             .toList(),
@@ -60,8 +63,8 @@ class _ImageScreenState extends State<ImageScreen> {
         ),
         loadingBuilder: (context, event) => Center(
           child: SizedBox(
-            width: 20.0,
-            height: 20.0,
+            width: 20,
+            height: 20,
             child: CircularProgressIndicator(
               value: event == null
                   ? 0
