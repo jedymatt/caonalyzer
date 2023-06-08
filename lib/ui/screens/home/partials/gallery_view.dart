@@ -12,32 +12,33 @@ class GalleryView extends StatefulWidget {
 
 class _GalleryViewState extends State<GalleryView> {
   bool _isListView = true;
-
-  @override
-  Widget build(BuildContext context) {
-    Batch batch = Batch(
+  List<Batch> batches = [
+    Batch(
       title: 'Batch 1',
-      path: 'path/to/batch',
+      path: 'https://picsum.photos/250',
       date: '2020-01-01',
       pictures: [
         Picture(
           id: 1,
-          path: 'path/to/picture',
+          path: 'https://picsum.photos/250?random=1',
           date: '2020-01-01',
         ),
         Picture(
           id: 2,
-          path: 'path/to/picture',
+          path: 'https://picsum.photos/250?random=2',
           date: '2020-01-01',
         ),
         Picture(
           id: 3,
-          path: 'path/to/picture',
+          path: 'https://picsum.photos/250?random=3',
           date: '2020-01-01',
         ),
       ],
-    );
+    )
+  ];
 
+  @override
+  Widget build(BuildContext context) {
     return SingleChildScrollView(
       child: Column(
         children: [
@@ -59,45 +60,59 @@ class _GalleryViewState extends State<GalleryView> {
               ? ListView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
-                  itemCount: batch.pictures.length * 10,
+                  itemCount: batches.length,
                   itemBuilder: (context, index) {
                     return ListTile(
                       onTap: () => Navigator.of(context).push(
                         MaterialPageRoute(
-                          builder: (context) => ViewBatchScreen(batch),
+                          builder: (context) => ViewBatchScreen(batches[index]),
                         ),
                       ),
-                      leading: const Placeholder(
-                        child: Text('Thumbnail'),
+                      leading: Container(
+                        clipBehavior: Clip.antiAlias,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Image.network(
+                          batches[index].thumbnail ?? '',
+                          fit: BoxFit.cover,
+                        ),
                       ),
-                      title: Text(batch.title),
+                      title: Text(batches[index].title),
                     );
                   },
                 )
               : GridView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
-                  itemCount: batch.pictures.length * 10,
+                  itemCount: batches.length,
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 3,
                   ),
                   itemBuilder: (context, index) {
-                    return Column(
-                      children: [
-                        Expanded(
-                          child: Card(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            clipBehavior: Clip.antiAlias,
-                            child: Image.network(
-                              batch.pictures.last.path,
-                              fit: BoxFit.cover,
+                    return InkWell(
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => ViewBatchScreen(batches[index]),
+                        ),
+                      ),
+                      child: Column(
+                        children: [
+                          Expanded(
+                            child: Card(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              clipBehavior: Clip.antiAlias,
+                              child: Image.network(
+                                batches[index].thumbnail ?? '',
+                                fit: BoxFit.cover,
+                              ),
                             ),
                           ),
-                        ),
-                        Text(batch.date),
-                      ],
+                          Text(batches[index].title),
+                        ],
+                      ),
                     );
                   },
                 ),
