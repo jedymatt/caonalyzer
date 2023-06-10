@@ -3,6 +3,8 @@ import 'package:caonalyzer/gallery/models/picture.dart';
 import 'package:caonalyzer/ui/gallery/screens/image_screen.dart';
 import 'package:flutter/material.dart';
 
+import '../../screens/camera_screen.dart';
+
 class ViewBatchScreen extends StatefulWidget {
   const ViewBatchScreen(this.batch, {super.key});
 
@@ -41,10 +43,9 @@ class _ViewBatchScreenState extends State<ViewBatchScreen> {
                       addToSelection(widget.batch.pictures[index]);
                     },
                     onTap: _isSelecting
-                        ? () =>
-                            toggleSelection(widget.batch.pictures[index])
-                        : () => redirectToImageViewer(
-                            widget.batch.pictures[index]),
+                        ? () => toggleSelection(widget.batch.pictures[index])
+                        : () =>
+                            redirectToImageViewer(widget.batch.pictures[index]),
                     child: Stack(
                       fit: StackFit.expand,
                       children: [
@@ -61,8 +62,8 @@ class _ViewBatchScreenState extends State<ViewBatchScreen> {
                             child: Padding(
                               padding: const EdgeInsets.all(4),
                               child: Icon(
-                                _selectedPictures.contains(
-                                        widget.batch.pictures[index])
+                                _selectedPictures
+                                        .contains(widget.batch.pictures[index])
                                     ? Icons.check_circle
                                     : Icons.radio_button_unchecked,
                                 color: Colors.blue,
@@ -148,6 +149,9 @@ class _ViewBatchScreenState extends State<ViewBatchScreen> {
         switch (index) {
           case 0:
             // camera
+            Navigator.of(context).push(MaterialPageRoute(
+              builder: (context) => const CameraScreen(),
+            ));
             break;
           case 1:
             // scan
