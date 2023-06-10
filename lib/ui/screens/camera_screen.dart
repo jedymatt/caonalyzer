@@ -63,17 +63,34 @@ class _CameraScreenState extends State<CameraScreen>
             child: CameraPreview(cameraController),
           ),
           ...detectedObjects(MediaQuery.of(context).size),
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: kToolbarHeight,
+            // circle button (capture button)
+            child: Center(
+              child: Container(
+                width: 60,
+                height: 60,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white,
+                ),
+                child: IconButton(
+                  icon: const Icon(Icons.camera_alt),
+                  onPressed: captureImage,
+                ),
+              ),
+            ),
+          ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: clickCamera,
-        child: const Icon(Icons.camera),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 
-  void clickCamera() {}
+  void captureImage() {
+    // todo: implement capture image
+  }
 
   void _initializeCameraController(CameraDescription description) async {
     cameraController = CameraController(

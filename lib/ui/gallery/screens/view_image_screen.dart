@@ -3,21 +3,21 @@ import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:image/image.dart' as image_lib;
 
-class ImagePreviewScreen extends StatefulWidget {
-  final image_lib.Image image;
-  final List<ObjectDetectionOutput>? objectDetectionOutputs;
-
-  const ImagePreviewScreen(
+class ViewImageScreen extends StatefulWidget {
+  const ViewImageScreen(
     this.image, {
     super.key,
     this.objectDetectionOutputs,
   });
 
+  final image_lib.Image image;
+  final List<ObjectDetectionOutput>? objectDetectionOutputs;
+
   @override
-  State<ImagePreviewScreen> createState() => _ImagePreviewScreenState();
+  State<ViewImageScreen> createState() => _ViewImageScreenState();
 }
 
-class _ImagePreviewScreenState extends State<ImagePreviewScreen> {
+class _ViewImageScreenState extends State<ViewImageScreen> {
   @override
   void initState() {
     super.initState();
