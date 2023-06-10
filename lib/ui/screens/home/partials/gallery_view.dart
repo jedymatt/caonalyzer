@@ -16,22 +16,21 @@ class _GalleryViewState extends State<GalleryView> {
     Batch(
       title: 'Batch 1',
       path: 'https://picsum.photos/250',
-      date: '2020-01-01',
       pictures: [
         Picture(
           id: 1,
           path: 'https://picsum.photos/250?random=1',
-          date: '2020-01-01',
+          thumbnail: 'https://picsum.photos/250?random=1',
         ),
         Picture(
           id: 2,
           path: 'https://picsum.photos/250?random=2',
-          date: '2020-01-01',
+          thumbnail: 'https://picsum.photos/250?random=2',
         ),
         Picture(
           id: 3,
           path: 'https://picsum.photos/250?random=3',
-          date: '2020-01-01',
+          thumbnail: 'https://picsum.photos/250?random=3',
         ),
       ],
     )
