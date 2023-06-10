@@ -50,7 +50,7 @@ class _ViewBatchScreenState extends State<ViewBatchScreen> {
                       fit: StackFit.expand,
                       children: [
                         Image.network(
-                          widget.batch.pictures[index].path,
+                          widget.batch.pictures[index].thumbnail,
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) =>
                               const Icon(Icons.error),
