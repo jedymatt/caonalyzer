@@ -1,10 +1,19 @@
+import 'dart:io';
+
 import 'package:camera/camera.dart';
+import 'package:caonalyzer/gallery/gallery_writer.dart';
+import 'package:caonalyzer/gallery/models/batch.dart';
 import 'package:caonalyzer/globals.dart';
 import 'package:caonalyzer/object_detectors/object_detectors.dart';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
+
+import 'camera/batch_confirmation_screen.dart';
 
 class CameraScreen extends StatefulWidget {
-  const CameraScreen({super.key});
+  const CameraScreen({super.key, this.batchPath});
+
+  final String? batchPath;
 
   @override
   State<CameraScreen> createState() => _CameraScreenState();
@@ -17,6 +26,7 @@ class _CameraScreenState extends State<CameraScreen>
   CameraImage? _cameraImage;
   List<ObjectDetectionOutput> outputs = [];
   int iteration = 0;
+  List<String> images = [];
 
   @override
   void initState() {
@@ -30,7 +40,6 @@ class _CameraScreenState extends State<CameraScreen>
   @override
   void dispose() {
     super.dispose();
-    cameraController.stopImageStream();
     cameraController.dispose();
   }
 
@@ -41,8 +50,11 @@ class _CameraScreenState extends State<CameraScreen>
       return;
     }
 
+    debugPrint('AppLifecycleState: $state');
+
     if (state == AppLifecycleState.inactive) {
       cameraController.dispose();
+      debugPrint('Camera disposed');
     } else if (state == AppLifecycleState.resumed) {
       _initializeCameraController(cameraController.description);
     }
@@ -58,38 +70,124 @@ class _CameraScreenState extends State<CameraScreen>
       body: Stack(
         fit: StackFit.expand,
         children: [
-          AspectRatio(
-            aspectRatio: cameraController.value.aspectRatio,
+          Center(
             child: CameraPreview(cameraController),
           ),
           ...detectedObjects(MediaQuery.of(context).size),
           Positioned(
-            left: 0,
-            right: 0,
-            bottom: kToolbarHeight,
-            // circle button (capture button)
-            child: Center(
-              child: Container(
-                width: 60,
-                height: 60,
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white,
+              left: 0,
+              right: 0,
+              bottom: kToolbarHeight,
+              // circle button (capture button)
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Stack(
+                  children: [
+                    Align(
+                      alignment: Alignment.center,
+                      child: Container(
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                        ),
+                        clipBehavior: Clip.antiAlias,
+                        child: Material(
+                          color: Colors.transparent,
+                          // shape: const CircleBorder(),
+                          child: InkWell(
+                            onTap: captureImage,
+                            child: Container(
+                              height: 80,
+                              decoration: const BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.white60,
+                                border: Border.fromBorderSide(
+                                  BorderSide(
+                                    color: Colors.red,
+                                    width: 5,
+                                  ),
+                                ),
+                              ),
+                              clipBehavior: Clip.antiAlias,
+                              child: const SizedBox(
+                                height: 60,
+                                width: 60,
+                                child: Icon(
+                                  Icons.camera,
+                                  size: 40,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    // redirect to batch confirmation screen
+                    if (images.isNotEmpty)
+                      Align(
+                          alignment: Alignment.centerRight,
+                          child: Material(
+                            child: SizedBox.square(
+                              dimension: 80,
+                              child: InkWell(
+                                onTap: () async {
+                                  Navigator.of(context).push(MaterialPageRoute(
+                                    builder: (context) =>
+                                        BatchConfirmationScreen(images),
+                                  ));
+                                },
+                                child: Stack(
+                                  children: [
+                                    Image.file(
+                                      File(images.last),
+                                      fit: BoxFit.fill,
+                                      width: double.infinity,
+                                      height: double.infinity,
+                                    ),
+                                    // check icon
+                                    const Expanded(
+                                      child: Center(
+                                        child: Icon(
+                                          Icons.check,
+                                          color: Colors.green,
+                                          size: 40,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ))
+                  ],
                 ),
-                child: IconButton(
-                  icon: const Icon(Icons.camera_alt),
-                  onPressed: captureImage,
-                ),
-              ),
-            ),
-          ),
+              )),
         ],
       ),
     );
   }
 
-  void captureImage() {
-    // todo: implement capture image
+  void captureImage() async {
+    if (cameraController.value.isStreamingImages) {
+      cameraController.stopImageStream();
+    }
+
+    XFile file = await cameraController.takePicture();
+
+    debugPrint('Image captured: ${file.path}');
+
+    // final batchPath =
+    //     widget.batchPath ?? GalleryWriter.instance.generateBatchPath();
+    //
+    // if (widget.batchPath == null) {
+    //   GalleryWriter.instance.createDirectory(batchPath);
+    // }
+    //
+    // String path =
+    //     await GalleryWriter.instance.appendImage(file.path, batchPath);
+
+    setState(() {
+      images.add(file.path);
+    });
   }
 
   void _initializeCameraController(CameraDescription description) async {
@@ -122,36 +220,6 @@ class _CameraScreenState extends State<CameraScreen>
         }
       }
     });
-  }
-
-  Widget camera(context) {
-    if (!cameraController.value.isInitialized) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
-    }
-
-    // fetch screen size
-    final size = MediaQuery.of(context).size;
-
-    // calculate scale depending on screen and camera ratios
-    // this is actually size.aspectRatio / (1 / camera.aspectRatio)
-    // because camera preview size is received as landscape
-    // but we're calculating for portrait orientation
-    var scale = size.aspectRatio * cameraController.value.aspectRatio;
-
-    // to prevent scaling down, invert the value
-    if (scale < 1) scale = 1 / scale;
-
-    return Transform.scale(
-      scale: scale,
-      child: Center(
-        child: CameraPreview(
-          cameraController,
-          child: AppBar(),
-        ),
-      ),
-    );
   }
 
   void _imageStream(CameraImage image) async {
