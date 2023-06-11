@@ -1,8 +1,13 @@
 import 'dart:io';
 
-import 'models/batch.dart';
+import 'package:path_provider/path_provider.dart';
 
-abstract class Reader {
-  List<Batch> readBatches(String path);
-  List<String> readImages(String path);
+class GalleryReader {
+  Future<List<File>> getImages(String path) async {
+    final Directory externalStorageDir = (await getExternalStorageDirectory())!;
+
+    final dir = Directory('${externalStorageDir.path}/$path');
+
+    return dir.listSync().map((e) => File(e.path)).toList();
+  }
 }
