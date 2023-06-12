@@ -30,6 +30,7 @@ class _CameraScreenState extends State<CameraScreen>
   void initState() {
     super.initState();
 
+    // TODO: only generate batch when user captures first image
     batchPath = widget.batchPath ?? GalleryWriter.instance.generateBatchPath();
 
     _initializeCameraController(cameras[0]);
@@ -45,7 +46,6 @@ class _CameraScreenState extends State<CameraScreen>
         setState(() {
           isTakingPicture = false;
         });
-
       }
     });
   }
