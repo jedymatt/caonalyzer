@@ -22,19 +22,32 @@ class CameraScreen extends StatefulWidget {
 class _CameraScreenState extends State<CameraScreen>
     with WidgetsBindingObserver, TickerProviderStateMixin {
   late CameraController cameraController;
-  late RealtimeObjectDetector objectDetector;
-  CameraImage? _cameraImage;
-  List<ObjectDetectionOutput> outputs = [];
-  int iteration = 0;
+  late String batchPath;
   List<String> images = [];
+  bool isTakingPicture = false;
 
   @override
   void initState() {
     super.initState();
 
-    objectDetector = preferredMode.value.realtimeObjectDetector;
+    batchPath = widget.batchPath ?? GalleryWriter.instance.generateBatchPath();
 
     _initializeCameraController(cameras[0]);
+
+    cameraController.addListener(() {
+      if (cameraController.value.isTakingPicture) {
+        debugPrint('isTakingPicture');
+        setState(() {
+          isTakingPicture = true;
+        });
+      } else {
+        debugPrint('isNotTakingPicture');
+        setState(() {
+          isTakingPicture = false;
+        });
+
+      }
+    });
   }
 
   @override
@@ -75,92 +88,115 @@ class _CameraScreenState extends State<CameraScreen>
           ),
           ...detectedObjects(MediaQuery.of(context).size),
           Positioned(
-              left: 0,
-              right: 0,
-              bottom: kToolbarHeight,
-              // circle button (capture button)
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Stack(
-                  children: [
-                    Align(
-                      alignment: Alignment.center,
-                      child: Container(
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                        ),
-                        clipBehavior: Clip.antiAlias,
-                        child: Material(
-                          color: Colors.transparent,
-                          // shape: const CircleBorder(),
-                          child: InkWell(
-                            onTap: captureImage,
-                            child: Container(
-                              height: 80,
-                              decoration: const BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: Colors.white60,
-                                border: Border.fromBorderSide(
-                                  BorderSide(
-                                    color: Colors.red,
-                                    width: 5,
+            left: 0,
+            right: 0,
+            bottom: kToolbarHeight,
+            // circle button (capture button)
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Stack(
+                children: [
+                  Align(
+                    alignment: Alignment.center,
+                    child: Container(
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                      ),
+                      clipBehavior: Clip.antiAlias,
+                      child: Material(
+                        color: Colors.transparent,
+                        // shape: const CircleBorder(),
+                        child: isTakingPicture
+                            ? Container(
+                                height: 80,
+                                decoration: const BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Colors.white60,
+                                  border: Border.fromBorderSide(
+                                    BorderSide(
+                                      color: Colors.red,
+                                      width: 5,
+                                    ),
+                                  ),
+                                ),
+                                clipBehavior: Clip.antiAlias,
+                                child: const SizedBox(
+                                  height: 60,
+                                  width: 60,
+                                ),
+                              )
+                            : InkWell(
+                                onTap: captureImage,
+                                child: Container(
+                                  height: 80,
+                                  decoration: const BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Colors.white60,
+                                    border: Border.fromBorderSide(
+                                      BorderSide(
+                                        color: Colors.red,
+                                        width: 5,
+                                      ),
+                                    ),
+                                  ),
+                                  clipBehavior: Clip.antiAlias,
+                                  child: const SizedBox(
+                                    height: 60,
+                                    width: 60,
+                                    child: Icon(
+                                      Icons.camera,
+                                      size: 40,
+                                    ),
                                   ),
                                 ),
                               ),
-                              clipBehavior: Clip.antiAlias,
-                              child: const SizedBox(
-                                height: 60,
-                                width: 60,
-                                child: Icon(
-                                  Icons.camera,
-                                  size: 40,
+                      ),
+                    ),
+                  ),
+                  // redirect to batch confirmation screen
+                  if (images.isNotEmpty)
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: Material(
+                        child: SizedBox.square(
+                          dimension: 80,
+                          child: InkWell(
+                            onTap: () {
+                              Navigator.of(context).push(MaterialPageRoute(
+                                builder: (context) => BatchConfirmationScreen(
+                                  batchPath,
+                                  images,
                                 ),
-                              ),
+                              ));
+                            },
+                            child: Stack(
+                              children: [
+                                Image.file(
+                                  File(images.last),
+                                  fit: BoxFit.fill,
+                                  width: double.infinity,
+                                  height: double.infinity,
+                                ),
+                                // check icon
+                                const Expanded(
+                                  child: Center(
+                                    child: Icon(
+                                      Icons.check,
+                                      color: Colors.green,
+                                      size: 40,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
                       ),
                     ),
-                    // redirect to batch confirmation screen
-                    if (images.isNotEmpty)
-                      Align(
-                          alignment: Alignment.centerRight,
-                          child: Material(
-                            child: SizedBox.square(
-                              dimension: 80,
-                              child: InkWell(
-                                onTap: () async {
-                                  Navigator.of(context).push(MaterialPageRoute(
-                                    builder: (context) =>
-                                        BatchConfirmationScreen(images),
-                                  ));
-                                },
-                                child: Stack(
-                                  children: [
-                                    Image.file(
-                                      File(images.last),
-                                      fit: BoxFit.fill,
-                                      width: double.infinity,
-                                      height: double.infinity,
-                                    ),
-                                    // check icon
-                                    const Expanded(
-                                      child: Center(
-                                        child: Icon(
-                                          Icons.check,
-                                          color: Colors.green,
-                                          size: 40,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ))
-                  ],
-                ),
-              )),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -204,7 +240,6 @@ class _CameraScreenState extends State<CameraScreen>
 
       setState(() {
         cameraController.startImageStream((image) {
-          _cameraImage = image;
           _imageStream(image);
         });
       });
@@ -223,61 +258,11 @@ class _CameraScreenState extends State<CameraScreen>
   }
 
   void _imageStream(CameraImage image) async {
-    objectDetector
-        .runInferenceOnFrame(
-      image.planes.map((plane) => plane.bytes).toList(),
-      image.height,
-      image.width,
-    )
-        .then((value) {
-      if (value.isNotEmpty) {
-        setState(() {
-          outputs = value;
-        });
-      }
-
-      if (value.isEmpty && iteration > 500) {
-        setState(() {
-          outputs = [];
-        });
-
-        iteration = 0;
-      }
-
-      iteration++;
-    });
+    //
   }
 
   List<Widget> detectedObjects(Size screen) {
-    if (outputs.isEmpty) return [];
-
-    Color colorPick = const Color.fromARGB(255, 50, 233, 30);
-
-    double factorX = screen.width / (_cameraImage?.height ?? 1);
-    double factorY = screen.height / (_cameraImage?.width ?? 1);
-
-    return outputs.map((result) {
-      return Positioned(
-        left: result.boundingBox.left * factorX,
-        top: result.boundingBox.top * factorY,
-        width: (result.boundingBox.right - result.boundingBox.left) * factorX,
-        height: (result.boundingBox.bottom - result.boundingBox.top) * factorY,
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: const BorderRadius.all(Radius.circular(10.0)),
-            border: Border.all(color: Colors.pink, width: 2.0),
-          ),
-          child: Text(
-            "${result.label} ${(result.confidence * 100).toStringAsFixed(0)}%",
-            style: TextStyle(
-              background: Paint()..color = colorPick,
-              color: Colors.white,
-              fontSize: 18.0,
-            ),
-          ),
-        ),
-      );
-    }).toList();
+    return [];
   }
 }
 
