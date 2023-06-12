@@ -60,6 +60,29 @@ class GalleryWriter {
     return copiedFile.path;
   }
 
+  Future<List<String>> appendImages(
+      List<String> sources, String destinationDir) async {
+    final Directory externalStorageDir = (await getExternalStorageDirectory())!;
+
+    final fileType = path_lib.extension(sources.first);
+    final filesCount = (await _getFiles(destinationDir)).length;
+    final filenames = List<String>.generate(
+      sources.length,
+      (index) => '${filesCount + index}$fileType',
+    );
+
+    for (var i = 0; i < sources.length; i++) {
+      final copiedFile = File(sources[i]).copySync(
+          '${externalStorageDir.path}/$destinationDir/${filenames[i]}');
+
+      debugPrint('Image copied: ${copiedFile.path}');
+    }
+
+    return filenames
+        .map((e) => '${externalStorageDir.path}/$destinationDir/$e')
+        .toList();
+  }
+
   Future<List<FileSystemEntity>> _getFiles(String path) async {
     final Directory externalStorageDir = (await getExternalStorageDirectory())!;
     final dir = Directory('${externalStorageDir.path}/$path');
