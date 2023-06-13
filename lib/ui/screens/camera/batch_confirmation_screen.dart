@@ -10,10 +10,11 @@ import 'package:photo_view/photo_view_gallery.dart';
 import '../../gallery/screens/view_batch_screen.dart';
 
 class BatchConfirmationScreen extends StatefulWidget {
-  const BatchConfirmationScreen(this.batchPath, this.images, {super.key});
+  const BatchConfirmationScreen(this.batchPath, this.images, {super.key, this.existingBatch = false});
 
   final String batchPath;
   final List<String> images;
+  final bool existingBatch;
 
   @override
   State<BatchConfirmationScreen> createState() =>
@@ -85,9 +86,11 @@ class _BatchConfirmationScreenState extends State<BatchConfirmationScreen> {
   }
 
   void confirm() async {
-    GalleryWriter.instance.createDirectory(widget.batchPath);
+   if(!widget.existingBatch) {
+     GalleryWriter.createDirectory(widget.batchPath);
+   }
 
-    await GalleryWriter.instance.appendImages(widget.images, widget.batchPath);
+    await GalleryWriter.appendImages(widget.images, widget.batchPath);
 
     Batch batch = Batch(
       dirPath: widget.batchPath,
@@ -96,6 +99,8 @@ class _BatchConfirmationScreenState extends State<BatchConfirmationScreen> {
     );
 
     if (!mounted) return;
+
+    debugPrint('batch: $batch exists: ${widget.existingBatch}');
 
     Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(builder: (context) => ViewBatchScreen(batch)),
