@@ -3,11 +3,11 @@ import 'dart:io';
 import 'package:caonalyzer/gallery/gallery_writer.dart';
 import 'package:caonalyzer/gallery/models/batch.dart';
 import 'package:flutter/material.dart';
+import 'package:path/path.dart' as path_lib;
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 
 import '../../gallery/screens/view_batch_screen.dart';
-import '../camera_screen.dart';
 
 class BatchConfirmationScreen extends StatefulWidget {
   const BatchConfirmationScreen(this.batchPath, this.images, {super.key});
@@ -88,8 +88,18 @@ class _BatchConfirmationScreenState extends State<BatchConfirmationScreen> {
     GalleryWriter.instance.createDirectory(widget.batchPath);
 
     await GalleryWriter.instance.appendImages(widget.images, widget.batchPath);
-    // todo: redirect to view batch screen
+
+    Batch batch = Batch(
+      dirPath: widget.batchPath,
+      title: path_lib.basename(widget.batchPath),
+      images: widget.images,
+    );
+
     if (!mounted) return;
-    Navigator.popUntil(context, (route) => route.isFirst);
+
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (context) => ViewBatchScreen(batch)),
+      (route) => route.isFirst,
+    );
   }
 }
