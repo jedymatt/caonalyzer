@@ -123,9 +123,9 @@ class _CameraScreenState extends State<CameraScreen>
                                 ),
                               )
                             : InkWell(
-                                onTap: () {
+                                onTap: () async {
                                   if(images.isEmpty) {
-                                    batchPath = widget.batchPath ?? GalleryWriter().generateBatchPath();
+                                    batchPath = widget.batchPath ??  await GalleryWriter.generateBatchPath(DateTime.now());
                                   }
                                   captureImage();
                                 },
@@ -168,6 +168,7 @@ class _CameraScreenState extends State<CameraScreen>
                                 builder: (context) => BatchConfirmationScreen(
                                   batchPath,
                                   images,
+                                  existingBatch: widget.batchPath != null,
                                 ),
                               ));
                             },
