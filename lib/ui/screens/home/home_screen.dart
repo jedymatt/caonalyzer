@@ -43,25 +43,6 @@ class _HomeScreenState extends State<HomeScreen> {
               icon: const Icon(Icons.settings),
             )
           ],
-          bottom: TabBar(
-            onTap: (value) {
-              setState(() {
-                viewIndex = value;
-              });
-            },
-            tabs: const <Widget>[
-              Tab(
-                icon: Icon(Icons.home),
-                iconMargin: EdgeInsets.zero,
-                text: 'Home',
-              ),
-              Tab(
-                icon: Icon(Icons.photo),
-                iconMargin: EdgeInsets.zero,
-                text: 'Gallery',
-              )
-            ],
-          ),
         ),
         body: buildView(),
         floatingActionButton: FloatingActionButton.extended(
@@ -69,6 +50,24 @@ class _HomeScreenState extends State<HomeScreen> {
           label: const Text('Camera'),
           icon: const Icon(Icons.camera),
         ),
+        bottomNavigationBar: BottomNavigationBar(
+          currentIndex: viewIndex,
+          onTap: (index) {
+            setState(() {
+              viewIndex = index;
+            });
+          },
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home),
+              label: 'Home',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.photo_library),
+              label: 'Gallery',
+            ),
+          ],
+        )
       ),
     );
   }
