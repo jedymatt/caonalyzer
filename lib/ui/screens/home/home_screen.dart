@@ -31,44 +31,41 @@ class _HomeScreenState extends State<HomeScreen> {
     return DefaultTabController(
       length: 2,
       child: Scaffold(
-        appBar: AppBar(
-          backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-          title: const Text(kAppName),
-          actions: [
-            IconButton(
-              onPressed: () {
-                Navigator.of(context).push(MaterialPageRoute(
-                    builder: (context) => const SettingsScreen()));
-              },
-              icon: const Icon(Icons.settings),
-            )
-          ],
-        ),
-        body: buildView(),
-        floatingActionButton: FloatingActionButton.extended(
-          onPressed: navigateToCamera,
-          label: const Text('Camera'),
-          icon: const Icon(Icons.camera),
-        ),
-        bottomNavigationBar: BottomNavigationBar(
-          currentIndex: viewIndex,
-          onTap: (index) {
-            setState(() {
-              viewIndex = index;
-            });
-          },
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home),
-              label: 'Home',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.photo_library),
-              label: 'Gallery',
-            ),
-          ],
-        )
-      ),
+          appBar: AppBar(
+            backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+            title: const Text(kAppName),
+            actions: [
+              IconButton(
+                onPressed: () {
+                  Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) => const SettingsScreen()));
+                },
+                icon: const Icon(Icons.settings),
+              )
+            ],
+          ),
+          body: buildView(),
+          floatingActionButton: FloatingActionButton.extended(
+            onPressed: navigateToCamera,
+            label: const Text('Camera'),
+            icon: const Icon(Icons.camera),
+          ),
+          bottomNavigationBar: NavigationBar(
+            selectedIndex: viewIndex,
+            onDestinationSelected: (value) {
+              setState(() => viewIndex = value);
+            },
+            destinations: const [
+              NavigationDestination(
+                icon: Icon(Icons.home),
+                label: 'Home',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.photo_library),
+                label: 'Gallery',
+              ),
+            ],
+          )),
     );
   }
 
