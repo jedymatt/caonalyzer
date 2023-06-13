@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:caonalyzer/gallery/gallery_writer.dart';
 import 'package:caonalyzer/gallery/models/batch.dart';
 import 'package:caonalyzer/ui/gallery/screens/image_screen.dart';
 import 'package:flutter/material.dart';
@@ -18,7 +19,6 @@ class ViewBatchScreen extends StatefulWidget {
 class _ViewBatchScreenState extends State<ViewBatchScreen> {
   bool _isSelecting = false;
   final List<String> _selectedImages = [];
-
 
   @override
   Widget build(BuildContext context) {
@@ -127,6 +127,28 @@ class _ViewBatchScreenState extends State<ViewBatchScreen> {
           label: 'Scan',
         ),
       ],
+      onTap: (index) {
+        switch (index) {
+          case 0:
+            // delete
+            final isNowEmpty = widget.batch.images.length == _selectedImages.length;
+
+            GalleryWriter.removeImages(_selectedImages);
+            setState(() {
+              _isSelecting = false;
+              _selectedImages.clear();
+            });
+
+            if (isNowEmpty) {
+              Navigator.of(context).pop();
+            }
+
+            break;
+          case 1:
+            // scan
+            break;
+        }
+      },
     );
   }
 
@@ -151,8 +173,10 @@ class _ViewBatchScreenState extends State<ViewBatchScreen> {
         switch (index) {
           case 0:
             // camera
+            debugPrint(widget.batch.toString());
             Navigator.of(context).push(MaterialPageRoute(
-              builder: (context) => const CameraScreen(),
+              builder: (context) =>
+                  CameraScreen(batchPath: widget.batch.dirPath),
             ));
             break;
           case 1:
@@ -175,7 +199,7 @@ class _ViewBatchScreenState extends State<ViewBatchScreen> {
     });
   }
 
-  void toggleSelection(String  image) {
+  void toggleSelection(String image) {
     setState(() {
       // remove picture from selection if it's already selected
       if (_selectedImages.contains(image)) {
