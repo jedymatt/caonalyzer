@@ -30,9 +30,6 @@ class _CameraScreenState extends State<CameraScreen>
   void initState() {
     super.initState();
 
-    // TODO: only generate batch when user captures first image
-    batchPath = widget.batchPath ?? GalleryWriter.instance.generateBatchPath();
-
     _initializeCameraController(cameras[0]);
 
     cameraController.addListener(() {
@@ -126,7 +123,12 @@ class _CameraScreenState extends State<CameraScreen>
                                 ),
                               )
                             : InkWell(
-                                onTap: captureImage,
+                                onTap: () {
+                                  if(images.isEmpty) {
+                                    batchPath = widget.batchPath ?? GalleryWriter().generateBatchPath();
+                                  }
+                                  captureImage();
+                                },
                                 child: Container(
                                   height: 80,
                                   decoration: const BoxDecoration(
@@ -210,17 +212,6 @@ class _CameraScreenState extends State<CameraScreen>
     XFile file = await cameraController.takePicture();
 
     debugPrint('Image captured: ${file.path}');
-
-    // final batchPath =
-    //     widget.batchPath ?? GalleryWriter.instance.generateBatchPath();
-    //
-    // if (widget.batchPath == null) {
-    //   GalleryWriter.instance.createDirectory(batchPath);
-    // }
-    //
-    // String path =
-    //     await GalleryWriter.instance.appendImage(file.path, batchPath);
-
     setState(() {
       images.add(file.path);
     });

@@ -1,5 +1,7 @@
+import 'dart:io';
+
+import 'package:caonalyzer/gallery/gallery_reader.dart';
 import 'package:caonalyzer/gallery/models/batch.dart';
-import 'package:caonalyzer/gallery/models/picture.dart';
 import 'package:caonalyzer/ui/gallery/screens/view_batch_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -11,30 +13,21 @@ class GalleryView extends StatefulWidget {
 }
 
 class _GalleryViewState extends State<GalleryView> {
+  List<Batch> batches = [];
+
   bool _isListView = true;
-  List<Batch> batches = [
-    Batch(
-      title: 'Batch 1',
-      path: 'https://picsum.photos/250',
-      pictures: [
-        Picture(
-          id: 1,
-          path: 'https://picsum.photos/250?random=1',
-          thumbnail: 'https://picsum.photos/250?random=1',
-        ),
-        Picture(
-          id: 2,
-          path: 'https://picsum.photos/250?random=2',
-          thumbnail: 'https://picsum.photos/250?random=2',
-        ),
-        Picture(
-          id: 3,
-          path: 'https://picsum.photos/250?random=3',
-          thumbnail: 'https://picsum.photos/250?random=3',
-        ),
-      ],
-    )
-  ];
+
+  @override
+  void initState() {
+    super.initState();
+
+    initBatches();
+  }
+
+  void initBatches() async {
+    batches = await GalleryReader.getBatches();
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -72,8 +65,8 @@ class _GalleryViewState extends State<GalleryView> {
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: Image.network(
-                          batches[index].thumbnail ?? '',
+                        child: Image.file(
+                          File(batches[index].thumbnail),
                           fit: BoxFit.cover,
                         ),
                       ),
@@ -103,8 +96,8 @@ class _GalleryViewState extends State<GalleryView> {
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               clipBehavior: Clip.antiAlias,
-                              child: Image.network(
-                                batches[index].thumbnail ?? '',
+                              child: Image.file(
+                                File(batches[index].thumbnail),
                                 fit: BoxFit.cover,
                               ),
                             ),

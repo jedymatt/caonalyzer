@@ -1,14 +1,14 @@
 import 'dart:developer' as developer;
+import 'dart:io';
 
-import 'package:caonalyzer/gallery/models/picture.dart';
 import 'package:flutter/material.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 
 class ImageScreen extends StatefulWidget {
-  const ImageScreen(this.pictures, {super.key, this.initialIndex = 0});
+  const ImageScreen(this.images, {super.key, this.initialIndex = 0});
 
-  final List<Picture> pictures;
+  final List<String> images;
   final int initialIndex;
 
   @override
@@ -25,7 +25,7 @@ class _ImageScreenState extends State<ImageScreen> {
     super.initState();
 
     currentIndex = widget.initialIndex;
-    imageTitle = widget.pictures[widget.initialIndex].id.toString();
+    imageTitle = '${currentIndex + 1}/${widget.images.length}';
     _pageController = PageController(initialPage: widget.initialIndex);
   }
 
@@ -34,25 +34,25 @@ class _ImageScreenState extends State<ImageScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          '${currentIndex + 1}/${widget.pictures.length}',
+          '${currentIndex + 1}/${widget.images.length}',
         ),
         centerTitle: true,
-        bottom: widget.pictures.length > 1
+        bottom: widget.images.length > 1
             ? PreferredSize(
                 preferredSize: const Size.fromHeight(4.0),
                 child: LinearProgressIndicator(
-                  value: (currentIndex + 1) / widget.pictures.length,
+                  value: (currentIndex + 1) / widget.images.length,
                 ),
               )
             : null,
       ),
       body: PhotoViewGallery(
         pageController: _pageController,
-        pageOptions: widget.pictures
+        pageOptions: widget.images
             .map(
-              (picture) => PhotoViewGalleryPageOptions(
-                imageProvider: NetworkImage(picture.path),
-                heroAttributes: PhotoViewHeroAttributes(tag: picture.id),
+              (image) => PhotoViewGalleryPageOptions(
+                imageProvider: FileImage(File(image)),
+                heroAttributes: PhotoViewHeroAttributes(tag: image),
                 minScale: PhotoViewComputedScale.contained,
                 maxScale: PhotoViewComputedScale.covered * 2.0,
               ),
@@ -73,10 +73,10 @@ class _ImageScreenState extends State<ImageScreen> {
           ),
         ),
         onPageChanged: (index) {
-          debugPrint('index: $index picturesLength: ${widget.pictures.length}');
+          debugPrint('index: $index picturesLength: ${widget.images.length}');
           setState(() {
             currentIndex = index;
-            imageTitle = widget.pictures[index].id.toString();
+            imageTitle = '${currentIndex + 1}/${widget.images.length}';
           });
         },
       ),

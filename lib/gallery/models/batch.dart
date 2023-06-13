@@ -1,15 +1,13 @@
-import 'picture.dart';
-
 class Batch {
   Batch({
     required this.title,
-    required this.path,
-    required this.pictures,
+    required this.dirPath,
+    required this.images,
   });
 
   final String title;
-  final String path;
-  final List<Picture> pictures;
+  final String dirPath;
+  final List<String> images;
 
-  String? get thumbnail => pictures.elementAtOrNull(0)?.path;
+  String get thumbnail => images.first;
 }

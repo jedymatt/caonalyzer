@@ -1,5 +1,6 @@
+import 'dart:io';
+
 import 'package:caonalyzer/gallery/models/batch.dart';
-import 'package:caonalyzer/gallery/models/picture.dart';
 import 'package:caonalyzer/ui/gallery/screens/image_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -16,7 +17,8 @@ class ViewBatchScreen extends StatefulWidget {
 
 class _ViewBatchScreenState extends State<ViewBatchScreen> {
   bool _isSelecting = false;
-  List<Picture> _selectedPictures = [];
+  final List<String> _selectedImages = [];
+
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +28,7 @@ class _ViewBatchScreenState extends State<ViewBatchScreen> {
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
         ),
-        itemCount: widget.batch.pictures.length,
+        itemCount: widget.batch.images.length,
         itemBuilder: (context, index) {
           return Padding(
             padding: const EdgeInsets.all(4),
@@ -40,17 +42,17 @@ class _ViewBatchScreenState extends State<ViewBatchScreen> {
                       setState(() {
                         _isSelecting = true;
                       });
-                      addToSelection(widget.batch.pictures[index]);
+                      addToSelection(widget.batch.images[index]);
                     },
                     onTap: _isSelecting
-                        ? () => toggleSelection(widget.batch.pictures[index])
+                        ? () => toggleSelection(widget.batch.images[index])
                         : () =>
-                            redirectToImageViewer(widget.batch.pictures[index]),
+                            redirectToImageViewer(widget.batch.images[index]),
                     child: Stack(
                       fit: StackFit.expand,
                       children: [
-                        Image.network(
-                          widget.batch.pictures[index].thumbnail,
+                        Image.file(
+                          File(widget.batch.images[index]),
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) =>
                               const Icon(Icons.error),
@@ -62,8 +64,8 @@ class _ViewBatchScreenState extends State<ViewBatchScreen> {
                             child: Padding(
                               padding: const EdgeInsets.all(4),
                               child: Icon(
-                                _selectedPictures
-                                        .contains(widget.batch.pictures[index])
+                                _selectedImages
+                                        .contains(widget.batch.images[index])
                                     ? Icons.check_circle
                                     : Icons.radio_button_unchecked,
                                 color: Colors.blue,
@@ -72,8 +74,8 @@ class _ViewBatchScreenState extends State<ViewBatchScreen> {
                           ),
                         // highlight box around the image
                         if (_isSelecting &&
-                            _selectedPictures
-                                .contains(widget.batch.pictures[index]))
+                            _selectedImages
+                                .contains(widget.batch.images[index]))
                           Container(
                             decoration: BoxDecoration(
                               border: Border.all(
@@ -86,7 +88,7 @@ class _ViewBatchScreenState extends State<ViewBatchScreen> {
                     ),
                   ),
                 ),
-                Text(widget.batch.pictures[index].id.toString()),
+                Text('${index + 1}'),
               ],
             ),
           );
@@ -96,11 +98,11 @@ class _ViewBatchScreenState extends State<ViewBatchScreen> {
     );
   }
 
-  void redirectToImageViewer(Picture picture) {
+  void redirectToImageViewer(String image) {
     Navigator.of(context).push(MaterialPageRoute(
       builder: (context) => ImageScreen(
-        widget.batch.pictures,
-        initialIndex: widget.batch.pictures.indexOf(picture),
+        widget.batch.images,
+        initialIndex: widget.batch.images.indexOf(image),
       ),
     ));
   }
@@ -112,7 +114,7 @@ class _ViewBatchScreenState extends State<ViewBatchScreen> {
   }
 
   Widget? _selectingImageBottomNav() {
-    if (_selectedPictures.isEmpty) return null;
+    if (_selectedImages.isEmpty) return null;
 
     return BottomNavigationBar(
       items: const [
@@ -164,22 +166,22 @@ class _ViewBatchScreenState extends State<ViewBatchScreen> {
     );
   }
 
-  void addToSelection(Picture picture) {
+  void addToSelection(String image) {
     setState(() {
       // add picture to selection but only if it's not already selected
-      if (!_selectedPictures.contains(picture)) {
-        _selectedPictures.add(picture);
+      if (!_selectedImages.contains(image)) {
+        _selectedImages.add(image);
       }
     });
   }
 
-  void toggleSelection(Picture picture) {
+  void toggleSelection(String  image) {
     setState(() {
       // remove picture from selection if it's already selected
-      if (_selectedPictures.contains(picture)) {
-        _selectedPictures.remove(picture);
+      if (_selectedImages.contains(image)) {
+        _selectedImages.remove(image);
       } else {
-        _selectedPictures.add(picture);
+        _selectedImages.add(image);
       }
     });
   }
@@ -206,23 +208,23 @@ class _ViewBatchScreenState extends State<ViewBatchScreen> {
 
   AppBar _appBarSelection() {
     return AppBar(
-      title: Text('${_selectedPictures.length} selected'),
+      title: Text('${_selectedImages.length} selected'),
       leading: IconButton(
         onPressed: () {
           setState(() {
             _isSelecting = false;
-            _selectedPictures.clear();
+            _selectedImages.clear();
           });
         },
         icon: const Icon(Icons.arrow_back),
       ),
       actions: [
-        if (_selectedPictures.length != widget.batch.pictures.length)
+        if (_selectedImages.length != widget.batch.images.length)
           IconButton(
             onPressed: () {
               setState(() {
-                _selectedPictures.clear();
-                _selectedPictures.addAll(widget.batch.pictures);
+                _selectedImages.clear();
+                _selectedImages.addAll(widget.batch.images);
               });
             },
             icon: const Icon(Icons.select_all),
@@ -231,7 +233,7 @@ class _ViewBatchScreenState extends State<ViewBatchScreen> {
           IconButton(
             onPressed: () {
               setState(() {
-                _selectedPictures.clear();
+                _selectedImages.clear();
               });
             },
             icon: const Icon(Icons.deselect),
