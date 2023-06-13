@@ -20,12 +20,12 @@ class GalleryReader {
 
     return dir
         .listSync()
-        .map((e) =>
-        Batch(
-          title: path.basename(e.path),
-          dirPath: e.path,
-          images: Directory(e.path).listSync().map((e) => e.path).toList(),
-        ))
+        .reversed
+        .map((e) => Batch(
+              title: path.basename(e.path),
+              dirPath: e.path,
+              images: Directory(e.path).listSync().map((e) => e.path).toList(),
+            ))
         .where((element) => element.images.isNotEmpty)
         .toList();
   }
