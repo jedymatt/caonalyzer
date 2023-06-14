@@ -1,9 +1,9 @@
 import 'dart:io';
 
-import 'package:caonalyzer/gallery/gallery_reader.dart';
-import 'package:caonalyzer/gallery/models/batch.dart';
+import 'package:caonalyzer/controllers/gallery_controller.dart';
 import 'package:caonalyzer/ui/gallery/screens/view_batch_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 class GalleryView extends StatefulWidget {
   const GalleryView({super.key});
@@ -13,21 +13,8 @@ class GalleryView extends StatefulWidget {
 }
 
 class _GalleryViewState extends State<GalleryView> {
-  List<Batch> batches = [];
-
-  bool _isListView = true;
-
-  @override
-  void initState() {
-    super.initState();
-
-    initBatches();
-  }
-
-  void initBatches() async {
-    batches = await GalleryReader.getBatches();
-    setState(() {});
-  }
+  final GalleryController controller = Get.put(GalleryController());
+  bool _isListView = false;
 
   @override
   Widget build(BuildContext context) {
@@ -38,26 +25,26 @@ class _GalleryViewState extends State<GalleryView> {
             children: [
               const Spacer(),
               IconButton(
-                  onPressed: () {
-                    setState(() {
-                      _isListView = !_isListView;
-                    });
-                  },
-                  icon: Icon(
-                    _isListView ? Icons.grid_view : Icons.list,
-                  )),
+                onPressed: () => setState(() {
+                  _isListView = !_isListView;
+                }),
+                icon: Icon(
+                  _isListView ? Icons.grid_view : Icons.list,
+                ),
+              ),
             ],
           ),
           _isListView
               ? ListView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
-                  itemCount: batches.length,
+                  itemCount: controller.batches.length,
                   itemBuilder: (context, index) {
                     return ListTile(
                       onTap: () => Navigator.of(context).push(
                         MaterialPageRoute(
-                          builder: (context) => ViewBatchScreen(batches[index]),
+                          builder: (context) =>
+                              ViewBatchScreen(controller.batches[index]),
                         ),
                       ),
                       leading: Container(
@@ -66,18 +53,18 @@ class _GalleryViewState extends State<GalleryView> {
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Image.file(
-                          File(batches[index].thumbnail),
+                          File(controller.batches[index].thumbnail),
                           fit: BoxFit.cover,
                         ),
                       ),
-                      title: Text(batches[index].title),
+                      title: Text(controller.batches[index].title),
                     );
                   },
                 )
               : GridView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
-                  itemCount: batches.length,
+                  itemCount: controller.batches.length,
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 3,
                   ),
@@ -85,7 +72,8 @@ class _GalleryViewState extends State<GalleryView> {
                     return InkWell(
                       onTap: () => Navigator.of(context).push(
                         MaterialPageRoute(
-                          builder: (context) => ViewBatchScreen(batches[index]),
+                          builder: (context) =>
+                              ViewBatchScreen(controller.batches[index]),
                         ),
                       ),
                       child: Column(
@@ -97,12 +85,12 @@ class _GalleryViewState extends State<GalleryView> {
                               ),
                               clipBehavior: Clip.antiAlias,
                               child: Image.file(
-                                File(batches[index].thumbnail),
+                                File(controller.batches[index].thumbnail),
                                 fit: BoxFit.cover,
                               ),
                             ),
                           ),
-                          Text(batches[index].title),
+                          Text(controller.batches[index].title),
                         ],
                       ),
                     );
