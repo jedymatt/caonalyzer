@@ -4,18 +4,18 @@ class ImageMetadata {
   ImageMetadata({
     required this.imagePath,
     required this.objectDetectionMode,
-    required this.objectDetectionOutput,
+    required this.objectDetectionOutputs,
   });
 
   final String imagePath;
   final String objectDetectionMode;
-  final ObjectDetectionOutput objectDetectionOutput;
+  final List<ObjectDetectionOutput> objectDetectionOutputs;
 
   String toJson() {
     return jsonEncode({
       'imagePath': imagePath,
       'objectDetectionMode': objectDetectionMode,
-      'objectDetectionOutput': objectDetectionOutput.toJson(),
+      'objectDetectionOutputs': objectDetectionOutputs.map((e) => e.toJson()).toList(),
     });
   }
 
@@ -24,7 +24,7 @@ class ImageMetadata {
     return ImageMetadata(
       imagePath: json['imagePath'],
       objectDetectionMode: json['objectDetectionMode'],
-      objectDetectionOutput: ObjectDetectionOutput.fromJson(json['objectDetectionOutput']),
+      objectDetectionOutputs: json['objectDetectionOutputs'].map<ObjectDetectionOutput>((e) => ObjectDetectionOutput.fromJson(e)).toList(),
     );
   }
 }
