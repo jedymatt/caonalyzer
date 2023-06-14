@@ -5,12 +5,29 @@ import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path_lib;
 
 class GalleryReader {
-  Future<List<File>> getImages(String path) async {
-    final Directory externalStorageDir = (await getExternalStorageDirectory())!;
-
-    final dir = Directory('${externalStorageDir.path}/$path');
+  static Future<List<File>> getImages(String path) async {
+    final dir = Directory(path);
 
     return dir.listSync().map((e) => File(e.path)).toList();
+  }
+
+  static Future<List<String>> getBatchPaths() async {
+    final Directory externalStorageDir = (await getExternalStorageDirectory())!;
+
+    final dir = Directory(externalStorageDir.path);
+
+    return dir
+        .listSync()
+        .reversed
+        .map((e) => e.path)
+        .where((element) => Directory(element).listSync().isNotEmpty)
+        .toList();
+  }
+
+  static List<String> getImagesFromBatch(String batchPath) {
+    final dir = Directory(batchPath);
+
+    return dir.listSync().map((e) => e.path).toList();
   }
 
   static Future<List<Batch>> getBatches() async {
