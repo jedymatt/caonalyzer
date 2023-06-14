@@ -15,8 +15,8 @@ class GalleryController extends GetxController {
   }
 
   void loadBatches() async {
-    if(batches.isNotEmpty) return;
-    
+    if (batches.isNotEmpty) return;
+
     batches.value = await GalleryReader.getBatches();
   }
 
