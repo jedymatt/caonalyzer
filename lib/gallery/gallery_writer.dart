@@ -5,10 +5,14 @@ import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path_lib;
 
 class GalleryWriter {
-
   static void createDirectory(String path) async {
     Directory(path).createSync();
     debugPrint('Directory created: $path');
+  }
+
+  static void deleteDirectory(String path) async {
+    Directory(path).deleteSync(recursive: true);
+    debugPrint('Directory deleted: $path');
   }
 
   static Future<String> generateBatchPath(DateTime dateTime) async {
@@ -27,7 +31,8 @@ class GalleryWriter {
     return path;
   }
 
-  static Future<String> appendImage(String source, String destinationDir) async {
+  static Future<String> appendImage(
+      String source, String destinationDir) async {
     final fileType = path_lib.extension(source);
     final filesCount = (await _getFiles(destinationDir)).length;
     final filename = '$filesCount$fileType';
