@@ -2,6 +2,7 @@ import 'package:camera/camera.dart';
 import 'package:caonalyzer/globals.dart';
 import 'package:caonalyzer/ui/screens/home/home_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 void _logError(String code, String? message) {
   // ignore: avoid_print
@@ -26,7 +27,7 @@ class App extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return GetMaterialApp(
       title: 'Cao-nalyzer',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
