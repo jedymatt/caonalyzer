@@ -34,68 +34,69 @@ class _GalleryViewState extends State<GalleryView> {
               ),
             ],
           ),
-          _isListView
-              ? ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: controller.batches.length,
-                  itemBuilder: (context, index) {
-                    return ListTile(
-                      onTap: () => Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              ViewBatchScreen(controller.batches[index]),
+          Obx(() => _isListView
+                ? ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: controller.batches.length,
+                    itemBuilder: (context, index) {
+                      return ListTile(
+                        onTap: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                ViewBatchScreen(controller.batches[index]),
+                          ),
                         ),
-                      ),
-                      leading: Container(
-                        clipBehavior: Clip.antiAlias,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8),
+                        leading: Container(
+                          clipBehavior: Clip.antiAlias,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Image.file(
+                            File(controller.batches[index].thumbnail),
+                            fit: BoxFit.cover,
+                          ),
                         ),
-                        child: Image.file(
-                          File(controller.batches[index].thumbnail),
-                          fit: BoxFit.cover,
+                        title: Text(controller.batches[index].title),
+                      );
+                    },
+                  )
+                : GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: controller.batches.length,
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 3,
+                    ),
+                    itemBuilder: (context, index) {
+                      return InkWell(
+                        onTap: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                ViewBatchScreen(controller.batches[index]),
+                          ),
                         ),
-                      ),
-                      title: Text(controller.batches[index].title),
-                    );
-                  },
-                )
-              : GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: controller.batches.length,
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 3,
-                  ),
-                  itemBuilder: (context, index) {
-                    return InkWell(
-                      onTap: () => Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              ViewBatchScreen(controller.batches[index]),
-                        ),
-                      ),
-                      child: Column(
-                        children: [
-                          Expanded(
-                            child: Card(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              clipBehavior: Clip.antiAlias,
-                              child: Image.file(
-                                File(controller.batches[index].thumbnail),
-                                fit: BoxFit.cover,
+                        child: Column(
+                          children: [
+                            Expanded(
+                              child: Card(
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                clipBehavior: Clip.antiAlias,
+                                child: Image.file(
+                                  File(controller.batches[index].thumbnail),
+                                  fit: BoxFit.cover,
+                                ),
                               ),
                             ),
-                          ),
-                          Text(controller.batches[index].title),
-                        ],
-                      ),
-                    );
-                  },
-                ),
+                            Text(controller.batches[index].title),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+          ),
         ],
       ),
     );
