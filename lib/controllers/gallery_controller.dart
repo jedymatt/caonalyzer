@@ -14,7 +14,11 @@ class GalleryController extends GetxController {
     loadBatches();
   }
 
-  void loadBatches() async => batches.value = await GalleryReader.getBatches();
+  void loadBatches() async {
+    if(batches.isNotEmpty) return;
+    
+    batches.value = await GalleryReader.getBatches();
+  }
 
   void deleteBatch(String batchDirPath) async {
     GalleryWriter.deleteDirectory(batchDirPath);
