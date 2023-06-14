@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:caonalyzer/gallery/gallery_reader.dart';
 import 'package:caonalyzer/gallery/gallery_writer.dart';
 import 'package:caonalyzer/gallery/models/batch.dart';
 import 'package:caonalyzer/ui/gallery/screens/image_screen.dart';
@@ -20,6 +21,15 @@ class _ViewBatchScreenState extends State<ViewBatchScreen> {
   bool _isSelecting = false;
   final List<String> _selectedImages = [];
 
+  late List<String> images;
+
+  @override
+  void initState() {
+    super.initState();
+
+    images = GalleryReader.getImagesFromBatch(widget.batch.dirPath);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -28,7 +38,7 @@ class _ViewBatchScreenState extends State<ViewBatchScreen> {
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
         ),
-        itemCount: widget.batch.images.length,
+        itemCount: images.length,
         itemBuilder: (context, index) {
           return Padding(
             padding: const EdgeInsets.all(4),
@@ -42,17 +52,17 @@ class _ViewBatchScreenState extends State<ViewBatchScreen> {
                       setState(() {
                         _isSelecting = true;
                       });
-                      addToSelection(widget.batch.images[index]);
+                      addToSelection(images[index]);
                     },
                     onTap: _isSelecting
-                        ? () => toggleSelection(widget.batch.images[index])
+                        ? () => toggleSelection(images[index])
                         : () =>
-                            redirectToImageViewer(widget.batch.images[index]),
+                            redirectToImageViewer(images[index]),
                     child: Stack(
                       fit: StackFit.expand,
                       children: [
                         Image.file(
-                          File(widget.batch.images[index]),
+                          File(images[index]),
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) =>
                               const Icon(Icons.error),
@@ -65,7 +75,7 @@ class _ViewBatchScreenState extends State<ViewBatchScreen> {
                               padding: const EdgeInsets.all(4),
                               child: Icon(
                                 _selectedImages
-                                        .contains(widget.batch.images[index])
+                                        .contains(images[index])
                                     ? Icons.check_circle
                                     : Icons.radio_button_unchecked,
                                 color: Colors.blue,
@@ -75,7 +85,7 @@ class _ViewBatchScreenState extends State<ViewBatchScreen> {
                         // highlight box around the image
                         if (_isSelecting &&
                             _selectedImages
-                                .contains(widget.batch.images[index]))
+                                .contains(images[index]))
                           Container(
                             decoration: BoxDecoration(
                               border: Border.all(
@@ -101,8 +111,8 @@ class _ViewBatchScreenState extends State<ViewBatchScreen> {
   void redirectToImageViewer(String image) {
     Navigator.of(context).push(MaterialPageRoute(
       builder: (context) => ImageScreen(
-        widget.batch.images,
-        initialIndex: widget.batch.images.indexOf(image),
+        images,
+        initialIndex: images.indexOf(image),
       ),
     ));
   }
@@ -131,7 +141,7 @@ class _ViewBatchScreenState extends State<ViewBatchScreen> {
         switch (index) {
           case 0:
             // delete
-            final isNowEmpty = widget.batch.images.length == _selectedImages.length;
+            final isNowEmpty = images.length == _selectedImages.length;
 
             GalleryWriter.removeImages(_selectedImages);
             setState(() {
@@ -243,12 +253,12 @@ class _ViewBatchScreenState extends State<ViewBatchScreen> {
         icon: const Icon(Icons.arrow_back),
       ),
       actions: [
-        if (_selectedImages.length != widget.batch.images.length)
+        if (_selectedImages.length != images.length)
           IconButton(
             onPressed: () {
               setState(() {
                 _selectedImages.clear();
-                _selectedImages.addAll(widget.batch.images);
+                _selectedImages.addAll(images);
               });
             },
             icon: const Icon(Icons.select_all),
