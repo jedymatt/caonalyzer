@@ -1,4 +1,5 @@
 import 'package:path/path.dart' as path_lib;
+
 class Batch {
   Batch({
     required this.title,
@@ -17,5 +18,17 @@ class Batch {
   @override
   String toString() {
     return 'Batch(title: $title, dirPath: $dirPath, images: $images)';
+  }
+
+  Batch copyWith({
+    String? title,
+    String? dirPath,
+    List<String>? images,
+  }) {
+    return Batch(
+      title: title ?? this.title,
+      dirPath: dirPath ?? this.dirPath,
+      images: images ?? this.images,
+    );
   }
 }
