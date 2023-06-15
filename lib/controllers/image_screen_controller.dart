@@ -9,7 +9,7 @@ import '../gallery/metadata_writer.dart';
 
 class ImageScreenController extends GetxController {
   final RxString imagePath = ''.obs;
-  final Rx<ImageMetadata?> imageMetadata = null.obs;
+  final Rx<ImageMetadata?> imageMetadata = Rxn<ImageMetadata>();
 
   void loadImagePath(String imagePath_) {
     imagePath.value = imagePath_;
