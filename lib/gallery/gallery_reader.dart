@@ -1,6 +1,8 @@
 import 'dart:io';
 
 import 'package:caonalyzer/gallery/models/batch.dart';
+import 'package:glob/glob.dart';
+import 'package:glob/list_local_fs.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path_lib;
 
@@ -25,9 +27,9 @@ class GalleryReader {
   }
 
   static List<String> getImagesFromBatch(String batchPath) {
-    final dir = Directory(batchPath);
+    final imageFile = Glob(path_lib.join(batchPath, '*.{jpg,jpeg,png}'));
 
-    return dir.listSync().map((e) => e.path).toList();
+    return imageFile.listSync().map((e) => e.path).toList();
   }
 
   static Future<List<Batch>> getBatches() async {
