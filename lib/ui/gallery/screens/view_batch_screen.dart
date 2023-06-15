@@ -2,10 +2,14 @@ import 'dart:io';
 
 import 'package:caonalyzer/gallery/gallery_reader.dart';
 import 'package:caonalyzer/gallery/gallery_writer.dart';
+import 'package:caonalyzer/gallery/metadata_writer.dart';
 import 'package:caonalyzer/gallery/models/batch.dart';
 import 'package:caonalyzer/ui/gallery/screens/image_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:caonalyzer/globals.dart' as globals;
+import 'package:image/image.dart' as image_lib;
 
+import '../../../gallery/models/image_metadata.dart';
 import '../../screens/camera_screen.dart';
 
 class ViewBatchScreen extends StatefulWidget {
@@ -56,8 +60,7 @@ class _ViewBatchScreenState extends State<ViewBatchScreen> {
                     },
                     onTap: _isSelecting
                         ? () => toggleSelection(images[index])
-                        : () =>
-                            redirectToImageViewer(images[index]),
+                        : () => redirectToImageViewer(images[index]),
                     child: Stack(
                       fit: StackFit.expand,
                       children: [
@@ -74,8 +77,7 @@ class _ViewBatchScreenState extends State<ViewBatchScreen> {
                             child: Padding(
                               padding: const EdgeInsets.all(4),
                               child: Icon(
-                                _selectedImages
-                                        .contains(images[index])
+                                _selectedImages.contains(images[index])
                                     ? Icons.check_circle
                                     : Icons.radio_button_unchecked,
                                 color: Colors.blue,
@@ -84,8 +86,7 @@ class _ViewBatchScreenState extends State<ViewBatchScreen> {
                           ),
                         // highlight box around the image
                         if (_isSelecting &&
-                            _selectedImages
-                                .contains(images[index]))
+                            _selectedImages.contains(images[index]))
                           Container(
                             decoration: BoxDecoration(
                               border: Border.all(
@@ -179,7 +180,7 @@ class _ViewBatchScreenState extends State<ViewBatchScreen> {
           label: 'More',
         ),
       ],
-      onTap: (index) {
+      onTap: (index) async {
         switch (index) {
           case 0:
             // camera
@@ -191,6 +192,30 @@ class _ViewBatchScreenState extends State<ViewBatchScreen> {
             break;
           case 1:
             // scan
+            final objectDetector = globals.preferredMode.value.objectDetector;
+
+            for (var image in images) {
+              final tensorImage = objectDetector.preprocessImage(
+                  image_lib.decodeImage(File(image).readAsBytesSync())!);
+
+              final outputs = await objectDetector.runInference(tensorImage);
+
+              MetadataWriter.create(
+                image,
+                ImageMetadata(
+                  imagePath: image,
+                  objectDetectionMode: globals.preferredMode.value.toString(),
+                  objectDetectionOutputs: outputs.map((e) {
+                    return ObjectDetectionOutput(
+                      class_: e.label,
+                      confidence: e.confidence,
+                      boxes: e.boundingBox.toLTRBList(),
+                    );
+                  }).toList(),
+                ),
+              );
+            }
+
             break;
           case 2:
             // open more menu
