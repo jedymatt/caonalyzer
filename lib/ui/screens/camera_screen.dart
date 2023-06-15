@@ -221,7 +221,7 @@ class _CameraScreenState extends State<CameraScreen>
   void _initializeCameraController(CameraDescription description) async {
     cameraController = CameraController(
       description,
-      ResolutionPreset.low,
+      ResolutionPreset.medium,
       enableAudio: false,
     );
 
