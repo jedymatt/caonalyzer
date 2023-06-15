@@ -56,4 +56,17 @@ class ObjectDetectionOutput {
       boxes: json['boxes'].cast<double>(),
     );
   }
+
+  ObjectDetectionOutput toPixelBoxes(int height, int width) {
+    return ObjectDetectionOutput(
+      class_: class_,
+      confidence: confidence,
+      boxes: [
+        boxes[0] * width,
+        boxes[1] * height,
+        boxes[2] * width,
+        boxes[3] * height,
+      ],
+    );
+  }
 }
