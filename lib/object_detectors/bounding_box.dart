@@ -14,6 +14,8 @@ class BoundingBox {
   double get width => right - left;
   double get height => bottom - top;
 
+  List<double> toLTRBList() => [left, top, right, bottom];
+
   BoundingBox toPixel(num imageHeight, num imageWidth) {
     if (!_isPercentage()) return this;
 
@@ -54,6 +56,7 @@ class BoundingBox {
       bottom: bottom,
     );
   }
+
 
   bool _isPercentage() {
     return left <= 1 && top <= 1 && right <= 1 && bottom <= 1;
