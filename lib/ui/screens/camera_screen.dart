@@ -2,11 +2,8 @@ import 'dart:io';
 
 import 'package:camera/camera.dart';
 import 'package:caonalyzer/gallery/gallery_writer.dart';
-import 'package:caonalyzer/gallery/models/batch.dart';
 import 'package:caonalyzer/globals.dart';
-import 'package:caonalyzer/object_detectors/object_detectors.dart';
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
 
 import 'batch_confirmation_screen.dart';
 
@@ -30,7 +27,7 @@ class _CameraScreenState extends State<CameraScreen>
   void initState() {
     super.initState();
 
-    _initializeCameraController(cameras[0]);
+    _initializeCameraController(Globals.cameras.first);
 
     cameraController.addListener(() {
       if (cameraController.value.isTakingPicture) {
@@ -124,8 +121,10 @@ class _CameraScreenState extends State<CameraScreen>
                               )
                             : InkWell(
                                 onTap: () async {
-                                  if(images.isEmpty) {
-                                    batchPath = widget.batchPath ??  await GalleryWriter.generateBatchPath(DateTime.now());
+                                  if (images.isEmpty) {
+                                    batchPath = widget.batchPath ??
+                                        await GalleryWriter.generateBatchPath(
+                                            DateTime.now());
                                   }
                                   captureImage();
                                 },
