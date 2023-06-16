@@ -1,16 +1,10 @@
 import 'dart:io';
 
-import 'package:caonalyzer/gallery/gallery_reader.dart';
-import 'package:caonalyzer/gallery/gallery_writer.dart';
-import 'package:caonalyzer/gallery/metadata_writer.dart';
+import 'package:caonalyzer/controllers/view_batch_screen_controller.dart';
 import 'package:caonalyzer/gallery/models/batch.dart';
 import 'package:caonalyzer/ui/gallery/screens/image_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:caonalyzer/globals.dart' as globals;
-import 'package:image/image.dart' as image_lib;
-
-import '../../../gallery/models/image_metadata.dart';
-import '../../screens/camera_screen.dart';
+import 'package:get/get.dart';
 
 class ViewBatchScreen extends StatefulWidget {
   const ViewBatchScreen(this.batch, {super.key});
@@ -22,110 +16,122 @@ class ViewBatchScreen extends StatefulWidget {
 }
 
 class _ViewBatchScreenState extends State<ViewBatchScreen> {
-  bool _isSelecting = false;
-  final List<String> _selectedImages = [];
-
-  late List<String> images;
+  late final ViewBatchScreenController controller;
 
   @override
   void initState() {
     super.initState();
 
-    images = GalleryReader.getImagesFromBatch(widget.batch.dirPath);
+    controller = Get.put(
+      ViewBatchScreenController(widget.batch),
+      tag: widget.batch.dirPath,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: _buildAppBar(),
-      body: GridView.builder(
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-        ),
-        itemCount: images.length,
-        itemBuilder: (context, index) {
-          return Padding(
-            padding: const EdgeInsets.all(4),
-            child: Column(
-              children: [
-                Expanded(
-                  child: InkWell(
-                    onLongPress: () {
-                      if (_isSelecting) return;
+    return WillPopScope(
+      onWillPop: () {
+        if (controller.isSelecting.value) {
+          controller.stopSelecting();
 
-                      setState(() {
-                        _isSelecting = true;
-                      });
-                      addToSelection(images[index]);
-                    },
-                    onTap: _isSelecting
-                        ? () => toggleSelection(images[index])
-                        : () => redirectToImageViewer(images[index]),
-                    child: Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        Image.file(
-                          File(images[index]),
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) =>
-                              const Icon(Icons.error),
-                        ),
-                        // checkmark in top right corner
-                        if (_isSelecting)
-                          Align(
-                            alignment: Alignment.topRight,
-                            child: Padding(
-                              padding: const EdgeInsets.all(4),
-                              child: Icon(
-                                _selectedImages.contains(images[index])
-                                    ? Icons.check_circle
-                                    : Icons.radio_button_unchecked,
-                                color: Colors.blue,
-                              ),
-                            ),
-                          ),
-                        // highlight box around the image
-                        if (_isSelecting &&
-                            _selectedImages.contains(images[index]))
-                          Container(
-                            decoration: BoxDecoration(
-                              border: Border.all(
-                                color: Colors.blue,
-                                width: 2,
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                ),
-                Text('${index + 1}'),
-              ],
+          return Future.value(false);
+        }
+
+        return Future.value(true);
+      },
+      child: Obx(() => Scaffold(
+            appBar: _buildAppBar(),
+            body: GridView.builder(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                mainAxisExtent: 200,
+              ),
+              padding: const EdgeInsets.all(8),
+              itemCount: controller.images.length,
+              itemBuilder: (context, index) => buildImageTile(index),
             ),
-          );
-        },
+            bottomNavigationBar: _buildBottomNavigationBar(),
+          )),
+    );
+  }
+
+  Widget buildImageTile(int index) {
+    const strokeWidth = 4.0;
+
+    return Container(
+      margin: const EdgeInsets.all(strokeWidth),
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        border: controller.isSelecting.value &&
+                controller.selectedImages.contains(controller.images[index])
+            ? Border.all(
+                color: Colors.blue,
+                width: 4,
+                strokeAlign: BorderSide.strokeAlignOutside,
+              )
+            : null,
       ),
-      bottomNavigationBar: _buildBottomNavigationBar(),
+      child: Card(
+        margin: const EdgeInsets.all(0),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onLongPress: () {
+            if (controller.isSelecting.value) return;
+
+            controller.toggleSelecting();
+
+            controller.toggleSelect(controller.images[index]);
+          },
+          onTap: controller.isSelecting.value
+              ? () => controller.toggleSelect(controller.images[index])
+              : () => redirectToImageViewer(controller.images[index]),
+          customBorder: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Ink.image(
+            image: FileImage(File(controller.images[index])),
+            fit: BoxFit.cover,
+            onImageError: (exception, stackTrace) => const Icon(Icons.error),
+            child: controller.isSelecting.value
+                ? Align(
+                    alignment: Alignment.topRight,
+                    child: Padding(
+                      padding: const EdgeInsets.all(strokeWidth),
+                      child: Icon(
+                        controller.selectedImages
+                                .contains(controller.images[index])
+                            ? Icons.check_circle
+                            : Icons.radio_button_unchecked,
+                        color: Colors.blue,
+                      ),
+                    ),
+                  )
+                : null,
+          ),
+        ),
+      ),
     );
   }
 
   void redirectToImageViewer(String image) {
     Navigator.of(context).push(MaterialPageRoute(
       builder: (context) => ImageScreen(
-        images,
-        initialIndex: images.indexOf(image),
+        controller.images,
+        initialIndex: controller.images.indexOf(image),
       ),
     ));
   }
 
-  Widget? _buildBottomNavigationBar() {
-    return _isSelecting
+  Widget _buildBottomNavigationBar() {
+    return controller.isSelecting.value
         ? _selectingImageBottomNav()
         : _notSelectingImageBottomNav();
   }
 
-  Widget? _selectingImageBottomNav() {
-    if (_selectedImages.isEmpty) return null;
+  Widget _selectingImageBottomNav() {
+    if (controller.selectedImages.isEmpty) return const SizedBox.shrink();
 
     return BottomNavigationBar(
       items: const [
@@ -141,19 +147,7 @@ class _ViewBatchScreenState extends State<ViewBatchScreen> {
       onTap: (index) {
         switch (index) {
           case 0:
-            // delete
-            final isNowEmpty = images.length == _selectedImages.length;
-
-            GalleryWriter.removeImages(_selectedImages);
-            setState(() {
-              _isSelecting = false;
-              _selectedImages.clear();
-            });
-
-            if (isNowEmpty) {
-              Navigator.of(context).pop();
-            }
-
+            controller.deleteSelected();
             break;
           case 1:
             // scan
@@ -164,139 +158,109 @@ class _ViewBatchScreenState extends State<ViewBatchScreen> {
   }
 
   Widget _notSelectingImageBottomNav() {
-    return BottomNavigationBar(
-      items: const [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.add_a_photo),
-          label: 'Camera',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.document_scanner),
-          label: 'Scan',
-        ),
-        // more
-        BottomNavigationBarItem(
-          icon: Icon(Icons.more_vert),
-          label: 'More',
-        ),
-      ],
-      onTap: (index) async {
-        switch (index) {
-          case 0:
-            // camera
-            debugPrint(widget.batch.toString());
-            Navigator.of(context).push(MaterialPageRoute(
-              builder: (context) =>
-                  CameraScreen(batchPath: widget.batch.dirPath),
-            ));
-            break;
-          case 1:
-            // scan
-            final objectDetector = globals.preferredMode.value.objectDetector;
+    return BottomAppBar(
+      child: Row(
+        children: [
+          IconButton(
+            icon: Icon(Icons.add_a_photo),
+            // label: 'Camera',
+            onPressed: () {},
+          ),
+          IconButton(
+            icon: Icon(Icons.document_scanner),
+            // label: 'Scan',
+            onPressed: () {},
+          ),
+          // more
+          IconButton(
+            icon: Icon(Icons.more_vert),
+            // label: 'More',
+            onPressed: () {},
+          ),
+        ],
+        // onTap: (index) async {
+        //   switch (index) {
+        //     case 0:
+        //       // camera
+        //       debugPrint(widget.batch.toString());
+        //       Navigator.of(context).push(MaterialPageRoute(
+        //         builder: (context) =>
+        //             CameraScreen(batchPath: widget.batch.dirPath),
+        //       ));
+        //       break;
+        //     case 1:
+        //       // scan
+        //       // todo: migrate to controller
+        //       final objectDetector = Globals.preferredMode.value.objectDetector;
 
-            for (var image in images) {
-              final tensorImage = objectDetector.preprocessImage(
-                  image_lib.decodeImage(File(image).readAsBytesSync())!);
+        //       for (var image in controller.images) {
+        //         final tensorImage = objectDetector.preprocessImage(
+        //             image_lib.decodeImage(File(image).readAsBytesSync())!);
 
-              final outputs = await objectDetector.runInference(tensorImage);
+        //         final outputs = await objectDetector.runInference(tensorImage);
 
-              MetadataWriter.create(
-                image,
-                ImageMetadata(
-                  imagePath: image,
-                  objectDetectionMode: globals.preferredMode.value.toString(),
-                  objectDetectionOutputs: outputs.map((e) {
-                    return ObjectDetectionOutput(
-                      class_: e.label,
-                      confidence: e.confidence,
-                      boxes: e.boundingBox.toLTRBList(),
-                    );
-                  }).toList(),
-                ),
-              );
-            }
+        //         MetadataWriter.create(
+        //           image,
+        //           ImageMetadata(
+        //             imagePath: image,
+        //             objectDetectionMode: Globals.preferredMode.value.toString(),
+        //             objectDetectionOutputs: outputs.map((e) {
+        //               return ObjectDetectionOutput(
+        //                 class_: e.label,
+        //                 confidence: e.confidence,
+        //                 boxes: e.boundingBox.toLTRBList(),
+        //               );
+        //             }).toList(),
+        //           ),
+        //         );
+        //       }
 
-            break;
-          case 2:
-            // open more menu
-            break;
-        }
-      },
+        //       break;
+        //     case 2:
+        //       // open more menu
+        //       break;
+        //   }
+        // },
+      ),
     );
   }
 
-  void addToSelection(String image) {
-    setState(() {
-      // add picture to selection but only if it's not already selected
-      if (!_selectedImages.contains(image)) {
-        _selectedImages.add(image);
-      }
-    });
-  }
-
-  void toggleSelection(String image) {
-    setState(() {
-      // remove picture from selection if it's already selected
-      if (_selectedImages.contains(image)) {
-        _selectedImages.remove(image);
-      } else {
-        _selectedImages.add(image);
-      }
-    });
-  }
-
   AppBar _buildAppBar() {
-    return _isSelecting ? _appBarSelection() : _appBarDefault();
+    return _appBarDefault();
   }
 
   AppBar _appBarDefault() {
     return AppBar(
-      title: Text(widget.batch.title),
+      title: controller.isSelecting.value
+          ? Text('${controller.selectedImages.length} selected')
+          : Text(widget.batch.title),
+      leading: controller.isSelecting.value
+          ? IconButton(
+              icon: const Icon(Icons.close),
+              onPressed: controller.stopSelecting,
+            )
+          : null,
       actions: [
-        IconButton(
-          onPressed: () {
-            setState(() {
-              _isSelecting = true;
-            });
-          },
-          icon: const Icon(Icons.checklist),
-        ),
-      ],
-    );
-  }
-
-  AppBar _appBarSelection() {
-    return AppBar(
-      title: Text('${_selectedImages.length} selected'),
-      leading: IconButton(
-        onPressed: () {
-          setState(() {
-            _isSelecting = false;
-            _selectedImages.clear();
-          });
-        },
-        icon: const Icon(Icons.arrow_back),
-      ),
-      actions: [
-        if (_selectedImages.length != images.length)
-          IconButton(
-            onPressed: () {
-              setState(() {
-                _selectedImages.clear();
-                _selectedImages.addAll(images);
-              });
-            },
-            icon: const Icon(Icons.select_all),
-          )
-        else
-          IconButton(
-            onPressed: () {
-              setState(() {
-                _selectedImages.clear();
-              });
-            },
-            icon: const Icon(Icons.deselect),
-          ),
+        !controller.isSelecting.value
+            ? IconButton(
+                onPressed: () {
+                  controller.isSelecting.value = true;
+                },
+                icon: const Icon(Icons.checklist),
+              )
+            : const SizedBox.shrink(),
+        controller.isSelecting.value
+            ? IconButton(
+                onPressed: controller.deselectAll,
+                icon: const Icon(Icons.deselect),
+              )
+            : const SizedBox.shrink(),
+        controller.isSelecting.value
+            ? IconButton(
+                onPressed: controller.selectAll,
+                icon: const Icon(Icons.select_all),
+              )
+            : const SizedBox.shrink(),
       ],
     );
   }
