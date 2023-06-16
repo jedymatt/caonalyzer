@@ -45,12 +45,12 @@ class GalleryReader {
     return dir
         .listSync()
         .reversed
+        // where directory is not empty
+        .where((element) => Directory(element.path).listSync().isNotEmpty)
         .map((e) => Batch(
               title: path_lib.basename(e.path),
               dirPath: e.path,
-              images: Directory(e.path).listSync().map((e) => e.path).toList(),
             ))
-        .where((element) => element.images.isNotEmpty)
         .toList();
   }
 }
