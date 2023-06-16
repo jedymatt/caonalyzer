@@ -20,7 +20,7 @@ class _MainViewState extends State<MainView> {
   @override
   void initState() {
     super.initState();
-    objectDetector = preferredMode.value.objectDetector;
+    objectDetector = Globals.preferredMode.value.objectDetector;
   }
 
   @override
@@ -49,7 +49,7 @@ class _MainViewState extends State<MainView> {
     final imageBytes = await fileImage.readAsBytes();
     final image_lib.Image decodedImage = image_lib.decodeImage(imageBytes)!;
 
-    objectDetector = preferredMode.value.objectDetector;
+    objectDetector = Globals.preferredMode.value.objectDetector;
 
     final tensorImage = objectDetector.preprocessImage(decodedImage);
 
