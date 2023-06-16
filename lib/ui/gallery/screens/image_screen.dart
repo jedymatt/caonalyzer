@@ -1,4 +1,3 @@
-import 'dart:developer' as developer;
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -21,7 +20,7 @@ class ImageScreen extends StatefulWidget {
 }
 
 class _ImageScreenState extends State<ImageScreen> {
-  ImageScreenController controller = Get.put(ImageScreenController());
+  late ImageScreenController controller;
   late final PageController _pageController;
   late String imageTitle;
   late int currentIndex;
@@ -35,9 +34,10 @@ class _ImageScreenState extends State<ImageScreen> {
     imageTitle = '${currentIndex + 1}/${widget.images.length}';
     _pageController = PageController(initialPage: widget.initialIndex);
 
-    controller.loadImagePath(widget.images[currentIndex]);
+    controller = Get.put(ImageScreenController(widget.images,
+        initialIndex: widget.initialIndex));
 
-    initDecodedImages();
+    // initDecodedImages();
   }
 
   void initDecodedImages() {
@@ -46,9 +46,11 @@ class _ImageScreenState extends State<ImageScreen> {
       final metadata = MetadataReader.read(image);
 
       if (decodedImage.width > decodedImage.height) {
-        decodedImage = image_lib.copyResize(decodedImage, width: 640, interpolation: image_lib.Interpolation.linear);
+        decodedImage = image_lib.copyResize(decodedImage,
+            width: 640, interpolation: image_lib.Interpolation.linear);
       } else {
-        decodedImage = image_lib.copyResize(decodedImage, height: 640, interpolation: image_lib.Interpolation.linear);
+        decodedImage = image_lib.copyResize(decodedImage,
+            height: 640, interpolation: image_lib.Interpolation.linear);
       }
 
       if (metadata != null) {
@@ -98,11 +100,11 @@ class _ImageScreenState extends State<ImageScreen> {
             : null,
       ),
       body: PhotoViewGallery(
-        pageController: _pageController,
-        pageOptions: widget.images
+        pageController: controller.pageController,
+        pageOptions: controller.images
             .map(
               (image) => PhotoViewGalleryPageOptions(
-                imageProvider: MemoryImage(decodedImages[currentIndex]),
+                imageProvider: FileImage(File(image)),
                 heroAttributes: PhotoViewHeroAttributes(tag: image),
                 minScale: PhotoViewComputedScale.contained,
                 maxScale: PhotoViewComputedScale.covered * 2.0,
@@ -131,6 +133,44 @@ class _ImageScreenState extends State<ImageScreen> {
           });
         },
       ),
+      bottomNavigationBar: Container(
+        color: Theme.of(context).colorScheme.background,
+        height: kBottomNavigationBarHeight,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            IconButton(
+              onPressed: controller.deleteCurrentImage,
+              icon: const Icon(Icons.delete),
+            ),
+            IconButton(
+              onPressed: controller.scanCurrentImage,
+              icon: const Icon(Icons.scanner),
+            ),
+          ],
+        ),
+      ),
+      bottomSheet: controller.showingResultSheet.value
+          ? BottomSheet(
+              onClosing: controller.closeResultSheet,
+              builder: (context) => SizedBox(
+                    height: 200,
+                    child: Column(
+                      children: [
+                        Text(
+                          'Result',
+                          style: Theme.of(context).textTheme.headline6,
+                        ),
+                        Expanded(
+                          child: SingleChildScrollView(
+                            child: Text(controller
+                                .currentImageMetadata!.objectDetectionMode),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ))
+          : null,
     );
   }
 }
