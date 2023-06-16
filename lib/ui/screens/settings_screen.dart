@@ -23,10 +23,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
           SwitchListTile(
             title: const Text('Online mode'),
             subtitle: const Text('Use a server to run inference'),
-            value: preferredMode.value == PreferredMode.online,
+            value: Globals.preferredMode.value == PreferredMode.online,
             onChanged: (value) {
               setState(() {
-                preferredMode.value =
+                Globals.preferredMode.value =
                     value ? PreferredMode.online : PreferredMode.offline;
               });
             },
@@ -35,7 +35,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             title: const Text('Host'),
             subtitle: Text(host.value),
             trailing: const Icon(Icons.chevron_right),
-            enabled: preferredMode.value == PreferredMode.online,
+            enabled: Globals.preferredMode.value == PreferredMode.online,
             onTap: () {
               String hostInput = host.value;
 
