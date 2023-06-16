@@ -6,14 +6,13 @@ import 'package:get/get.dart';
 import '../gallery/gallery_writer.dart';
 import '../ui/gallery/screens/view_batch_screen.dart';
 import 'package:path/path.dart' as path_lib;
-import 'package:caonalyzer/globals.dart' as globals;
 
 class BatchConfirmationController extends GetxController {
   final GalleryController galleryController = Get.find();
 
   void confirmNewBatch(String batchDirPath, List<String> images) async {
     GalleryWriter.createDirectory(batchDirPath);
-    final allImages = await GalleryWriter.appendImages(
+    await GalleryWriter.appendImages(
       images,
       batchDirPath,
     );
@@ -21,10 +20,9 @@ class BatchConfirmationController extends GetxController {
     var batch = Batch(
       title: path_lib.basename(batchDirPath),
       dirPath: batchDirPath,
-      images: allImages,
     );
 
-    globals.batches.insert(0, batch);
+    Globals.batches.insert(0, batch);
 
     Get.offAll(
       () => ViewBatchScreen(batch),
@@ -35,7 +33,8 @@ class BatchConfirmationController extends GetxController {
   void confirmExistingBatch(String batchDirPath, List<String> images) async {
     await GalleryWriter.appendImages(images, batchDirPath);
 
-    final batch = batches.firstWhere((batch) => batch.dirPath == batchDirPath);
+    final batch =
+        Globals.batches.firstWhere((batch) => batch.dirPath == batchDirPath);
 
     Get.offAll(
       () => ViewBatchScreen(batch),
