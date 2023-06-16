@@ -13,7 +13,7 @@ Future<void> main() async {
   try {
     WidgetsFlutterBinding.ensureInitialized();
 
-    await initGlobals();
+    await Globals.init();
   } on CameraException catch (e) {
     _logError(e.code, e.description);
   }
