@@ -3,10 +3,10 @@ import 'package:get/get.dart';
 
 import '../gallery/gallery_reader.dart';
 import '../gallery/models/batch.dart';
-import '../globals.dart' as globals;
+import '../globals.dart';
 
 class GalleryController extends GetxController {
-  RxList<Batch> get batches => globals.batches;
+  RxList<Batch> get batches => Globals.batches;
 
   @override
   void onInit() {
