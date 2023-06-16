@@ -1,7 +1,7 @@
 import 'package:caonalyzer/globals.dart';
 import 'package:caonalyzer/ui/screens/camera_screen.dart';
 import 'package:caonalyzer/ui/screens/home/partials/gallery_view.dart';
-import 'package:caonalyzer/ui/screens/home/partials/main_view.dart';
+import 'package:caonalyzer/ui/screens/home/partials/initial_view.dart';
 import 'package:caonalyzer/ui/screens/settings_screen.dart';
 import 'package:flutter/material.dart';
 
