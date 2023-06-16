@@ -27,6 +27,11 @@ class GalleryReader {
   }
 
   static List<String> getImagesFromBatch(String batchPath) {
+    // batchPath add escape character for regex characters
+    batchPath = batchPath.replaceAllMapped(
+      RegExp(r'([\\^$*+?{}\[\]().])'),
+      (match) => '\\${match.group(1)}',
+    );
     final imageFile = Glob(path_lib.join(batchPath, '*.{jpg,jpeg,png}'));
 
     return imageFile.listSync().map((e) => e.path).toList();
