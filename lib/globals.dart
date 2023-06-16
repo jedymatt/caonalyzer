@@ -10,14 +10,19 @@ const String kAppName = 'Cao-nalyzer';
 
 final box = GetStorage();
 
-RxList<CameraDescription> cameras = <CameraDescription>[].obs;
 RxString host = '192.168.1.8'.obs;
-Rx<PreferredMode> preferredMode = PreferredMode.offline.obs;
 RxList<String> labels = <String>[].obs;
-final batches = <Batch>[].obs;
 
-Future<void> initGlobals() async {
-  cameras.value = await availableCameras();
+Future<void> initGlobals() async {}
 
-  labels.value = (await rootBundle.loadString('assets/labels.txt')).split('\n');
+abstract final class Globals {
+  static final batches = <Batch>[].obs;
+  static final preferredMode = PreferredMode.offline.obs;
+  static final cameras = <CameraDescription>[].obs;
+
+  static Future<void> init() async {
+    cameras.value = await availableCameras();
+    labels.value =
+        (await rootBundle.loadString('assets/labels.txt')).split('\n');
+  }
 }
