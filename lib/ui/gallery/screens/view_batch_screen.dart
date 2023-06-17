@@ -57,17 +57,16 @@ class _ViewBatchScreenState extends State<ViewBatchScreen> {
               : BottomSheet(
                   onClosing: () {},
                   builder: (context) => SizedBox(
-                    height: kToolbarHeight,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        IconButton(
-                          onPressed: controller.deleteSelected,
-                          icon: const Icon(Icons.delete),
-                        ),
-                      ],
-                    )
-                  ),
+                      height: kToolbarHeight,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          IconButton(
+                            onPressed: controller.deleteSelected,
+                            icon: const Icon(Icons.delete),
+                          ),
+                        ],
+                      )),
                 ),
         ),
       ),
@@ -192,8 +191,33 @@ class _ViewBatchScreenState extends State<ViewBatchScreen> {
           ),
           IconButton(
             icon: const Icon(Icons.more_vert),
-            onPressed: () {},
-            padding: const EdgeInsets.all(12),
+            onPressed: () {
+              Get.bottomSheet(
+                Container(
+                  color: Theme.of(context).colorScheme.secondaryContainer,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const SizedBox(height: 20),
+                      ListTile(
+                        leading: const Icon(Icons.delete),
+                        title: const Text('Delete'),
+                        onTap: () {
+                          controller.deleteBatch();
+
+                          Get.close(2);
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                clipBehavior: Clip.antiAlias,
+              );
+
+            },
           ),
         ],
       ),
@@ -218,9 +242,7 @@ class _ViewBatchScreenState extends State<ViewBatchScreen> {
       actions: [
         !controller.isSelecting.value
             ? IconButton(
-                onPressed: () {
-                  controller.isSelecting.value = true;
-                },
+                onPressed: () => controller.isSelecting.value = true,
                 icon: const Icon(Icons.checklist),
               )
             : const SizedBox.shrink(),
