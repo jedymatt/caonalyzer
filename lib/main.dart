@@ -3,6 +3,7 @@ import 'package:caonalyzer/globals.dart';
 import 'package:caonalyzer/ui/screens/home/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 
 void _logError(String code, String? message) {
   // ignore: avoid_print
@@ -10,21 +11,17 @@ void _logError(String code, String? message) {
 }
 
 Future<void> main() async {
-  try {
-    WidgetsFlutterBinding.ensureInitialized();
+  WidgetsFlutterBinding.ensureInitialized();
+  await Globals.init();
 
-    await Globals.init();
-  } on CameraException catch (e) {
-    _logError(e.code, e.description);
-  }
-
-  runApp(const App());
+  runApp(const CaonalyzerApp());
 }
 
-class App extends StatelessWidget {
-  const App({super.key});
+class CaonalyzerApp extends StatelessWidget {
+  const CaonalyzerApp({
+    super.key,
+  });
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
