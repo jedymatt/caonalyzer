@@ -56,4 +56,10 @@ class ViewBatchScreenController extends GetxController {
     isSelecting.value = false;
     selectedImages.value = [];
   }
+
+  void deleteBatch() {
+    GalleryWriter.deleteDirectory(batch.dirPath);
+
+    Globals.batches.remove(batch);
+  }
 }
