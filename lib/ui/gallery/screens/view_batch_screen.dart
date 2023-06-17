@@ -40,19 +40,37 @@ class _ViewBatchScreenState extends State<ViewBatchScreen> {
 
         return Future.value(true);
       },
-      child: Obx(() => Scaffold(
-            appBar: _buildAppBar(),
-            body: GridView.builder(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                mainAxisExtent: 200,
-              ),
-              padding: const EdgeInsets.all(8),
-              itemCount: controller.images.length,
-              itemBuilder: (context, index) => buildImageTile(index),
+      child: Obx(
+        () => Scaffold(
+          appBar: _buildAppBar(),
+          body: GridView.builder(
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              mainAxisExtent: 200,
             ),
-            bottomNavigationBar: _buildBottomNavigationBar(),
-          )),
+            padding: const EdgeInsets.all(8),
+            itemCount: controller.images.length,
+            itemBuilder: (context, index) => buildImageTile(index),
+          ),
+          bottomSheet: !controller.isSelecting.value
+              ? _buildBottomNavigationBar()
+              : BottomSheet(
+                  onClosing: () {},
+                  builder: (context) => SizedBox(
+                    height: kToolbarHeight,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        IconButton(
+                          onPressed: controller.deleteSelected,
+                          icon: const Icon(Icons.delete),
+                        ),
+                      ],
+                    )
+                  ),
+                ),
+        ),
+      ),
     );
   }
 
@@ -68,7 +86,7 @@ class _ViewBatchScreenState extends State<ViewBatchScreen> {
                 controller.selectedImages.contains(controller.images[index])
             ? Border.all(
                 color: Colors.blue,
-                width: 4,
+                width: strokeWidth,
                 strokeAlign: BorderSide.strokeAlignOutside,
               )
             : null,
@@ -125,9 +143,7 @@ class _ViewBatchScreenState extends State<ViewBatchScreen> {
   }
 
   Widget _buildBottomNavigationBar() {
-    return controller.isSelecting.value
-        ? _selectingImageBottomNav()
-        : _notSelectingImageBottomNav();
+    return _notSelectingImageBottomNav();
   }
 
   Widget _selectingImageBottomNav() {
@@ -158,69 +174,28 @@ class _ViewBatchScreenState extends State<ViewBatchScreen> {
   }
 
   Widget _notSelectingImageBottomNav() {
-    return BottomAppBar(
+    return Container(
+      color: Theme.of(context).colorScheme.secondaryContainer,
+      padding: const EdgeInsets.all(8.0),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           IconButton(
-            icon: Icon(Icons.add_a_photo),
-            // label: 'Camera',
+            icon: const Icon(Icons.document_scanner),
             onPressed: () {},
+            padding: const EdgeInsets.all(12),
+          ),
+          IconButton.filled(
+            onPressed: () {},
+            icon: const Icon(Icons.add_a_photo),
+            padding: const EdgeInsets.all(12),
           ),
           IconButton(
-            icon: Icon(Icons.document_scanner),
-            // label: 'Scan',
+            icon: const Icon(Icons.more_vert),
             onPressed: () {},
-          ),
-          // more
-          IconButton(
-            icon: Icon(Icons.more_vert),
-            // label: 'More',
-            onPressed: () {},
+            padding: const EdgeInsets.all(12),
           ),
         ],
-        // onTap: (index) async {
-        //   switch (index) {
-        //     case 0:
-        //       // camera
-        //       debugPrint(widget.batch.toString());
-        //       Navigator.of(context).push(MaterialPageRoute(
-        //         builder: (context) =>
-        //             CameraScreen(batchPath: widget.batch.dirPath),
-        //       ));
-        //       break;
-        //     case 1:
-        //       // scan
-        //       // todo: migrate to controller
-        //       final objectDetector = Globals.preferredMode.value.objectDetector;
-
-        //       for (var image in controller.images) {
-        //         final tensorImage = objectDetector.preprocessImage(
-        //             image_lib.decodeImage(File(image).readAsBytesSync())!);
-
-        //         final outputs = await objectDetector.runInference(tensorImage);
-
-        //         MetadataWriter.create(
-        //           image,
-        //           ImageMetadata(
-        //             imagePath: image,
-        //             objectDetectionMode: Globals.preferredMode.value.toString(),
-        //             objectDetectionOutputs: outputs.map((e) {
-        //               return ObjectDetectionOutput(
-        //                 class_: e.label,
-        //                 confidence: e.confidence,
-        //                 boxes: e.boundingBox.toLTRBList(),
-        //               );
-        //             }).toList(),
-        //           ),
-        //         );
-        //       }
-
-        //       break;
-        //     case 2:
-        //       // open more menu
-        //       break;
-        //   }
-        // },
       ),
     );
   }
