@@ -120,12 +120,12 @@ class _CameraViewState extends State<CameraView>
               child: isTakingPicture
                   ? Container(
                       height: 80,
-                      decoration: const BoxDecoration(
+                      decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: Colors.white12,
+                        color: Colors.black.withAlpha(100),
                         border: Border.fromBorderSide(
                           BorderSide(
-                            color: Colors.red,
+                            color: Colors.red.withAlpha(100),
                             width: 5,
                           ),
                         ),
@@ -206,7 +206,19 @@ class _CameraViewState extends State<CameraView>
                       ),
                     ),
                   )
-                : const SizedBox.square(dimension: 80),
+                : Container(
+                    height: 80,
+                    width: 80,
+                    decoration: ShapeDecoration(
+                      color: Colors.black.withAlpha(100),
+                      // rounded border
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: BorderRadius.all(
+                          Radius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ),
           ],
         ),
       ),
