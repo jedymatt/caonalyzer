@@ -61,5 +61,7 @@ class ViewBatchScreenController extends GetxController {
     GalleryWriter.deleteDirectory(batch.dirPath);
 
     Globals.batches.remove(batch);
+
+    Get.close(2);
   }
 }

@@ -201,12 +201,8 @@ class _ViewBatchScreenState extends State<ViewBatchScreen> {
                       const SizedBox(height: 20),
                       ListTile(
                         leading: const Icon(Icons.delete),
-                        title: const Text('Delete'),
-                        onTap: () {
-                          controller.deleteBatch();
-
-                          Get.close(2);
-                        },
+                        title: const Text('Delete All'),
+                        onTap: controller.deleteBatch,
                       ),
                     ],
                   ),
