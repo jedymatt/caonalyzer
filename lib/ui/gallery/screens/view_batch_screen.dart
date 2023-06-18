@@ -185,7 +185,7 @@ class _ViewBatchScreenState extends State<ViewBatchScreen> {
             padding: const EdgeInsets.all(12),
           ),
           IconButton.filled(
-            onPressed: () {},
+            onPressed: controller.navigateToCamera,
             icon: const Icon(Icons.add_a_photo),
             padding: const EdgeInsets.all(12),
           ),
