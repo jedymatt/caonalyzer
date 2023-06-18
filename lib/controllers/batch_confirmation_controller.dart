@@ -24,7 +24,7 @@ class BatchConfirmationController extends GetxController {
     Globals.batches.insert(0, batch);
 
     Get.offAll(
-      () => ViewBatchScreen(batch),
+      ViewBatchScreen(batch),
       predicate: (route) => route.isFirst,
     );
   }
@@ -34,12 +34,9 @@ class BatchConfirmationController extends GetxController {
 
     final batch =
         Globals.batches.firstWhere((batch) => batch.dirPath == batchDirPath);
-
+    //
+    // Get.find<ViewBatchScreenController>(tag: batchDirPath).fetchImages();
     Get.find<ViewBatchScreenController>(tag: batchDirPath).fetchImages();
-
-    Get.offAll(
-      () => ViewBatchScreen(batch),
-      predicate: (route) => route.isFirst,
-    );
+    Get.close(2);
   }
 }
