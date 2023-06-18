@@ -34,7 +34,7 @@ class ViewBatchScreenController extends GetxController {
   }
 
   void selectAll() {
-    selectedImages.value = images;
+    selectedImages.value = [...images];
   }
 
   void deselectAll() {
