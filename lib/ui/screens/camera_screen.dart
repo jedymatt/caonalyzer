@@ -8,9 +8,7 @@ import 'package:flutter/material.dart';
 import 'batch_confirmation_screen.dart';
 
 class CameraScreen extends StatefulWidget {
-  const CameraScreen({super.key, this.batchPath});
-
-  final String? batchPath;
+  const CameraScreen({super.key});
 
   @override
   State<CameraScreen> createState() => _CameraScreenState();
@@ -77,129 +75,137 @@ class _CameraScreenState extends State<CameraScreen>
       body: Stack(
         fit: StackFit.expand,
         children: [
-          Center(
-            child: CameraPreview(cameraController),
-          ),
+          ScaledCameraPreview(cameraController),
           ...detectedObjects(MediaQuery.of(context).size),
+          // appbar
           Positioned(
+            top: 0,
             left: 0,
             right: 0,
-            bottom: kToolbarHeight,
-            // circle button (capture button)
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Stack(
-                children: [
-                  Align(
-                    alignment: Alignment.center,
-                    child: Container(
+            child: AppBar(
+              backgroundColor: Colors.white.withAlpha(100),
+            ),
+          ),
+          buildBottomBar(context),
+        ],
+      ),
+    );
+  }
+
+  Widget buildBottomBar(BuildContext context) {
+    return Positioned(
+      left: 0,
+      right: 0,
+      bottom: 0,
+      // circle button (capture button)
+      child: Container(
+        color: Colors.white.withAlpha(100),
+        padding: const EdgeInsets.all(20),
+        child: Row(
+          mainAxisSize: MainAxisSize.max,
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            const SizedBox.square(
+              dimension: 80,
+            ),
+            Container(
+              decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: isTakingPicture
+                  ? Container(
+                      height: 80,
                       decoration: const BoxDecoration(
                         shape: BoxShape.circle,
+                        color: Colors.white12,
+                        border: Border.fromBorderSide(
+                          BorderSide(
+                            color: Colors.red,
+                            width: 5,
+                          ),
+                        ),
                       ),
                       clipBehavior: Clip.antiAlias,
-                      child: Material(
-                        color: Colors.transparent,
-                        // shape: const CircleBorder(),
-                        child: isTakingPicture
-                            ? Container(
-                                height: 80,
-                                decoration: const BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: Colors.white60,
-                                  border: Border.fromBorderSide(
-                                    BorderSide(
-                                      color: Colors.red,
-                                      width: 5,
-                                    ),
-                                  ),
-                                ),
-                                clipBehavior: Clip.antiAlias,
-                                child: const SizedBox(
-                                  height: 60,
-                                  width: 60,
-                                ),
-                              )
-                            : InkWell(
-                                onTap: () async {
-                                  if (images.isEmpty) {
-                                    batchPath = widget.batchPath ??
-                                        await GalleryWriter.generateBatchPath(
-                                            DateTime.now());
-                                  }
-                                  captureImage();
-                                },
-                                child: Container(
-                                  height: 80,
-                                  decoration: const BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: Colors.white60,
-                                    border: Border.fromBorderSide(
-                                      BorderSide(
-                                        color: Colors.red,
-                                        width: 5,
-                                      ),
-                                    ),
-                                  ),
-                                  clipBehavior: Clip.antiAlias,
-                                  child: const SizedBox(
-                                    height: 60,
-                                    width: 60,
-                                    child: Icon(
-                                      Icons.camera,
-                                      size: 40,
-                                    ),
-                                  ),
-                                ),
-                              ),
+                      child: const SizedBox(
+                        height: 60,
+                        width: 60,
                       ),
-                    ),
-                  ),
-                  // redirect to batch confirmation screen
-                  if (images.isNotEmpty)
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: Material(
-                        child: SizedBox.square(
-                          dimension: 80,
-                          child: InkWell(
-                            onTap: () {
-                              Navigator.of(context).push(MaterialPageRoute(
-                                builder: (context) => BatchConfirmationScreen(
-                                  batchPath,
-                                  images,
-                                  existingBatch: widget.batchPath != null,
-                                ),
-                              ));
-                            },
-                            child: Stack(
-                              children: [
-                                Image.file(
-                                  File(images.last),
-                                  fit: BoxFit.fill,
-                                  width: double.infinity,
-                                  height: double.infinity,
-                                ),
-                                // check icon
-                                const Expanded(
-                                  child: Center(
-                                    child: Icon(
-                                      Icons.check,
-                                      color: Colors.green,
-                                      size: 40,
-                                    ),
-                                  ),
-                                ),
-                              ],
+                    )
+                  : Material(
+                      child: InkWell(
+                        onTap: () async {
+                          if (images.isEmpty) {
+                            batchPath = await GalleryWriter.generateBatchPath(
+                                DateTime.now());
+                          }
+                          captureImage();
+                        },
+                        child: Container(
+                          height: 80,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white60,
+                            border: Border.fromBorderSide(
+                              BorderSide(
+                                color: Colors.red,
+                                width: 5,
+                              ),
+                            ),
+                          ),
+                          child: const SizedBox(
+                            height: 60,
+                            width: 60,
+                            child: Icon(
+                              Icons.camera,
+                              size: 40,
                             ),
                           ),
                         ),
                       ),
                     ),
-                ],
-              ),
             ),
-          ),
-        ],
+            // redirect to batch confirmation screen
+            images.isNotEmpty
+                ? SizedBox.square(
+                    dimension: 80,
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Material(
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.all(
+                            Radius.circular(12),
+                          ),
+                        ),
+                        clipBehavior: Clip.antiAlias,
+                        child: InkWell(
+                          onTap: () {
+                            Navigator.of(context).push(MaterialPageRoute(
+                              builder: (context) => BatchConfirmationScreen(
+                                batchPath,
+                                images,
+                              ),
+                            ));
+                          },
+                          child: Ink.image(
+                            image: FileImage(File(images.last)),
+                            fit: BoxFit.cover,
+                            child: const Center(
+                              child: Icon(
+                                Icons.check,
+                                color: Colors.green,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  )
+                : const SizedBox.square(
+                    dimension: 80,
+                  ),
+          ],
+        ),
       ),
     );
   }
