@@ -2,6 +2,7 @@ import 'package:caonalyzer/gallery/gallery_reader.dart';
 import 'package:caonalyzer/gallery/gallery_writer.dart';
 import 'package:caonalyzer/gallery/models/batch.dart';
 import 'package:caonalyzer/globals.dart';
+import 'package:caonalyzer/ui/screens/batch_camera_screen.dart';
 import 'package:get/get.dart';
 
 class ViewBatchScreenController extends GetxController {
@@ -17,6 +18,10 @@ class ViewBatchScreenController extends GetxController {
   void onInit() {
     super.onInit();
 
+    fetchImages();
+  }
+
+  void fetchImages() {
     images.value = GalleryReader.getImagesFromBatch(batch.dirPath);
   }
 
@@ -63,5 +68,9 @@ class ViewBatchScreenController extends GetxController {
     Globals.batches.remove(batch);
 
     Get.close(2);
+  }
+
+  void navigateToCamera() {
+    Get.to(BatchCameraScreen(batch.dirPath));
   }
 }
