@@ -53,4 +53,8 @@ class GalleryReader {
             ))
         .toList();
   }
+
+  static bool batchExists(String batchPath) {
+    return Directory(batchPath).existsSync();
+  }
 }
