@@ -22,10 +22,7 @@ class _ViewBatchScreenState extends State<ViewBatchScreen> {
   void initState() {
     super.initState();
 
-    controller = Get.put(
-      ViewBatchScreenController(widget.batch),
-      tag: widget.batch.dirPath,
-    );
+    controller = Get.put(ViewBatchScreenController(widget.batch), tag: widget.batch.dirPath);
   }
 
   @override
@@ -191,8 +188,6 @@ class _ViewBatchScreenState extends State<ViewBatchScreen> {
     );
   }
 
-
-
   AppBar _buildAppBar() {
     return AppBar(
       title: controller.isSelecting.value
@@ -213,14 +208,14 @@ class _ViewBatchScreenState extends State<ViewBatchScreen> {
             : const SizedBox.shrink(),
         controller.isSelecting.value
             ? IconButton(
-                onPressed: controller.deselectAll,
-                icon: const Icon(Icons.deselect),
+                onPressed: controller.selectAll,
+                icon: const Icon(Icons.select_all),
               )
             : const SizedBox.shrink(),
         controller.isSelecting.value
             ? IconButton(
-                onPressed: controller.selectAll,
-                icon: const Icon(Icons.select_all),
+                onPressed: controller.deselectAll,
+                icon: const Icon(Icons.deselect),
               )
             : const SizedBox.shrink(),
       ],
