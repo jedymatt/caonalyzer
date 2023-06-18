@@ -1,4 +1,5 @@
 import 'package:caonalyzer/controllers/gallery_controller.dart';
+import 'package:caonalyzer/controllers/view_batch_screen_controller.dart';
 import 'package:caonalyzer/gallery/models/batch.dart';
 import 'package:caonalyzer/globals.dart';
 import 'package:get/get.dart';
@@ -33,6 +34,8 @@ class BatchConfirmationController extends GetxController {
 
     final batch =
         Globals.batches.firstWhere((batch) => batch.dirPath == batchDirPath);
+
+    Get.find<ViewBatchScreenController>(tag: batchDirPath).fetchImages();
 
     Get.offAll(
       () => ViewBatchScreen(batch),
