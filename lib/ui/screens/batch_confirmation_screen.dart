@@ -13,8 +13,12 @@ import '../../controllers/batch_confirmation_controller.dart';
 import '../gallery/screens/view_batch_screen.dart';
 
 class BatchConfirmationScreen extends StatefulWidget {
-  const BatchConfirmationScreen(this.batchPath, this.images,
-      {super.key, this.existingBatch = false});
+  const BatchConfirmationScreen(
+    this.batchPath,
+    this.images, {
+    super.key,
+    this.existingBatch = false,
+  });
 
   final String batchPath;
   final List<String> images;
@@ -92,6 +96,6 @@ class _BatchConfirmationScreenState extends State<BatchConfirmationScreen> {
   }
 
   void confirm() async => widget.existingBatch
-        ?  controller.confirmExistingBatch(widget.batchPath, widget.images)
-        :  controller.confirmNewBatch(widget.batchPath, widget.images);
+      ? controller.confirmExistingBatch(widget.batchPath, widget.images)
+      : controller.confirmNewBatch(widget.batchPath, widget.images);
 }
