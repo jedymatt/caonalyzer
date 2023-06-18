@@ -8,8 +8,6 @@ import '../ui/gallery/screens/view_batch_screen.dart';
 import 'package:path/path.dart' as path_lib;
 
 class BatchConfirmationController extends GetxController {
-  final GalleryController galleryController = Get.find();
-
   void confirmNewBatch(String batchDirPath, List<String> images) async {
     GalleryWriter.createDirectory(batchDirPath);
     await GalleryWriter.appendImages(
