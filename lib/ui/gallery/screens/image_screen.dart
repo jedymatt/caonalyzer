@@ -34,10 +34,18 @@ class _ImageScreenState extends State<ImageScreen> {
     imageTitle = '${currentIndex + 1}/${widget.images.length}';
     _pageController = PageController(initialPage: widget.initialIndex);
 
-    controller = Get.put(ImageScreenController(widget.images,
-        initialIndex: widget.initialIndex));
+    controller = Get.put(ImageScreenController(
+      widget.images,
+      initialIndex: widget.initialIndex,
+    ));
 
     // initDecodedImages();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    Get.delete<ImageScreenController>();
   }
 
   void initDecodedImages() {
