@@ -50,9 +50,12 @@ class _ViewBatchScreenState extends State<ViewBatchScreen> {
             ),
             padding: const EdgeInsets.all(8),
             itemCount: controller.images.length,
-            itemBuilder: (context, index) => buildImageTile(index),
+            itemBuilder: (context, index) => Padding(
+              padding: const EdgeInsets.all(2),
+              child: buildImageTile(index),
+            ),
           ),
-          bottomSheet: !controller.isSelecting.value
+          bottomNavigationBar: !controller.isSelecting.value
               ? _buildBottomNavigationBar()
               : BottomSheet(
                   onClosing: () {},
@@ -142,37 +145,6 @@ class _ViewBatchScreenState extends State<ViewBatchScreen> {
   }
 
   Widget _buildBottomNavigationBar() {
-    return _notSelectingImageBottomNav();
-  }
-
-  Widget _selectingImageBottomNav() {
-    if (controller.selectedImages.isEmpty) return const SizedBox.shrink();
-
-    return BottomNavigationBar(
-      items: const [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.delete),
-          label: 'Delete',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.document_scanner),
-          label: 'Scan',
-        ),
-      ],
-      onTap: (index) {
-        switch (index) {
-          case 0:
-            controller.deleteSelected();
-            break;
-          case 1:
-            // scan
-            break;
-        }
-      },
-    );
-  }
-
-  Widget _notSelectingImageBottomNav() {
     return Container(
       color: Theme.of(context).colorScheme.secondaryContainer,
       padding: const EdgeInsets.all(8.0),
@@ -212,7 +184,6 @@ class _ViewBatchScreenState extends State<ViewBatchScreen> {
                 ),
                 clipBehavior: Clip.antiAlias,
               );
-
             },
           ),
         ],
@@ -220,11 +191,9 @@ class _ViewBatchScreenState extends State<ViewBatchScreen> {
     );
   }
 
-  AppBar _buildAppBar() {
-    return _appBarDefault();
-  }
 
-  AppBar _appBarDefault() {
+
+  AppBar _buildAppBar() {
     return AppBar(
       title: controller.isSelecting.value
           ? Text('${controller.selectedImages.length} selected')
