@@ -56,7 +56,10 @@ class _HomePageState extends State<HomePage> {
             case HomeInitial:
               return const Center(child: Text('Home'));
             case HomeTabChangedToGallery:
-              return const GalleryFragment();
+              return const Padding(
+                padding: EdgeInsets.all(8.0),
+                child: GalleryFragment(),
+              );
           }
           return const Center(child: Text('Default'));
         },
