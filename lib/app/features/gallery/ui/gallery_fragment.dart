@@ -19,7 +19,11 @@ class _GalleryFragmentState extends State<GalleryFragment> {
     return BlocBuilder<GalleryBloc, GalleryState>(
       buildWhen: (previous, current) => current is! GalleryActionState,
       builder: (context, state) {
-        if (state is GalleryInitial || state is GalleryLoading) {
+        if(state is GalleryInitial) {
+          return const SizedBox.shrink();
+        }
+
+        if (state is GalleryLoading) {
           return const Center(
             child: CircularProgressIndicator(),
           );
