@@ -14,11 +14,6 @@ class _HomePageState extends State<HomePage> {
   int selectedTab = 0;
 
   @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -49,7 +44,7 @@ class _HomePageState extends State<HomePage> {
             );
         }
 
-        return const Center(child: Text('Default'));
+        return const Center(child: Text('404 Not Found'));
       }),
       bottomNavigationBar: NavigationBar(
         selectedIndex: selectedTab,
@@ -66,7 +61,6 @@ class _HomePageState extends State<HomePage> {
         onDestinationSelected: (value) {
           setState(() {
             selectedTab = value;
-            // homeBloc.add(HomeTabChangedEvent(selectedTab));
           });
         },
       ),
