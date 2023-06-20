@@ -14,9 +14,3 @@ class GalleryLoaded extends GalleryState {
 
   GalleryLoaded({required this.batches});
 }
-
-class GalleryNavigateToBatchActionState extends GalleryActionState {
-  final Batch batch;
-
-  GalleryNavigateToBatchActionState({required this.batch});
-}
