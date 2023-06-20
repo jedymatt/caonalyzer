@@ -100,7 +100,6 @@ class _BatchPageState extends State<BatchPage> {
                                     decoration: BoxDecoration(
                                       color: Colors.black.withOpacity(0.4),
                                     ),
-                                    alignment: Alignment.topRight,
                                     padding: const EdgeInsets.all(8.0),
                                     child: const Icon(
                                       Icons.check_circle,
