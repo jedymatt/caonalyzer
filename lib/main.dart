@@ -1,7 +1,8 @@
+import 'package:caonalyzer/app/features/gallery/bloc/gallery_bloc.dart';
 import 'package:caonalyzer/app/features/home/ui/home_page.dart';
 import 'package:caonalyzer/globals.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,13 +18,19 @@ class CaonalyzerApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GetMaterialApp(
+    return MaterialApp(
       title: 'Cao-nalyzer',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const HomePage(),
+      home: MultiBlocProvider(
+        providers: [
+          BlocProvider(
+            create: (context) => GalleryBloc()..add(GalleryInitialEvent()),
+          )
+        ], child: const HomePage(),
+      ),
     );
   }
 }
