@@ -13,8 +13,6 @@ class GalleryBloc extends Bloc<GalleryEvent, GalleryState> {
   GalleryBloc() : super(GalleryInitial()) {
     on<GalleryInitialEvent>((event, emit) async {
       emit(GalleryLoading());
-      await Future.delayed(const Duration(seconds: 1));
-
       final batchPaths = await GalleryReader.getBatchPaths();
       var batches = batchPaths
           .map((e) => Batch(
@@ -27,10 +25,6 @@ class GalleryBloc extends Bloc<GalleryEvent, GalleryState> {
       emit(GalleryLoaded(
         batches: batches,
       ));
-    });
-
-    on<GalleryNavigateToBatchEvent>((event, emit) {
-      emit(GalleryNavigateToBatchActionState(batch: event.batch));
     });
   }
 }
