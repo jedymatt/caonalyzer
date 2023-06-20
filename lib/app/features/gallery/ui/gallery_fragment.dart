@@ -19,8 +19,6 @@ class _GalleryFragmentState extends State<GalleryFragment> {
     return BlocBuilder<GalleryBloc, GalleryState>(
       buildWhen: (previous, current) => current is! GalleryActionState,
       builder: (context, state) {
-        final galleryBloc = BlocProvider.of<GalleryBloc>(context);
-
         if (state is GalleryInitial || state is GalleryLoading) {
           return const Center(
             child: CircularProgressIndicator(),
