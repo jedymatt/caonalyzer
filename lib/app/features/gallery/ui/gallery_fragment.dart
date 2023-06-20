@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:caonalyzer/app/features/batch/ui/batch_page.dart';
 import 'package:caonalyzer/app/features/gallery/bloc/gallery_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -12,28 +13,14 @@ class GalleryFragment extends StatefulWidget {
 }
 
 class _GalleryFragmentState extends State<GalleryFragment> {
-  final GalleryBloc galleryBloc = GalleryBloc();
-
-  @override
-  void initState() {
-    super.initState();
-    galleryBloc.add(GalleryInitialEvent());
-  }
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<GalleryBloc, GalleryState>(
-      bloc: galleryBloc,
-      listenWhen: (previous, current) => current is GalleryActionState,
+    return BlocBuilder<GalleryBloc, GalleryState>(
       buildWhen: (previous, current) => current is! GalleryActionState,
-      listener: (context, state) {
-        if (state is GalleryNavigateToBatchActionState) {
-          debugPrint('Navigate to batch ${state.batch.title}');
-          // todo: navigate to batch page
-          // Navigator.of(context).push(MaterialPageRoute(builder: (context) => BatchPage()));
-        }
-      },
       builder: (context, state) {
+        final galleryBloc = BlocProvider.of<GalleryBloc>(context);
+
         if (state is GalleryInitial || state is GalleryLoading) {
           return const Center(
             child: CircularProgressIndicator(),
@@ -58,11 +45,11 @@ class _GalleryFragmentState extends State<GalleryFragment> {
           itemBuilder: (context, index) {
             return GestureDetector(
               onTap: () {
-                galleryBloc.add(
-                  GalleryNavigateToBatchEvent(
-                    batch: state.batches[index],
+                Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) => BatchPage(
+                    batchPath: state.batches[index].directory,
                   ),
-                );
+                ));
               },
               child: GridTile(
                 footer: Container(
