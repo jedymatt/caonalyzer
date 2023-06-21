@@ -1,6 +1,6 @@
+import 'package:caonalyzer/app/features/batch_confirmation/ui/batch_confirmation_page.dart';
 import 'package:caonalyzer/gallery/gallery_writer.dart';
 import 'package:caonalyzer/ui/components/camera_view.dart';
-import 'package:caonalyzer/ui/screens/batch_confirmation_screen.dart';
 import 'package:flutter/material.dart';
 
 class CameraPage extends StatefulWidget {
@@ -26,11 +26,9 @@ class _CameraPageState extends State<CameraPage> {
 
           if (!mounted) return;
 
-          Navigator.of(context).push(MaterialPageRoute(
-            builder: (context) => BatchConfirmationScreen(
-              batchPath,
-              images,
-            ),
+          Navigator.of(context).push(BatchConfirmationPage.route(
+            batchPath: batchPath,
+            images: images,
           ));
         },
       ),
