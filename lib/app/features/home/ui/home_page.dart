@@ -33,15 +33,9 @@ class _HomePageState extends State<HomePage> {
       body: Builder(builder: (context) {
         switch (selectedTab) {
           case 0:
-            return const Padding(
-              padding: EdgeInsets.all(8.0),
-              child: Center(child: Text('Home')),
-            );
+            return const Center(child: Text('Home'));
           case 1:
-            return const Padding(
-              padding: EdgeInsets.all(8.0),
-              child: GalleryFragment(),
-            );
+            return const GalleryFragment();
         }
 
         return const Center(child: Text('404 Not Found'));
