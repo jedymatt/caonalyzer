@@ -7,6 +7,7 @@ import 'package:caonalyzer/app/features/gallery/models/batch.dart';
 import 'package:path/path.dart' as path_lib;
 
 part 'gallery_event.dart';
+
 part 'gallery_state.dart';
 
 class GalleryBloc extends Bloc<GalleryEvent, GalleryState> {
@@ -22,9 +23,22 @@ class GalleryBloc extends Bloc<GalleryEvent, GalleryState> {
               ))
           .toList();
 
-      emit(GalleryLoaded(
-        batches: batches,
-      ));
+      emit(GalleryLoaded(batches: batches));
+    });
+
+    on<GalleryFetchImagesEvent>((event, emit) async {
+      emit(GalleryLoading());
+
+      final batchPaths = await GalleryReader.getBatchPaths();
+      var batches = batchPaths
+          .map((e) => Batch(
+                title: path_lib.basename(e),
+                directory: e,
+                thumbnail: Directory(e).listSync().first.path,
+              ))
+          .toList();
+
+      emit(GalleryLoaded(batches: batches));
     });
   }
 }
