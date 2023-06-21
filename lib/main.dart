@@ -8,29 +8,58 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Globals.init();
 
-  runApp(const CaonalyzerApp());
+  Bloc.observer = AppBlocObserver();
+  runApp(const App());
 }
 
-class CaonalyzerApp extends StatelessWidget {
-  const CaonalyzerApp({
+class App extends StatelessWidget {
+  const App({
     super.key,
   });
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Cao-nalyzer',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
-      home: MultiBlocProvider(
-        providers: [
-          BlocProvider(
-            create: (context) => GalleryBloc()..add(GalleryInitialEvent()),
-          )
-        ], child: const HomePage(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (context) => GalleryBloc()..add(GalleryInitialEvent()),
+        )
+      ],
+      child: MaterialApp(
+        title: 'Cao-nalyzer',
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+          useMaterial3: true,
+        ),
+        home: MultiBlocProvider(
+          providers: [
+            BlocProvider(
+              create: (context) => GalleryBloc()..add(GalleryInitialEvent()),
+            )
+          ],
+          child: const HomePage(),
+        ),
       ),
     );
+  }
+}
+
+class AppBlocObserver extends BlocObserver {
+  @override
+  void onChange(BlocBase bloc, Change change) {
+    super.onChange(bloc, change);
+    debugPrint('${bloc.runtimeType} $change');
+  }
+
+  @override
+  void onTransition(Bloc bloc, Transition transition) {
+    super.onTransition(bloc, transition);
+    debugPrint('${bloc.runtimeType} $transition');
+  }
+
+  @override
+  void onError(BlocBase bloc, Object error, StackTrace stackTrace) {
+    debugPrint('${bloc.runtimeType} $error $stackTrace');
+    super.onError(bloc, error, stackTrace);
   }
 }
