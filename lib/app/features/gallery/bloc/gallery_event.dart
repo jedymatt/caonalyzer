@@ -5,6 +5,8 @@ abstract class GalleryEvent {}
 
 class GalleryInitialEvent extends GalleryEvent {}
 
+class GalleryFetchImagesEvent extends GalleryEvent {}
+
 class GalleryNavigateToBatchEvent extends GalleryEvent {
   final Batch batch;
 
