@@ -13,85 +13,99 @@ class GalleryFragment extends StatefulWidget {
 }
 
 class _GalleryFragmentState extends State<GalleryFragment> {
+  late final GalleryBloc galleryBloc;
+
+  @override
+  void initState() {
+    super.initState();
+
+    galleryBloc = BlocProvider.of<GalleryBloc>(context);
+  }
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<GalleryBloc, GalleryState>(
-      buildWhen: (previous, current) => current is! GalleryActionState,
-      builder: (context, state) {
-        if(state is GalleryInitial) {
-          return const SizedBox.shrink();
-        }
-
-        if (state is GalleryLoading) {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
-        }
-
-        if (state is! GalleryLoaded) {
-          debugPrint('Something went wrong ${state.runtimeType}');
-          return const Center(
-            child: Text('Something went wrong'),
-          );
-        }
-
-        return GridView.builder(
-          gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-            maxCrossAxisExtent: 150,
-            childAspectRatio: 1,
-            crossAxisSpacing: 8,
-            mainAxisSpacing: 8,
-          ),
-          itemCount: state.batches.length,
-          itemBuilder: (context, index) {
-            return GestureDetector(
-              onTap: () {
-                Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => BatchPage(
-                    batchPath: state.batches[index].directory,
-                  ),
-                ));
-              },
-              child: GridTile(
-                footer: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.transparent,
-                        Colors.black.withOpacity(0.8),
-                      ],
-                    ),
-                    color: Colors.black.withOpacity(0.5),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    state.batches[index].title,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                child: Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                    image: DecorationImage(
-                      image: FileImage(
-                        File(state.batches[index].thumbnail),
-                      ),
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                ),
-              ),
-            );
-          },
-        );
+    return RefreshIndicator(
+      onRefresh: () async {
+        galleryBloc.add(GalleryFetchImagesEvent());
       },
+      child: BlocBuilder<GalleryBloc, GalleryState>(
+          bloc: galleryBloc,
+          buildWhen: (previous, current) => current is! GalleryActionState,
+          builder: (context, state) {
+            if (state is GalleryInitial) {
+              return const SizedBox.shrink();
+            }
+
+            if (state is GalleryLoading) {
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            }
+
+            if (state is! GalleryLoaded) {
+              debugPrint('Something went wrong ${state.runtimeType}');
+              return const Center(
+                child: Text('Something went wrong'),
+              );
+            }
+
+            return GridView.builder(
+              gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                maxCrossAxisExtent: 150,
+                childAspectRatio: 1,
+                crossAxisSpacing: 8,
+                mainAxisSpacing: 8,
+              ),
+              itemCount: state.batches.length,
+              padding: const EdgeInsets.all(8),
+              itemBuilder: (context, index) {
+                return GestureDetector(
+                  onTap: () {
+                    Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) => BatchPage(
+                        batchPath: state.batches[index].directory,
+                      ),
+                    ));
+                  },
+                  child: GridTile(
+                    footer: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.transparent,
+                            Colors.black.withOpacity(0.8),
+                          ],
+                        ),
+                        color: Colors.black.withOpacity(0.5),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        state.batches[index].title,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8),
+                        image: DecorationImage(
+                          image: FileImage(
+                            File(state.batches[index].thumbnail),
+                          ),
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            );
+          }),
     );
   }
 }
