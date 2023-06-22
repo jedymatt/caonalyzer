@@ -29,6 +29,8 @@ class _CameraPageState extends State<CameraPage> {
           Navigator.of(context).push(BatchConfirmationPage.route(
             batchPath: batchPath,
             images: images,
+            isFromBatchPage:
+                ModalRoute.of(context)?.settings.name == 'BatchPage',
           ));
         },
       ),
