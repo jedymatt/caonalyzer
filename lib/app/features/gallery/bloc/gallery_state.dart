@@ -14,3 +14,7 @@ class GalleryLoaded extends GalleryState {
 
   GalleryLoaded({required this.batches});
 }
+
+class GalleryRefreshing extends GalleryLoaded {
+  GalleryRefreshing({required super.batches});
+}
