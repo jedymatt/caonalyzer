@@ -31,14 +31,7 @@ class App extends StatelessWidget {
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
           useMaterial3: true,
         ),
-        home: MultiBlocProvider(
-          providers: [
-            BlocProvider(
-              create: (context) => GalleryBloc()..add(GalleryInitialEvent()),
-            )
-          ],
-          child: const HomePage(),
-        ),
+        home: const HomePage(),
       ),
     );
   }
