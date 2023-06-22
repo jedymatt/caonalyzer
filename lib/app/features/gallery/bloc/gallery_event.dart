@@ -5,7 +5,11 @@ abstract class GalleryEvent {}
 
 class GalleryInitialEvent extends GalleryEvent {}
 
-class GalleryFetchImagesEvent extends GalleryEvent {}
+class GalleryRefreshImagesEvent extends GalleryEvent {
+  final List<Batch> placeholderBatches;
+
+  GalleryRefreshImagesEvent({this.placeholderBatches = const []});
+}
 
 class GalleryNavigateToBatchEvent extends GalleryEvent {
   final Batch batch;
