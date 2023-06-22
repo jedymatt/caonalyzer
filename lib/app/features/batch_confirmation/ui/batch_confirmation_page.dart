@@ -1,7 +1,5 @@
 import 'dart:io';
 
-import 'package:caonalyzer/app/features/batch/bloc/batch_bloc.dart';
-import 'package:caonalyzer/app/features/batch/ui/batch_page.dart';
 import 'package:caonalyzer/app/features/batch_confirmation/bloc/batch_confirmation_bloc.dart';
 import 'package:caonalyzer/app/features/gallery/bloc/gallery_bloc.dart';
 import 'package:flutter/material.dart';
@@ -11,25 +9,30 @@ import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 
 class BatchConfirmationPage extends StatefulWidget {
-  const BatchConfirmationPage(
-      {super.key,
-      required this.title,
-      required this.batchPath,
-      required this.images});
+  const BatchConfirmationPage({
+    super.key,
+    required this.title,
+    required this.batchPath,
+    required this.images,
+    this.isFromBatchPage = false,
+  });
 
   final String batchPath;
   final String title;
   final List<String> images;
+  final bool isFromBatchPage;
 
   static Route route({
     required String batchPath,
     required List<String> images,
+    bool isFromBatchPage = false,
   }) {
     return MaterialPageRoute(
       builder: (_) => BatchConfirmationPage(
         batchPath: batchPath,
         images: images,
         title: path_lib.basename(batchPath),
+        isFromBatchPage: isFromBatchPage,
       ),
     );
   }
@@ -54,19 +57,14 @@ class _BatchConfirmationPageState extends State<BatchConfirmationPage> {
       bloc: batchConfirmationBloc,
       listenWhen: (previous, current) =>
           current is BatchConfirmationActionState,
-      listener: (context, state) {
+      listener: (context, state) async {
         if (state is BatchConfirmationNavigateToBatchPageActionState) {
-          if (ModalRoute.of(context)!.settings.name == 'BatchPage') {
-            Navigator.of(context).pop();
+          if (widget.isFromBatchPage) {
+            Navigator.of(context)
+              ..pop()
+              ..pop();
           } else {
-            BlocProvider.of<GalleryBloc>(context)
-                .add(GalleryFetchImagesEvent());
-
-            Navigator.of(context).pushAndRemoveUntil(
-                BatchPage.route(
-                  batchPath: state.batchPath,
-                ),
-                (route) => route.isFirst);
+            Navigator.of(context).popUntil((route) => route.isFirst);
           }
         }
 
@@ -75,6 +73,8 @@ class _BatchConfirmationPageState extends State<BatchConfirmationPage> {
         }
 
         if (state is BatchConfirmationAddImageState) {
+          if (!mounted) return;
+
           Navigator.of(context).pop();
         }
       },
@@ -98,7 +98,7 @@ class _BatchConfirmationPageState extends State<BatchConfirmationPage> {
           ),
         ),
         bottomNavigationBar: BottomNavigationBar(
-          onTap: (index) {
+          onTap: (index) async {
             if (index == 0) {
               // retake
             }
@@ -114,6 +114,9 @@ class _BatchConfirmationPageState extends State<BatchConfirmationPage> {
                   images: widget.images,
                 ),
               );
+
+              BlocProvider.of<GalleryBloc>(context)
+                  .add(GalleryRefreshImagesEvent());
             }
           },
           currentIndex: 1,
