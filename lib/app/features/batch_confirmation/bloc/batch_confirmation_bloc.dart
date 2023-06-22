@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:bloc/bloc.dart';
 import 'package:caonalyzer/gallery/gallery_reader.dart';
 import 'package:caonalyzer/gallery/gallery_writer.dart';
@@ -30,7 +28,8 @@ class BatchConfirmationBloc
 
       await GalleryWriter.appendImages(event.images, event.batchPath);
 
-      emit(BatchConfirmationNavigateToBatchPageActionState(batchPath: event.batchPath));
+      emit(BatchConfirmationNavigateToBatchPageActionState(
+          batchPath: event.batchPath));
     });
   }
 }
