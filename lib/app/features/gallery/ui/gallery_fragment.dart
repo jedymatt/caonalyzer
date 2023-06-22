@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:caonalyzer/app/features/batch/ui/batch_page.dart';
 import 'package:caonalyzer/app/features/gallery/bloc/gallery_bloc.dart';
+import 'package:caonalyzer/app/features/gallery/models/batch.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -24,88 +25,108 @@ class _GalleryFragmentState extends State<GalleryFragment> {
 
   @override
   Widget build(BuildContext context) {
-    return RefreshIndicator(
-      onRefresh: () async {
-        galleryBloc.add(GalleryFetchImagesEvent());
+    return BlocBuilder<GalleryBloc, GalleryState>(
+      bloc: galleryBloc,
+      builder: (context, state) {
+        if (state is GalleryInitial) {
+          return const SizedBox.shrink();
+        }
+
+        if (state is GalleryLoading) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+
+        if (state is! GalleryLoaded) {
+          return const Center(
+            child: Text('Something went wrong'),
+          );
+        }
+
+        return RefreshIndicator(
+          onRefresh: () async {
+            // fetch the images in gallery
+            galleryBloc.add(GalleryRefreshImagesEvent(
+              placeholderBatches: state.batches,
+            ));
+
+            // sync the indicator with the bloc
+            await galleryBloc.stream
+                .firstWhere((state) => state is! GalleryRefreshing);
+          },
+          child: GridView.builder(
+            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+              maxCrossAxisExtent: 150,
+              childAspectRatio: 1,
+              crossAxisSpacing: 8,
+              mainAxisSpacing: 8,
+            ),
+            itemCount: state.batches.length,
+            padding: const EdgeInsets.all(8),
+            itemBuilder: (context, index) {
+              return BatchTile(
+                batch: state.batches[index],
+              );
+            },
+          ),
+        );
       },
-      child: BlocBuilder<GalleryBloc, GalleryState>(
-          bloc: galleryBloc,
-          buildWhen: (previous, current) => current is! GalleryActionState,
-          builder: (context, state) {
-            if (state is GalleryInitial) {
-              return const SizedBox.shrink();
-            }
+    );
+  }
+}
 
-            if (state is GalleryLoading) {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
-            }
+class BatchTile extends StatelessWidget {
+  const BatchTile({
+    super.key,
+    required this.batch,
+  });
 
-            if (state is! GalleryLoaded) {
-              debugPrint('Something went wrong ${state.runtimeType}');
-              return const Center(
-                child: Text('Something went wrong'),
-              );
-            }
+  final Batch batch;
 
-            return GridView.builder(
-              gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                maxCrossAxisExtent: 150,
-                childAspectRatio: 1,
-                crossAxisSpacing: 8,
-                mainAxisSpacing: 8,
-              ),
-              itemCount: state.batches.length,
-              padding: const EdgeInsets.all(8),
-              itemBuilder: (context, index) {
-                return GestureDetector(
-                  onTap: () {
-                    Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) => BatchPage(
-                        batchPath: state.batches[index].directory,
-                      ),
-                    ));
-                  },
-                  child: GridTile(
-                    footer: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.transparent,
-                            Colors.black.withOpacity(0.8),
-                          ],
-                        ),
-                        color: Colors.black.withOpacity(0.5),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        state.batches[index].title,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8),
-                        image: DecorationImage(
-                          image: FileImage(
-                            File(state.batches[index].thumbnail),
-                          ),
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    ),
-                  ),
-                );
-              },
-            );
-          }),
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.of(context).push(MaterialPageRoute(
+          builder: (context) => BatchPage(
+            batchPath: batch.directory,
+          ),
+        ));
+      },
+      child: GridTile(
+        footer: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Colors.transparent,
+                Colors.black.withOpacity(0.8),
+              ],
+            ),
+            color: Colors.black.withOpacity(0.5),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Text(
+            batch.title,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            image: DecorationImage(
+              image: FileImage(File(batch.thumbnail)),
+              fit: BoxFit.cover,
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
