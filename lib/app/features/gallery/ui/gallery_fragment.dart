@@ -38,7 +38,7 @@ class _GalleryFragmentState extends State<GalleryFragment> {
           );
         }
 
-        if (state is! GalleryLoaded) {
+        if (state is! GallerySuccess) {
           return const Center(
             child: Text('Something went wrong'),
           );
@@ -47,13 +47,11 @@ class _GalleryFragmentState extends State<GalleryFragment> {
         return RefreshIndicator(
           onRefresh: () async {
             // fetch the images in gallery
-            galleryBloc.add(GalleryRefreshImagesEvent(
-              placeholderBatches: state.batches,
-            ));
+            galleryBloc.add(GalleryImagesRefreshed());
 
             // sync the indicator with the bloc
             await galleryBloc.stream
-                .firstWhere((state) => state is! GalleryRefreshing);
+                .firstWhere((state) => state is! GalleryRefreshingBatches);
           },
           child: GridView.builder(
             gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(

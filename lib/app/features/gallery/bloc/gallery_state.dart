@@ -9,12 +9,16 @@ class GalleryInitial extends GalleryState {}
 
 class GalleryLoading extends GalleryState {}
 
-class GalleryLoaded extends GalleryState {
+class GallerySuccess extends GalleryState {
   final List<Batch> batches;
 
-  GalleryLoaded({required this.batches});
+  GallerySuccess({required this.batches});
 }
 
-class GalleryRefreshing extends GalleryLoaded {
-  GalleryRefreshing({required super.batches});
+class GalleryRefreshingBatches extends GalleryState {
+  final List<Batch> batches;
+
+  GalleryRefreshingBatches({
+    required this.batches,
+  });
 }

@@ -23,7 +23,7 @@ class App extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider(
-          create: (context) => GalleryBloc()..add(GalleryInitialEvent()),
+          create: (context) => GalleryBloc()..add(GalleryStarted()),
         ),
         BlocProvider(
           create: (context) => HomeBloc(),

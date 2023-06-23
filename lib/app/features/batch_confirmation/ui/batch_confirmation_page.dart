@@ -73,8 +73,7 @@ class _BatchConfirmationPageState extends State<BatchConfirmationPage> {
               (route) => route.isFirst,
             );
           } else {
-            BlocProvider.of<GalleryBloc>(context)
-                .add(GalleryRefreshImagesEvent());
+            BlocProvider.of<GalleryBloc>(context).add(GalleryImagesRefreshed());
 
             BlocProvider.of<HomeBloc>(context)
                 .add(HomeTabChangedEvent(tab: HomeTab.gallery));
@@ -166,7 +165,7 @@ class _BatchConfirmationPageState extends State<BatchConfirmationPage> {
                   ));
 
                   BlocProvider.of<GalleryBloc>(context)
-                      .add(GalleryRefreshImagesEvent());
+                      .add(GalleryImagesRefreshed());
                 }
               },
               currentIndex: 1,

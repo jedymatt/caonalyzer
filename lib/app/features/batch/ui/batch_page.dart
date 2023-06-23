@@ -46,8 +46,7 @@ class _BatchPageState extends State<BatchPage> {
         buildWhen: (previous, current) => current is! BatchActionState,
         listener: (context, state) {
           if (state is BatchNavigateToParentPageActionState) {
-            BlocProvider.of<GalleryBloc>(context)
-                .add(GalleryRefreshImagesEvent());
+            BlocProvider.of<GalleryBloc>(context).add(GalleryImagesRefreshed());
 
             Navigator.of(context).pop();
           }
