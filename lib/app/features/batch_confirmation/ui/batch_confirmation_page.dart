@@ -1,7 +1,9 @@
 import 'dart:io';
 
+import 'package:caonalyzer/app/features/batch/ui/batch_page.dart';
 import 'package:caonalyzer/app/features/batch_confirmation/bloc/batch_confirmation_bloc.dart';
 import 'package:caonalyzer/app/features/gallery/bloc/gallery_bloc.dart';
+import 'package:caonalyzer/app/features/home/bloc/home_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:path/path.dart' as path_lib;
@@ -57,13 +59,24 @@ class _BatchConfirmationPageState extends State<BatchConfirmationPage> {
       bloc: batchConfirmationBloc,
       listenWhen: (previous, current) =>
           current is BatchConfirmationActionState,
-      listener: (context, state) async {
+      listener: (context, state) {
         if (state is BatchConfirmationNavigateToBatchPageActionState) {
           if (widget.isFromBatchPage) {
-            Navigator.of(context)
-              ..pop()
-              ..pop();
+            // pop until batch page
+            Navigator.pushAndRemoveUntil(
+              context,
+              BatchPage.route(
+                batchPath: widget.batchPath,
+              ),
+              (route) => route.isFirst,
+            );
           } else {
+            BlocProvider.of<GalleryBloc>(context)
+                .add(GalleryRefreshImagesEvent());
+
+            BlocProvider.of<HomeBloc>(context)
+                .add(HomeTabChangedEvent(tab: HomeTab.gallery));
+
             Navigator.of(context).popUntil((route) => route.isFirst);
           }
         }
@@ -73,8 +86,6 @@ class _BatchConfirmationPageState extends State<BatchConfirmationPage> {
         }
 
         if (state is BatchConfirmationAddImageState) {
-          if (!mounted) return;
-
           Navigator.of(context).pop();
         }
       },
