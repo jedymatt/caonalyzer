@@ -4,7 +4,9 @@ import 'package:caonalyzer/ui/components/camera_view.dart';
 import 'package:flutter/material.dart';
 
 class CameraPage extends StatefulWidget {
-  const CameraPage({super.key});
+  const CameraPage({super.key, this.existingBatchPath});
+
+  final String? existingBatchPath;
 
   @override
   State<CameraPage> createState() => _CameraPageState();
@@ -21,16 +23,17 @@ class _CameraPageState extends State<CameraPage> {
           timeCaptured ??= DateTime.now();
         },
         onTapFinishCapturing: (images) async {
-          final batchPath =
+          final batchPath = widget.existingBatchPath ??
               await GalleryWriter.generateBatchPath(timeCaptured!);
 
           if (!mounted) return;
 
+          // get the previous route name
+
           Navigator.of(context).push(BatchConfirmationPage.route(
             batchPath: batchPath,
             images: images,
-            isFromBatchPage:
-                ModalRoute.of(context)?.settings.name == 'BatchPage',
+            isFromBatchPage: widget.existingBatchPath != null,
           ));
         },
       ),
