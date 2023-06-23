@@ -29,7 +29,8 @@ class BatchConfirmationBloc
       await GalleryWriter.appendImages(event.images, event.batchPath);
 
       emit(BatchConfirmationNavigateToBatchPageActionState(
-          batchPath: event.batchPath));
+        batchPath: event.batchPath,
+      ));
     });
   }
 }
