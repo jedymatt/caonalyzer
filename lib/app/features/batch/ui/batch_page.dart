@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:caonalyzer/app/features/batch/bloc/batch_bloc.dart';
 import 'package:caonalyzer/app/features/batch/ui/widgets/image_tile.dart';
+import 'package:caonalyzer/app/features/camera/ui/camera_page.dart';
+import 'package:caonalyzer/app/features/gallery/bloc/gallery_bloc.dart';
 import 'package:caonalyzer/app/features/image/ui/image_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -39,8 +41,17 @@ class _BatchPageState extends State<BatchPage> {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => batchBloc,
-      child: BlocBuilder<BatchBloc, BatchState>(
+      child: BlocConsumer<BatchBloc, BatchState>(
+        listenWhen: (previous, current) => current is BatchActionState,
         buildWhen: (previous, current) => current is! BatchActionState,
+        listener: (context, state) {
+          if (state is BatchNavigateToParentPageActionState) {
+            BlocProvider.of<GalleryBloc>(context)
+                .add(GalleryRefreshImagesEvent());
+
+            Navigator.of(context).pop();
+          }
+        },
         builder: (context, state) {
           return WillPopScope(
             onWillPop: () async {
@@ -55,105 +66,150 @@ class _BatchPageState extends State<BatchPage> {
               return Future.value(true);
             },
             child: Scaffold(
-              appBar: BatchAppBar(title: title),
-              body: Builder(
-                builder: (context) {
-                  if (state is BatchLoadingFetchImages) {
+                appBar: BatchAppBar(title: title),
+                body: Builder(
+                  builder: (context) {
+                    if (state is BatchLoadingFetchImages) {
+                      return const Center(
+                        child: CircularProgressIndicator(),
+                      );
+                    }
+
+                    if (state is BatchSelectionModeState) {
+                      return GridView.builder(
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          mainAxisExtent: 200,
+                        ),
+                        itemCount: state.images.length,
+                        itemBuilder: (context, index) {
+                          return Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: ImageTile(
+                              image: FileImage(File(state.images[index])),
+                              onTap: () {
+                                // toggle
+                                if (state.selectedImages
+                                    .contains(state.images[index])) {
+                                  batchBloc.add(BatchSelectMultipleImagesEvent(
+                                    images: state.images,
+                                    selectedImages: state.selectedImages
+                                        .where((element) =>
+                                            element != state.images[index])
+                                        .toList(),
+                                  ));
+                                } else {
+                                  batchBloc.add(BatchSelectMultipleImagesEvent(
+                                    images: state.images,
+                                    selectedImages: [
+                                      ...state.selectedImages,
+                                      state.images[index]
+                                    ],
+                                  ));
+                                }
+                              },
+                              child: state.selectedImages
+                                      .contains(state.images[index])
+                                  ? Container(
+                                      // gradient color
+                                      decoration: BoxDecoration(
+                                        color: Colors.black.withOpacity(0.4),
+                                      ),
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: const Icon(
+                                        Icons.check_circle,
+                                        color: Colors.green,
+                                      ),
+                                    )
+                                  : null,
+                            ),
+                          );
+                        },
+                      );
+                    }
+
+                    if (state is BatchSuccessfulFetchImages) {
+                      return GridView.builder(
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          mainAxisExtent: 200,
+                        ),
+                        itemCount: state.images.length,
+                        itemBuilder: (context, index) {
+                          return Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: ImageTile(
+                              image: FileImage(File(state.images[index])),
+                              onTap: () {
+                                Navigator.of(context).push(MaterialPageRoute(
+                                    builder: (context) => const ImagePage()));
+                              },
+                              onLongPress: () {
+                                batchBloc.add(BatchSelectMultipleImagesEvent(
+                                  images: state.images,
+                                  selectedImages: [state.images[index]],
+                                ));
+                              },
+                            ),
+                          );
+                        },
+                      );
+                    }
+
                     return const Center(
-                      child: CircularProgressIndicator(),
+                      child: Text('Unexpected Error'),
                     );
-                  }
-
-                  if (state is BatchSelectionModeState) {
-                    return GridView.builder(
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        mainAxisExtent: 200,
-                      ),
-                      itemCount: state.images.length,
-                      itemBuilder: (context, index) {
-                        return Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: ImageTile(
-                            image: FileImage(File(state.images[index])),
-                            onTap: () {
-                              // toggle
-                              if (state.selectedImages
-                                  .contains(state.images[index])) {
-                                batchBloc.add(BatchSelectMultipleImagesEvent(
-                                  images: state.images,
-                                  selectedImages: state.selectedImages
-                                      .where((element) =>
-                                          element != state.images[index])
-                                      .toList(),
+                  },
+                ),
+                bottomNavigationBar: BottomAppBar(
+                  child: BlocBuilder<BatchBloc, BatchState>(
+                    builder: (context, state) {
+                      if (state is BatchSelectionModeState) {
+                        return Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            IconButton(
+                              onPressed: () {
+                                batchBloc.add(BatchDeleteImagesEvent(
+                                  images: state.selectedImages,
                                 ));
-                              } else {
-                                batchBloc.add(BatchSelectMultipleImagesEvent(
-                                  images: state.images,
-                                  selectedImages: [
-                                    ...state.selectedImages,
-                                    state.images[index]
-                                  ],
-                                ));
-                              }
-                            },
-                            onLongPress: () {},
-                            child: state.selectedImages
-                                    .contains(state.images[index])
-                                ? Container(
-                                    // gradient color
-                                    decoration: BoxDecoration(
-                                      color: Colors.black.withOpacity(0.4),
-                                    ),
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: const Icon(
-                                      Icons.check_circle,
-                                      color: Colors.green,
-                                    ),
-                                  )
-                                : null,
-                          ),
+                              },
+                              icon: const Icon(Icons.delete),
+                            ),
+                          ],
                         );
-                      },
-                    );
-                  }
+                      }
 
-                  if (state is BatchSuccessfulFetchImages) {
-                    return GridView.builder(
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        mainAxisExtent: 200,
-                      ),
-                      itemCount: state.images.length,
-                      itemBuilder: (context, index) {
-                        return Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: ImageTile(
-                            image: FileImage(File(state.images[index])),
-                            onTap: () {
+                      return Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          IconButton(
+                            onPressed: () {
                               Navigator.of(context).push(MaterialPageRoute(
-                                  builder: (context) => const ImagePage()));
-                            },
-                            onLongPress: () {
-                              batchBloc.add(BatchSelectMultipleImagesEvent(
-                                images: state.images,
-                                selectedImages: [state.images[index]],
+                                builder: (context) => CameraPage(
+                                  existingBatchPath: widget.batchPath,
+                                ),
                               ));
                             },
+                            icon: const Icon(Icons.add_a_photo),
+                            tooltip: 'Add a photo',
                           ),
-                        );
-                      },
-                    );
-                  }
-
-                  return const Center(
-                    child: Text('Unexpected Error'),
-                  );
-                },
-              ),
-            ),
+                          IconButton(
+                            onPressed: () {
+                              // todo: navigate to show results page
+                            },
+                            icon: const Icon(
+                              Icons.insights,
+                            ),
+                            tooltip: 'Show results',
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                )),
           );
         },
       ),
