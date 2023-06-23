@@ -1,4 +1,5 @@
 import 'package:caonalyzer/app/features/gallery/bloc/gallery_bloc.dart';
+import 'package:caonalyzer/app/features/home/bloc/home_bloc.dart';
 import 'package:caonalyzer/app/features/home/ui/home_page.dart';
 import 'package:caonalyzer/globals.dart';
 import 'package:flutter/material.dart';
@@ -23,7 +24,10 @@ class App extends StatelessWidget {
       providers: [
         BlocProvider(
           create: (context) => GalleryBloc()..add(GalleryInitialEvent()),
-        )
+        ),
+        BlocProvider(
+          create: (context) => HomeBloc(),
+        ),
       ],
       child: MaterialApp(
         title: 'Cao-nalyzer',
