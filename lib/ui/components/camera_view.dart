@@ -7,12 +7,14 @@ import 'package:flutter/material.dart';
 class CameraView extends StatefulWidget {
   const CameraView({
     super.key,
-    required this.onTapFinishCapturing,
+    this.cameraController,
+    this.onTapFinishCapturing,
     this.onTapCaptureImage,
     this.streamImage,
   });
 
-  final Function(List<String>) onTapFinishCapturing;
+  final CameraController? cameraController;
+  final Function(List<String>)? onTapFinishCapturing;
   final Function(File)? onTapCaptureImage;
   final Function(CameraImage)? streamImage;
 
@@ -32,26 +34,14 @@ class _CameraViewState extends State<CameraView>
     super.initState();
 
     _initializeCameraController(Globals.cameras.first);
-
-    cameraController.addListener(() {
-      if (cameraController.value.isTakingPicture) {
-        debugPrint('isTakingPicture');
-        setState(() {
-          isTakingPicture = true;
-        });
-      } else {
-        debugPrint('isNotTakingPicture');
-        setState(() {
-          isTakingPicture = false;
-        });
-      }
-    });
   }
 
   @override
   void dispose() {
     super.dispose();
-    cameraController.dispose();
+    if (widget.cameraController == null) {
+      cameraController.dispose();
+    }
   }
 
   @override
@@ -139,6 +129,9 @@ class _CameraViewState extends State<CameraView>
                   : Material(
                       child: InkWell(
                         onTap: () async {
+                          setState(() {
+                            isTakingPicture = true;
+                          });
                           if (cameraController.value.isStreamingImages) {
                             cameraController.stopImageStream();
                           }
@@ -151,6 +144,7 @@ class _CameraViewState extends State<CameraView>
 
                           setState(() {
                             images.add(file.path);
+                            isTakingPicture = false;
                           });
                         },
                         child: Container(
@@ -191,7 +185,9 @@ class _CameraViewState extends State<CameraView>
                         ),
                         clipBehavior: Clip.antiAlias,
                         child: InkWell(
-                          onTap: () => widget.onTapFinishCapturing(images),
+                          onTap: widget.onTapFinishCapturing != null
+                              ? () => widget.onTapFinishCapturing!(images)
+                              : null,
                           child: Ink.image(
                             image: FileImage(File(images.last)),
                             fit: BoxFit.cover,
@@ -226,11 +222,12 @@ class _CameraViewState extends State<CameraView>
   }
 
   void _initializeCameraController(CameraDescription description) async {
-    cameraController = CameraController(
-      description,
-      ResolutionPreset.medium,
-      enableAudio: false,
-    );
+    cameraController = widget.cameraController ??
+        CameraController(
+          description,
+          ResolutionPreset.medium,
+          enableAudio: false,
+        );
 
     cameraController.initialize().then((_) {
       if (cameraController.value.isStreamingImages) {
