@@ -9,13 +9,29 @@ part 'batch_confirmation_state.dart';
 
 class BatchConfirmationBloc
     extends Bloc<BatchConfirmationEvent, BatchConfirmationState> {
-  BatchConfirmationBloc() : super(BatchConfirmationInitial()) {
+  BatchConfirmationBloc({required List<String> images})
+      : super(BatchConfirmationInitial(images: images)) {
     on<BatchConfirmationAddImageEvent>((event, emit) {
       emit(BatchConfirmationAddImageState());
     });
 
+    on<BatchConfirmationChangeImagePageEvent>((event, emit) {
+      emit(BatchConfirmationInitial(
+        currentIndex: event.index,
+        images: event.images,
+      ));
+    });
+
     on<BatchConfirmationRetakeImageEvent>((event, emit) {
-      emit(BatchConfirmationRetakeImageState());
+      emit(BatchConfirmationInitial(
+        currentIndex: event.toRetakeImageIndex,
+        images: List.from(event.images)
+          ..replaceRange(
+            event.toRetakeImageIndex,
+            event.toRetakeImageIndex + 1,
+            [event.retakedImagePath],
+          ),
+      ));
     });
 
     on<BatchConfirmationSaveBatchEvent>((event, emit) async {

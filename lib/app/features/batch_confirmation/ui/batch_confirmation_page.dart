@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:caonalyzer/app/features/batch/ui/batch_page.dart';
 import 'package:caonalyzer/app/features/batch_confirmation/bloc/batch_confirmation_bloc.dart';
+import 'package:caonalyzer/app/features/camera/ui/single_camera_page.dart';
 import 'package:caonalyzer/app/features/gallery/bloc/gallery_bloc.dart';
 import 'package:caonalyzer/app/features/home/bloc/home_bloc.dart';
 import 'package:flutter/material.dart';
@@ -50,7 +51,9 @@ class _BatchConfirmationPageState extends State<BatchConfirmationPage> {
   void initState() {
     super.initState();
 
-    batchConfirmationBloc = BatchConfirmationBloc();
+    batchConfirmationBloc = BatchConfirmationBloc(
+      images: widget.images,
+    );
   }
 
   @override
@@ -63,8 +66,7 @@ class _BatchConfirmationPageState extends State<BatchConfirmationPage> {
         if (state is BatchConfirmationNavigateToBatchPageActionState) {
           if (widget.isFromBatchPage) {
             // pop until batch page
-            Navigator.pushAndRemoveUntil(
-              context,
+            Navigator.of(context).pushAndRemoveUntil(
               BatchPage.route(
                 batchPath: widget.batchPath,
               ),
@@ -77,12 +79,13 @@ class _BatchConfirmationPageState extends State<BatchConfirmationPage> {
             BlocProvider.of<HomeBloc>(context)
                 .add(HomeTabChangedEvent(tab: HomeTab.gallery));
 
-            Navigator.of(context).popUntil((route) => route.isFirst);
+            Navigator.of(context).pushAndRemoveUntil(
+              BatchPage.route(
+                batchPath: widget.batchPath,
+              ),
+              (route) => route.isFirst,
+            );
           }
-        }
-
-        if (state is BatchConfirmationRetakeImageState) {
-          // todo: retake image
         }
 
         if (state is BatchConfirmationAddImageState) {
@@ -93,59 +96,97 @@ class _BatchConfirmationPageState extends State<BatchConfirmationPage> {
         appBar: AppBar(
           title: Text(widget.title),
         ),
-        body: PhotoViewGallery(
-          pageOptions: widget.images
-              .map(
-                (image) => PhotoViewGalleryPageOptions(
-                  imageProvider: FileImage(File(image)),
-                  heroAttributes: PhotoViewHeroAttributes(tag: image),
-                  minScale: PhotoViewComputedScale.contained,
-                  maxScale: PhotoViewComputedScale.covered * 2.0,
+        body: BlocBuilder<BatchConfirmationBloc, BatchConfirmationState>(
+          bloc: batchConfirmationBloc,
+          builder: (context, state) {
+            if (state is! BatchConfirmationInitial) {
+              return const SizedBox.shrink();
+            }
+
+            return PhotoViewGallery(
+                pageOptions: state.images
+                    .map(
+                      (image) => PhotoViewGalleryPageOptions(
+                        imageProvider: FileImage(File(image)),
+                        heroAttributes: PhotoViewHeroAttributes(tag: image),
+                        minScale: PhotoViewComputedScale.contained,
+                        maxScale: PhotoViewComputedScale.covered * 2.0,
+                      ),
+                    )
+                    .toList(),
+                backgroundDecoration: BoxDecoration(
+                  color: Theme.of(context).canvasColor,
                 ),
-              )
-              .toList(),
-          backgroundDecoration: BoxDecoration(
-            color: Theme.of(context).canvasColor,
-          ),
-        ),
-        bottomNavigationBar: BottomNavigationBar(
-          onTap: (index) async {
-            if (index == 0) {
-              // retake
-            }
-
-            if (index == 1) {
-              batchConfirmationBloc.add(BatchConfirmationAddImageEvent());
-            }
-
-            if (index == 2) {
-              batchConfirmationBloc.add(
-                BatchConfirmationSaveBatchEvent(
-                  batchPath: widget.batchPath,
-                  images: widget.images,
-                ),
-              );
-
-              BlocProvider.of<GalleryBloc>(context)
-                  .add(GalleryRefreshImagesEvent());
-            }
+                onPageChanged: (index) {
+                  batchConfirmationBloc.add(
+                    BatchConfirmationChangeImagePageEvent(
+                      index: index,
+                      images: state.images,
+                    ),
+                  );
+                });
           },
-          currentIndex: 1,
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.camera_alt),
-              label: 'Retake',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.add_a_photo),
-              label: 'Add',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.check),
-              backgroundColor: Colors.green,
-              label: 'Confirm',
-            ),
-          ],
+        ),
+        bottomNavigationBar:
+            BlocBuilder<BatchConfirmationBloc, BatchConfirmationState>(
+          bloc: batchConfirmationBloc,
+          builder: (context, state) {
+            if (state is! BatchConfirmationInitial) {
+              return const SizedBox.shrink();
+            }
+
+            return BottomNavigationBar(
+              onTap: (index) async {
+                if (index == 0) {
+                  // retake
+                  Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => SingleCameraPage(
+                      onCapture: (image) {
+                        batchConfirmationBloc.add(
+                          BatchConfirmationRetakeImageEvent(
+                            retakedImagePath: image.path,
+                            toRetakeImageIndex: state.currentIndex,
+                            images: state.images,
+                          ),
+                        );
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                  ));
+                }
+
+                if (index == 1) {
+                  batchConfirmationBloc.add(BatchConfirmationAddImageEvent());
+                }
+
+                if (index == 2) {
+                  batchConfirmationBloc.add(BatchConfirmationSaveBatchEvent(
+                    batchPath: widget.batchPath,
+                    images: state.images,
+                  ));
+
+                  BlocProvider.of<GalleryBloc>(context)
+                      .add(GalleryRefreshImagesEvent());
+                }
+              },
+              currentIndex: 1,
+              items: const [
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.camera_alt),
+                  label: 'Retake',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.add_a_photo),
+                  label: 'Add',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.check),
+                  backgroundColor: Colors.green,
+                  label: 'Confirm',
+                ),
+              ],
+            );
+          },
         ),
       ),
     );
