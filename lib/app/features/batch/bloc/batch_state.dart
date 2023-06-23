@@ -33,3 +33,7 @@ class BatchMultiSelectImagesState extends BatchState {
     required this.selectedImages,
   });
 }
+
+class BatchDeletingImagesState extends BatchState {}
+
+class BatchNavigateToParentPageActionState extends BatchActionState {}
