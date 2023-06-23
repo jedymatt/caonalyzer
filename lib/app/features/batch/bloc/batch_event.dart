@@ -13,11 +13,18 @@ class BatchSelectMultipleImagesEvent extends BatchEvent {
   final List<String> images;
   final List<String> selectedImages;
 
-  BatchSelectMultipleImagesEvent({required this.images, required this.selectedImages});
+  BatchSelectMultipleImagesEvent(
+      {required this.images, required this.selectedImages});
 }
 
 class BatchCancelSelectionModeEvent extends BatchEvent {
   final List<String> images;
 
   BatchCancelSelectionModeEvent({required this.images});
+}
+
+class BatchDeleteImagesEvent extends BatchEvent {
+  final List<String> images;
+
+  BatchDeleteImagesEvent({required this.images});
 }
