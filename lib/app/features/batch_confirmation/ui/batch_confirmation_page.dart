@@ -52,7 +52,8 @@ class _BatchConfirmationPageState extends State<BatchConfirmationPage> {
     super.initState();
 
     batchConfirmationBloc = BatchConfirmationBloc(
-      images: widget.images,
+      batchPath: widget.batchPath,
+      images: List.from(widget.images),
     );
   }
 
@@ -118,10 +119,7 @@ class _BatchConfirmationPageState extends State<BatchConfirmationPage> {
                 ),
                 onPageChanged: (index) {
                   batchConfirmationBloc.add(
-                    BatchConfirmationChangeImagePageEvent(
-                      index: index,
-                      images: state.images,
-                    ),
+                    BatchConfirmationImagePageChanged(index: index),
                   );
                 });
           },
@@ -142,10 +140,8 @@ class _BatchConfirmationPageState extends State<BatchConfirmationPage> {
                     builder: (context) => SingleCameraPage(
                       onCapture: (image) {
                         batchConfirmationBloc.add(
-                          BatchConfirmationRetakeImageEvent(
-                            retakedImagePath: image.path,
-                            toRetakeImageIndex: state.currentIndex,
-                            images: state.images,
+                          BatchConfirmationImageRetaked(
+                            imagePath: image.path,
                           ),
                         );
                         Navigator.of(context).pop();
@@ -155,14 +151,11 @@ class _BatchConfirmationPageState extends State<BatchConfirmationPage> {
                 }
 
                 if (index == 1) {
-                  batchConfirmationBloc.add(BatchConfirmationAddImageEvent());
+                  batchConfirmationBloc.add(BatchConfirmationImageAdded());
                 }
 
                 if (index == 2) {
-                  batchConfirmationBloc.add(BatchConfirmationSaveBatchEvent(
-                    batchPath: widget.batchPath,
-                    images: state.images,
-                  ));
+                  batchConfirmationBloc.add(BatchConfirmationBatchSaved());
 
                   BlocProvider.of<GalleryBloc>(context)
                       .add(GalleryImagesRefreshed());

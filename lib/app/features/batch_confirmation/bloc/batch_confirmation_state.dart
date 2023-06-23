@@ -6,24 +6,30 @@ abstract class BatchConfirmationState {}
 abstract class BatchConfirmationActionState extends BatchConfirmationState {}
 
 class BatchConfirmationInitial extends BatchConfirmationState {
+  final String batchPath;
   final List<String> images;
   final int currentIndex;
+
   BatchConfirmationInitial({
-    required this.images,
+    required this.batchPath,
+    this.images = const [],
     this.currentIndex = 0,
   });
+
+  BatchConfirmationInitial copyWith({
+    String? batchPath,
+    List<String>? images,
+    int? currentIndex,
+  }) {
+    return BatchConfirmationInitial(
+      batchPath: batchPath ?? this.batchPath,
+      images: images ?? this.images,
+      currentIndex: currentIndex ?? this.currentIndex,
+    );
+  }
 }
 
 class BatchConfirmationLoadingSaveBatchState extends BatchConfirmationState {}
-
-class BatchConfirmationRetakeImageState extends BatchConfirmationActionState {
-  final List<String> currentImages;
-  final int selectedIndex;
-  BatchConfirmationRetakeImageState({
-    required this.currentImages,
-    required this.selectedIndex,
-  });
-}
 
 class BatchConfirmationAddImageState extends BatchConfirmationActionState {}
 
