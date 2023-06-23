@@ -7,12 +7,12 @@ abstract class BatchActionState extends BatchState {}
 
 class BatchInitial extends BatchState {}
 
-class BatchLoadingFetchImages extends BatchState {}
+class BatchLoading extends BatchState {}
 
-class BatchSuccessfulFetchImages extends BatchState {
+class BatchSuccess extends BatchState {
   final List<String> images;
 
-  BatchSuccessfulFetchImages({
+  BatchSuccess({
     required this.images,
   });
 }

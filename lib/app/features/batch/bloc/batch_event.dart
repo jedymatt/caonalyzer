@@ -3,28 +3,29 @@ part of 'batch_bloc.dart';
 @immutable
 abstract class BatchEvent {}
 
-class BatchFetchImagesEvent extends BatchEvent {
+class BatchStarted extends BatchEvent {
+  final String batchPath;
+  BatchStarted({
+    required this.batchPath,
+  });
+}
+
+class BatchImagesFetched extends BatchEvent {
   final String batchPath;
 
-  BatchFetchImagesEvent({required this.batchPath});
+  BatchImagesFetched({required this.batchPath});
 }
 
-class BatchSelectMultipleImagesEvent extends BatchEvent {
-  final List<String> images;
+class BatchImagesSelected extends BatchEvent {
   final List<String> selectedImages;
 
-  BatchSelectMultipleImagesEvent(
-      {required this.images, required this.selectedImages});
+  BatchImagesSelected({required this.selectedImages});
 }
 
-class BatchCancelSelectionModeEvent extends BatchEvent {
+class BatchSelectionCanceled extends BatchEvent {}
+
+class BatchImagesDeleted extends BatchEvent {
   final List<String> images;
 
-  BatchCancelSelectionModeEvent({required this.images});
-}
-
-class BatchDeleteImagesEvent extends BatchEvent {
-  final List<String> images;
-
-  BatchDeleteImagesEvent({required this.images});
+  BatchImagesDeleted({required this.images});
 }

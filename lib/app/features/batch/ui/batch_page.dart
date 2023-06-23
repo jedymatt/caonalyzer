@@ -33,8 +33,7 @@ class _BatchPageState extends State<BatchPage> {
     super.initState();
 
     title = path_lib.basename(widget.batchPath);
-    batchBloc = BatchBloc()
-      ..add(BatchFetchImagesEvent(batchPath: widget.batchPath));
+    batchBloc = BatchBloc()..add(BatchStarted(batchPath: widget.batchPath));
   }
 
   @override
@@ -55,9 +54,7 @@ class _BatchPageState extends State<BatchPage> {
           return WillPopScope(
             onWillPop: () async {
               if (state is BatchSelectionModeState) {
-                batchBloc.add(BatchCancelSelectionModeEvent(
-                  images: state.images,
-                ));
+                batchBloc.add(BatchSelectionCanceled());
 
                 return Future.value(false);
               }
@@ -68,7 +65,7 @@ class _BatchPageState extends State<BatchPage> {
                 appBar: BatchAppBar(title: title),
                 body: Builder(
                   builder: (context) {
-                    if (state is BatchLoadingFetchImages) {
+                    if (state is BatchLoading) {
                       return const Center(
                         child: CircularProgressIndicator(),
                       );
@@ -91,16 +88,14 @@ class _BatchPageState extends State<BatchPage> {
                                 // toggle
                                 if (state.selectedImages
                                     .contains(state.images[index])) {
-                                  batchBloc.add(BatchSelectMultipleImagesEvent(
-                                    images: state.images,
+                                  batchBloc.add(BatchImagesSelected(
                                     selectedImages: state.selectedImages
                                         .where((element) =>
                                             element != state.images[index])
                                         .toList(),
                                   ));
                                 } else {
-                                  batchBloc.add(BatchSelectMultipleImagesEvent(
-                                    images: state.images,
+                                  batchBloc.add(BatchImagesSelected(
                                     selectedImages: [
                                       ...state.selectedImages,
                                       state.images[index]
@@ -128,7 +123,7 @@ class _BatchPageState extends State<BatchPage> {
                       );
                     }
 
-                    if (state is BatchSuccessfulFetchImages) {
+                    if (state is BatchSuccess) {
                       return GridView.builder(
                         gridDelegate:
                             const SliverGridDelegateWithFixedCrossAxisCount(
@@ -146,8 +141,7 @@ class _BatchPageState extends State<BatchPage> {
                                     builder: (context) => const ImagePage()));
                               },
                               onLongPress: () {
-                                batchBloc.add(BatchSelectMultipleImagesEvent(
-                                  images: state.images,
+                                batchBloc.add(BatchImagesSelected(
                                   selectedImages: [state.images[index]],
                                 ));
                               },
@@ -171,7 +165,7 @@ class _BatchPageState extends State<BatchPage> {
                           children: [
                             IconButton(
                               onPressed: () {
-                                batchBloc.add(BatchDeleteImagesEvent(
+                                batchBloc.add(BatchImagesDeleted(
                                   images: state.selectedImages,
                                 ));
                               },
@@ -232,17 +226,14 @@ class BatchAppBar extends StatelessWidget implements PreferredSizeWidget {
             title: Text('${state.selectedImages.length} selected'),
             leading: IconButton(
               onPressed: () {
-                batchBloc.add(BatchCancelSelectionModeEvent(
-                  images: state.images,
-                ));
+                batchBloc.add(BatchSelectionCanceled());
               },
               icon: const Icon(Icons.close),
             ),
             actions: [
               IconButton(
                 onPressed: () {
-                  batchBloc.add(BatchSelectMultipleImagesEvent(
-                    images: state.images,
+                  batchBloc.add(BatchImagesSelected(
                     selectedImages: [...state.images],
                   ));
                 },
@@ -251,8 +242,7 @@ class BatchAppBar extends StatelessWidget implements PreferredSizeWidget {
               IconButton(
                 // deselect
                 onPressed: () {
-                  batchBloc.add(BatchSelectMultipleImagesEvent(
-                    images: state.images,
+                  batchBloc.add(BatchImagesSelected(
                     selectedImages: const [],
                   ));
                 },
@@ -262,12 +252,11 @@ class BatchAppBar extends StatelessWidget implements PreferredSizeWidget {
           );
         }
 
-        if (state is BatchSuccessfulFetchImages) {
+        if (state is BatchSuccess) {
           return AppBar(title: Text(title), actions: [
             IconButton(
               onPressed: () {
-                batchBloc.add(BatchSelectMultipleImagesEvent(
-                  images: state.images,
+                batchBloc.add(BatchImagesSelected(
                   selectedImages: const [],
                 ));
               },
