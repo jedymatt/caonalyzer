@@ -50,8 +50,9 @@ class _GalleryFragmentState extends State<GalleryFragment> {
             galleryBloc.add(GalleryImagesRefreshed());
 
             // sync the indicator with the bloc
-            await galleryBloc.stream
-                .firstWhere((state) => state is! GalleryRefreshingBatches);
+            await galleryBloc.stream.firstWhere(
+              (state) => state is GallerySuccess && state.refreshing,
+            );
           },
           child: GridView.builder(
             gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
