@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:caonalyzer/app/features/batch/bloc/batch_bloc.dart';
 import 'package:caonalyzer/app/features/batch/ui/widgets/image_tile.dart';
+import 'package:caonalyzer/app/features/batch_confirmation/bloc/batch_confirmation_bloc.dart';
+import 'package:caonalyzer/app/features/camera/bloc/camera_bloc.dart';
 import 'package:caonalyzer/app/features/camera/ui/camera_page.dart';
 import 'package:caonalyzer/app/features/gallery/bloc/gallery_bloc.dart';
 import 'package:caonalyzer/app/features/image/ui/image_page.dart';
@@ -180,9 +182,30 @@ class _BatchPageState extends State<BatchPage> {
                         children: [
                           IconButton(
                             onPressed: () {
+                              final batchConfirmationBloc =
+                                  BatchConfirmationBloc();
+                              bool isFirstCapture = true;
                               Navigator.of(context).push(MaterialPageRoute(
-                                builder: (context) => CameraPage(
-                                  existingBatchPath: widget.batchPath,
+                                builder: (context) => BlocProvider.value(
+                                  value: batchConfirmationBloc,
+                                  child: CameraPage(
+                                    mode: CameraCaptureMode.batch,
+                                    onCapture: (path) {
+                                      if (isFirstCapture) {
+                                        batchConfirmationBloc
+                                            .add(BatchConfirmationStarted(
+                                          batchPath: widget.batchPath,
+                                        ));
+                                        isFirstCapture = false;
+                                      }
+
+                                      batchConfirmationBloc.add(
+                                        BatchConfirmationImageAdded(
+                                          imagePath: path,
+                                        ),
+                                      );
+                                    },
+                                  ),
                                 ),
                               ));
                             },
