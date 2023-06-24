@@ -10,16 +10,32 @@ part 'batch_confirmation_state.dart';
 
 class BatchConfirmationBloc
     extends Bloc<BatchConfirmationEvent, BatchConfirmationState> {
-  BatchConfirmationBloc(
-      {required List<String> images, required String batchPath})
-      : super(BatchConfirmationInitial(batchPath: batchPath, images: images)) {
+  BatchConfirmationBloc() : super(BatchConfirmationInitial()) {
+    on<BatchConfirmationStarted>(_onStarted);
     on<BatchConfirmationImageAdded>(_onImageAdded);
     on<BatchConfirmationImagePageChanged>(_onImagePageChanged);
     on<BatchConfirmationImageRetaked>(_onImageRetaked);
     on<BatchConfirmationBatchSaved>(_onBatchSaved);
   }
 
-  FutureOr<void> _onBatchSaved(event, emit) async {
+  FutureOr<void> _onStarted(BatchConfirmationStarted event,
+      Emitter<BatchConfirmationState> emit) async {
+    if (state is! BatchConfirmationInitial) return null;
+
+    final batchPath = event.batchPath ??
+        await GalleryWriter.generateBatchPath(DateTime.now());
+
+    final state_ = state as BatchConfirmationInitial;
+
+    emit(state_.copyWith(
+      currentIndex: 0,
+      images: state_.images,
+      batchPath: batchPath,
+    ));
+  }
+
+  FutureOr<void> _onBatchSaved(BatchConfirmationBatchSaved event,
+      Emitter<BatchConfirmationState> emit) async {
     if (state is! BatchConfirmationInitial) return null;
 
     final state_ = state as BatchConfirmationInitial;
@@ -27,22 +43,31 @@ class BatchConfirmationBloc
     emit(BatchConfirmationLoadingSaveBatchState());
 
     // if batchPath is does not exist, create it
-    if (!GalleryReader.batchExists(state_.batchPath)) {
-      GalleryWriter.createDirectory(state_.batchPath);
+    if (!GalleryReader.batchExists(state_.batchPath!)) {
+      GalleryWriter.createDirectory(state_.batchPath!);
     }
 
-    await GalleryWriter.appendImages(state_.images, state_.batchPath);
+    await GalleryWriter.appendImages(state_.images, state_.batchPath!);
 
     emit(BatchConfirmationNavigateToBatchPageActionState(
-      batchPath: state_.batchPath,
+      batchPath: state_.batchPath!,
     ));
   }
 
-  FutureOr<void> _onImageAdded(event, emit) {
-    emit(BatchConfirmationAddImageState());
+  FutureOr<void> _onImageAdded(
+      BatchConfirmationImageAdded event, Emitter<BatchConfirmationState> emit) {
+    if (state is BatchConfirmationInitial) {
+      final state_ = state as BatchConfirmationInitial;
+
+      emit(state_.copyWith(
+        currentIndex: state_.currentIndex,
+        images: List.from(state_.images)..add(event.imagePath),
+      ));
+    }
   }
 
-  FutureOr<void> _onImagePageChanged(event, emit) {
+  FutureOr<void> _onImagePageChanged(BatchConfirmationImagePageChanged event,
+      Emitter<BatchConfirmationState> emit) {
     if (state is! BatchConfirmationInitial) return null;
 
     final state_ = state as BatchConfirmationInitial;
