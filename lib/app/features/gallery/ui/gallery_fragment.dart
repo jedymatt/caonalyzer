@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:caonalyzer/app/features/batch/ui/batch_page.dart';
@@ -15,18 +16,26 @@ class GalleryFragment extends StatefulWidget {
 
 class _GalleryFragmentState extends State<GalleryFragment> {
   late final GalleryBloc galleryBloc;
+  late Completer<void> _refreshCompleter;
 
   @override
   void initState() {
     super.initState();
 
     galleryBloc = BlocProvider.of<GalleryBloc>(context);
+    _refreshCompleter = Completer<void>();
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<GalleryBloc, GalleryState>(
+    return BlocConsumer<GalleryBloc, GalleryState>(
       bloc: galleryBloc,
+      listener: (context, state) {
+        if (state is GallerySuccess && !(state).refreshing) {
+          _refreshCompleter.complete();
+          _refreshCompleter = Completer<void>();
+        }
+      },
       builder: (context, state) {
         if (state is GalleryInitial) {
           return const SizedBox.shrink();
@@ -50,9 +59,7 @@ class _GalleryFragmentState extends State<GalleryFragment> {
             galleryBloc.add(GalleryImagesRefreshed());
 
             // sync the indicator with the bloc
-            await galleryBloc.stream.firstWhere(
-              (state) => state is GallerySuccess && state.refreshing,
-            );
+            return _refreshCompleter.future;
           },
           child: GridView.builder(
             gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(

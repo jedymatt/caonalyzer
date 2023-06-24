@@ -23,11 +23,11 @@ class GalleryBloc extends Bloc<GalleryEvent, GalleryState> {
   }
 
   FutureOr<void> _onImageRefreshed(event, emit) async {
-    if (state is! GallerySuccess) return null;
+    if (state is! GallerySuccess) return;
 
     final state_ = state as GallerySuccess;
 
-    if (state_.refreshing) return null;
+    if (state_.refreshing) return;
 
     emit(state_.copyWith(refreshing: true));
 
