@@ -11,14 +11,17 @@ class GalleryLoading extends GalleryState {}
 
 class GallerySuccess extends GalleryState {
   final List<Batch> batches;
+  final bool refreshing;
 
-  GallerySuccess({required this.batches});
-}
+  GallerySuccess({required this.batches, this.refreshing = false});
 
-class GalleryRefreshingBatches extends GalleryState {
-  final List<Batch> batches;
-
-  GalleryRefreshingBatches({
-    required this.batches,
-  });
+  GallerySuccess copyWith({
+    List<Batch>? batches,
+    bool? refreshing,
+  }) {
+    return GallerySuccess(
+      batches: batches ?? this.batches,
+      refreshing: refreshing ?? this.refreshing,
+    );
+  }
 }
