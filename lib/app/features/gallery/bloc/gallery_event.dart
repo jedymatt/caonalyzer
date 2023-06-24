@@ -5,4 +5,4 @@ abstract class GalleryEvent {}
 
 class GalleryStarted extends GalleryEvent {}
 
-class GalleryImagesRefreshed extends GalleryEvent {}
+class GalleryBatchesRefreshed extends GalleryEvent {}
