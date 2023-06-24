@@ -3,10 +3,7 @@ part of 'camera_bloc.dart';
 @immutable
 abstract class CameraEvent {}
 
-class CameraStarted extends CameraEvent {
-  final CameraCaptureMode mode;
-  CameraStarted({required this.mode});
-}
+class CameraStarted extends CameraEvent {}
 
 class CameraStopped extends CameraEvent {}
 
