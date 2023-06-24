@@ -6,12 +6,12 @@ abstract class BatchConfirmationState {}
 abstract class BatchConfirmationActionState extends BatchConfirmationState {}
 
 class BatchConfirmationInitial extends BatchConfirmationState {
-  final String batchPath;
+  final String? batchPath;
   final List<String> images;
   final int currentIndex;
 
   BatchConfirmationInitial({
-    required this.batchPath,
+    this.batchPath,
     this.images = const [],
     this.currentIndex = 0,
   });
