@@ -31,17 +31,23 @@ class _GalleryFragmentState extends State<GalleryFragment> {
     return BlocConsumer<GalleryBloc, GalleryState>(
       bloc: galleryBloc,
       listener: (context, state) {
-        if (state is GallerySuccess && !(state).refreshing) {
+        if (state is GalleryRefreshSuccess) {
           _refreshCompleter.complete();
           _refreshCompleter = Completer<void>();
         }
+      },
+      buildWhen: (previous, current) {
+        if (current is GalleryRefreshInProgress) return false;
+        if (current is GalleryRefreshSuccess) return false;
+
+        return true;
       },
       builder: (context, state) {
         if (state is GalleryInitial) {
           return const SizedBox.shrink();
         }
 
-        if (state is GalleryLoading) {
+        if (state is GalleryInProgress) {
           return const Center(
             child: CircularProgressIndicator(),
           );
@@ -56,7 +62,7 @@ class _GalleryFragmentState extends State<GalleryFragment> {
         return RefreshIndicator(
           onRefresh: () async {
             // fetch the images in gallery
-            galleryBloc.add(GalleryImagesRefreshed());
+            galleryBloc.add(GalleryBatchesRefreshed());
 
             // sync the indicator with the bloc
             return _refreshCompleter.future;
