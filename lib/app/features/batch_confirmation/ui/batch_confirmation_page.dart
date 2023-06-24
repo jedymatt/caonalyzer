@@ -63,7 +63,7 @@ class _BatchConfirmationPageState extends State<BatchConfirmationPage> {
               );
             } else {
               BlocProvider.of<GalleryBloc>(context)
-                  .add(GalleryImagesRefreshed());
+                  .add(GalleryBatchesRefreshed());
 
               BlocProvider.of<HomeBloc>(context)
                   .add(HomeTabChangedEvent(tab: HomeTab.gallery));
@@ -149,7 +149,7 @@ class _BatchConfirmationPageState extends State<BatchConfirmationPage> {
                     batchConfirmationBloc.add(BatchConfirmationBatchSaved());
 
                     BlocProvider.of<GalleryBloc>(context)
-                        .add(GalleryImagesRefreshed());
+                        .add(GalleryBatchesRefreshed());
                   }
                 },
                 currentIndex: 1,
