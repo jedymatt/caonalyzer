@@ -30,17 +30,13 @@ class _GalleryFragmentState extends State<GalleryFragment> {
   Widget build(BuildContext context) {
     return BlocConsumer<GalleryBloc, GalleryState>(
       bloc: galleryBloc,
+      listenWhen: (previous, current) => current is GalleryActionState,
+      buildWhen: (previous, current) => current is! GalleryActionState,
       listener: (context, state) {
         if (state is GalleryRefreshSuccess) {
           _refreshCompleter.complete();
           _refreshCompleter = Completer<void>();
         }
-      },
-      buildWhen: (previous, current) {
-        if (current is GalleryRefreshInProgress) return false;
-        if (current is GalleryRefreshSuccess) return false;
-
-        return true;
       },
       builder: (context, state) {
         if (state is GalleryInitial) {

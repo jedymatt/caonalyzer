@@ -15,6 +15,6 @@ class GallerySuccess extends GalleryState {
   GallerySuccess({required this.batches});
 }
 
-class GalleryRefreshInProgress extends GalleryState {}
+class GalleryRefreshInProgress extends GalleryActionState {}
 
-class GalleryRefreshSuccess extends GalleryState {}
+class GalleryRefreshSuccess extends GalleryActionState {}
