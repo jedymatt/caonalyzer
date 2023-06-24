@@ -1,3 +1,5 @@
+import 'package:caonalyzer/app/features/batch_confirmation/bloc/batch_confirmation_bloc.dart';
+import 'package:caonalyzer/app/features/camera/bloc/camera_bloc.dart';
 import 'package:caonalyzer/app/features/camera/ui/camera_page.dart';
 import 'package:caonalyzer/app/features/gallery/ui/gallery_fragment.dart';
 import 'package:caonalyzer/app/features/home/bloc/home_bloc.dart';
@@ -77,8 +79,27 @@ class _HomePageState extends State<HomePage> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
+          final batchConfirmationBloc = BatchConfirmationBloc();
+          bool isFirstCapture = true;
           Navigator.of(context).push(MaterialPageRoute(
-            builder: (context) => const CameraPage(),
+            builder: (context) => BlocProvider.value(
+              value: batchConfirmationBloc,
+              child: CameraPage(
+                mode: CameraCaptureMode.batch,
+                onCapture: (path) {
+                  if (isFirstCapture) {
+                    batchConfirmationBloc.add(BatchConfirmationStarted());
+                    isFirstCapture = false;
+                  }
+
+                  batchConfirmationBloc.add(
+                    BatchConfirmationImageAdded(
+                      imagePath: path,
+                    ),
+                  );
+                },
+              ),
+            ),
           ));
         },
         label: const Text('Camera'),
