@@ -4,7 +4,6 @@ import 'package:bloc/bloc.dart';
 import 'package:caonalyzer/gallery/gallery_reader.dart';
 import 'package:caonalyzer/gallery/gallery_writer.dart';
 import 'package:meta/meta.dart';
-import 'package:path/path.dart' as path_lib;
 
 part 'batch_confirmation_event.dart';
 part 'batch_confirmation_state.dart';
