@@ -14,24 +14,24 @@ part 'gallery_state.dart';
 class GalleryBloc extends Bloc<GalleryEvent, GalleryState> {
   GalleryBloc() : super(GalleryInitial()) {
     on<GalleryStarted>(_onStarted);
-    on<GalleryImagesRefreshed>(_onImageRefreshed);
+    on<GalleryBatchesRefreshed>(_onBatchesRefreshed);
   }
 
-  FutureOr<void> _onStarted(event, emit) async {
-    emit(GalleryLoading());
+  FutureOr<void> _onStarted(
+      GalleryStarted event, Emitter<GalleryState> emit) async {
+    emit(GalleryInProgress());
     emit(GallerySuccess(batches: await _getBatches()));
   }
 
-  FutureOr<void> _onImageRefreshed(event, emit) async {
+  FutureOr<void> _onBatchesRefreshed(event, emit) async {
     if (state is! GallerySuccess) return;
 
-    final state_ = state as GallerySuccess;
+    emit(GalleryRefreshInProgress());
 
-    if (state_.refreshing) return;
+    final batches = await _getBatches();
 
-    emit(state_.copyWith(refreshing: true));
-
-    emit(GallerySuccess(batches: await _getBatches()));
+    emit(GalleryRefreshSuccess());
+    emit(GallerySuccess(batches: batches));
   }
 
   Future<List<Batch>> _getBatches() async {
