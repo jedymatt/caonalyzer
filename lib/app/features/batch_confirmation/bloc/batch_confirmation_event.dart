@@ -4,9 +4,8 @@ part of 'batch_confirmation_bloc.dart';
 abstract class BatchConfirmationEvent {}
 
 class BatchConfirmationStarted extends BatchConfirmationEvent {
-  final List<String> images;
-  final int currentIndex;
-  BatchConfirmationStarted({required this.images, this.currentIndex = 0});
+  final String? batchPath;
+  BatchConfirmationStarted({this.batchPath});
 }
 
 class BatchConfirmationImageRetaked extends BatchConfirmationEvent {
@@ -20,6 +19,11 @@ class BatchConfirmationImagePageChanged extends BatchConfirmationEvent {
   BatchConfirmationImagePageChanged({required this.index});
 }
 
-class BatchConfirmationImageAdded extends BatchConfirmationEvent {}
+class BatchConfirmationImageAdded extends BatchConfirmationEvent {
+  final String imagePath;
+  BatchConfirmationImageAdded({
+    required this.imagePath,
+  });
+}
 
 class BatchConfirmationBatchSaved extends BatchConfirmationEvent {}
