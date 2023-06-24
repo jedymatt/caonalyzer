@@ -27,11 +27,9 @@ class BatchConfirmationBloc
 
     emit(BatchConfirmationLoadingSaveBatchState());
 
-    final batchPath = path_lib.dirname(state_.images.first);
-
     // if batchPath is does not exist, create it
-    if (!GalleryReader.batchExists(batchPath)) {
-      GalleryWriter.createDirectory(batchPath);
+    if (!GalleryReader.batchExists(state_.batchPath)) {
+      GalleryWriter.createDirectory(state_.batchPath);
     }
 
     await GalleryWriter.appendImages(state_.images, state_.batchPath);
