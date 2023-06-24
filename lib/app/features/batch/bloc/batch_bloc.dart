@@ -12,11 +12,8 @@ part 'batch_state.dart';
 class BatchBloc extends Bloc<BatchEvent, BatchState> {
   BatchBloc() : super(BatchInitial()) {
     on<BatchStarted>(_onStarted);
-
     on<BatchImagesSelected>(_onImagesSelected);
-
-    on<BatchSelectionCanceled>(_onSelectionCanceled);
-
+    on<BatchImageSelectionCanceled>(_onSelectionCanceled);
     on<BatchImagesDeleted>(_onImagesDeleted);
   }
 

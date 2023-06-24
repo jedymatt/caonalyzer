@@ -54,7 +54,7 @@ class _BatchPageState extends State<BatchPage> {
           return WillPopScope(
             onWillPop: () async {
               if (state is BatchSelectionModeState) {
-                batchBloc.add(BatchSelectionCanceled());
+                batchBloc.add(BatchImageSelectionCanceled());
 
                 return Future.value(false);
               }
@@ -226,7 +226,7 @@ class BatchAppBar extends StatelessWidget implements PreferredSizeWidget {
             title: Text('${state.selectedImages.length} selected'),
             leading: IconButton(
               onPressed: () {
-                batchBloc.add(BatchSelectionCanceled());
+                batchBloc.add(BatchImageSelectionCanceled());
               },
               icon: const Icon(Icons.close),
             ),

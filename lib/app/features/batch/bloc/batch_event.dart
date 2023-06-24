@@ -22,7 +22,7 @@ class BatchImagesSelected extends BatchEvent {
   BatchImagesSelected({required this.selectedImages});
 }
 
-class BatchSelectionCanceled extends BatchEvent {}
+class BatchImageSelectionCanceled extends BatchEvent {}
 
 class BatchImagesDeleted extends BatchEvent {
   final List<String> images;
