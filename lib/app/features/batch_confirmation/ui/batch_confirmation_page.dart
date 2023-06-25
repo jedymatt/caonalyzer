@@ -53,6 +53,7 @@ class _BatchConfirmationPageState extends State<BatchConfirmationPage> {
             current is BatchConfirmationActionState,
         listener: (context, state) {
           if (state is BatchConfirmationNavigateToBatchPageActionState) {
+            batchConfirmationBloc.close();
             if (widget.isFromBatchPage) {
               // pop until batch page
               Navigator.of(context).pushAndRemoveUntil(
@@ -124,15 +125,9 @@ class _BatchConfirmationPageState extends State<BatchConfirmationPage> {
                 onTap: (index) async {
                   if (index == 0) {
                     // retake
-                    final cameraBloc = CameraBloc(
-                      mode: CameraCaptureMode.single,
-                    );
                     Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) => MultiBlocProvider(
-                        providers: [
-                          BlocProvider.value(value: batchConfirmationBloc),
-                          BlocProvider.value(value: cameraBloc),
-                        ],
+                      builder: (context) => BlocProvider.value(
+                        value: batchConfirmationBloc,
                         child: CameraPage(
                           existingBatchPath: state.batchPath,
                           mode: CameraCaptureMode.single,
@@ -148,7 +143,6 @@ class _BatchConfirmationPageState extends State<BatchConfirmationPage> {
                         ),
                       ),
                     ));
-
                     return;
                   }
 
@@ -158,9 +152,6 @@ class _BatchConfirmationPageState extends State<BatchConfirmationPage> {
 
                   if (index == 2) {
                     batchConfirmationBloc.add(BatchConfirmationBatchSaved());
-
-                    BlocProvider.of<GalleryBloc>(context)
-                        .add(GalleryBatchesRefreshed());
                   }
                 },
                 currentIndex: 1,

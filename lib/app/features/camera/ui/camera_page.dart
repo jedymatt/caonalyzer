@@ -48,8 +48,14 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
   void initState() {
     super.initState();
 
-    cameraBloc = BlocProvider.of<CameraBloc>(context)
+    cameraBloc = CameraBloc(mode: widget.mode)
       ..add(CameraStarted(mode: widget.mode));
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    cameraBloc.close();
   }
 
   @override
@@ -102,7 +108,6 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
                   ),
                 ),
               ),
-              // capture button
               Align(
                 alignment: Alignment.bottomCenter,
                 child: Padding(
@@ -121,6 +126,7 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
                           const SizedBox.square(
                             dimension: 24,
                           ),
+                          // capture button
                           Container(
                             decoration: const BoxDecoration(
                               shape: BoxShape.circle,
@@ -162,7 +168,7 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
                                                       BatchConfirmationBloc>(
                                                   context);
 
-                                          await Navigator.of(context)
+                                          Navigator.of(context)
                                               .push(MaterialPageRoute(
                                             builder: (context) =>
                                                 BlocProvider.value(
@@ -173,10 +179,11 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
                                                     const BatchConfirmationPage(),
                                               ),
                                             ),
-                                          ));
-
-                                          cameraBloc.add(
-                                              CameraStarted(mode: widget.mode));
+                                          ))
+                                              .then((_) {
+                                            cameraBloc.add(CameraStarted(
+                                                mode: widget.mode));
+                                          });
                                         },
                                         icon: const Icon(Icons.check),
                                         color: Colors.green,

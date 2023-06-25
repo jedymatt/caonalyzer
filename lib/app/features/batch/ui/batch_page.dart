@@ -186,29 +186,31 @@ class _BatchPageState extends State<BatchPage> {
                               final batchConfirmationBloc =
                                   BatchConfirmationBloc();
                               bool isFirstCapture = true;
-                              Navigator.of(context).push(MaterialPageRoute(
-                                builder: (context) => BlocProvider.value(
-                                  value: batchConfirmationBloc,
-                                  child: CameraPage(
-                                    mode: CameraCaptureMode.batch,
-                                    onCapture: (path) {
-                                      if (isFirstCapture) {
-                                        batchConfirmationBloc
-                                            .add(BatchConfirmationStarted(
-                                          batchPath: widget.batchPath,
-                                        ));
-                                        isFirstCapture = false;
-                                      }
+                              Navigator.of(context)
+                                  .push(MaterialPageRoute(
+                                    builder: (context) => BlocProvider.value(
+                                      value: batchConfirmationBloc,
+                                      child: CameraPage(
+                                        mode: CameraCaptureMode.batch,
+                                        onCapture: (path) {
+                                          if (isFirstCapture) {
+                                            batchConfirmationBloc
+                                                .add(BatchConfirmationStarted(
+                                              batchPath: widget.batchPath,
+                                            ));
+                                            isFirstCapture = false;
+                                          }
 
-                                      batchConfirmationBloc.add(
-                                        BatchConfirmationImageAdded(
-                                          imagePath: path,
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                ),
-                              ));
+                                          batchConfirmationBloc.add(
+                                            BatchConfirmationImageAdded(
+                                              imagePath: path,
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                  ))
+                                  .then((_) => batchConfirmationBloc.close());
                             },
                             icon: const Icon(Icons.add_a_photo),
                             tooltip: 'Add a photo',
