@@ -6,7 +6,7 @@ import '../gallery/models/batch.dart';
 import '../globals.dart';
 
 class GalleryController extends GetxController {
-  RxList<Batch> get batches => Globals.batches;
+  RxList<Batch> get batches => <Batch>[].obs;
 
   @override
   void onInit() {

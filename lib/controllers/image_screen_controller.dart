@@ -42,7 +42,6 @@ class ImageScreenController extends GetxController {
 
     if (images.isEmpty) {
       final dirPath = path_lib.dirname(imagePath);
-      Globals.batches.removeWhere((element) => element.dirPath == dirPath);
 
       Get.until((route) => route.isFirst);
 
