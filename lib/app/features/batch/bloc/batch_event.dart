@@ -16,16 +16,21 @@ class BatchImagesFetched extends BatchEvent {
   BatchImagesFetched({required this.batchPath});
 }
 
-class BatchImagesSelected extends BatchEvent {
-  final List<String> selectedImages;
+class BatchImageSelectionToggled extends BatchEvent {
+  final int index;
 
-  BatchImagesSelected({required this.selectedImages});
+  BatchImageSelectionToggled({required this.index});
 }
 
-class BatchImageSelectionCanceled extends BatchEvent {}
-
-class BatchImagesDeleted extends BatchEvent {
-  final List<String> images;
-
-  BatchImagesDeleted({required this.images});
+class BatchImageSelectionEnabled extends BatchEvent {
+  final int? startingSelectedIndex;
+  BatchImageSelectionEnabled({this.startingSelectedIndex});
 }
+
+class BatchImageSelectionDisabled extends BatchEvent {}
+
+class BatchSelectedImagesDeleted extends BatchEvent {}
+
+class BatchAllImagesSelected extends BatchEvent {}
+
+class BatchAllImagesDeselected extends BatchEvent {}

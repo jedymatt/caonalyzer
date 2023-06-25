@@ -11,27 +11,26 @@ class BatchLoading extends BatchState {}
 
 class BatchSuccess extends BatchState {
   final List<String> images;
+  final List<String> selectedImages;
+  final bool selectionEnabled;
 
   BatchSuccess({
     required this.images,
+    this.selectedImages = const [],
+    this.selectionEnabled = false,
   });
-}
 
-class BatchSelectionModeState extends BatchState {
-  final List<String> images;
-  final List<String> selectedImages;
-
-  BatchSelectionModeState({required this.images, required this.selectedImages});
-}
-
-class BatchMultiSelectImagesState extends BatchState {
-  final List<String> images;
-  final List<String> selectedImages;
-
-  BatchMultiSelectImagesState({
-    required this.images,
-    required this.selectedImages,
-  });
+  BatchSuccess copyWith({
+    List<String>? images,
+    List<String>? selectedImages,
+    bool? selectionEnabled,
+  }) {
+    return BatchSuccess(
+      images: images ?? this.images,
+      selectedImages: selectedImages ?? this.selectedImages,
+      selectionEnabled: selectionEnabled ?? this.selectionEnabled,
+    );
+  }
 }
 
 class BatchDeletingImagesState extends BatchState {}

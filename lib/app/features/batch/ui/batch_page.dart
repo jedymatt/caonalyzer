@@ -55,9 +55,9 @@ class _BatchPageState extends State<BatchPage> {
         },
         builder: (context, state) {
           return WillPopScope(
-            onWillPop: () async {
-              if (state is BatchSelectionModeState) {
-                batchBloc.add(BatchImageSelectionCanceled());
+            onWillPop: () {
+              if (state is BatchSuccess && state.selectionEnabled) {
+                batchBloc.add(BatchImageSelectionDisabled());
 
                 return Future.value(false);
               }
@@ -74,7 +74,13 @@ class _BatchPageState extends State<BatchPage> {
                       );
                     }
 
-                    if (state is BatchSelectionModeState) {
+                    if (state is! BatchSuccess) {
+                      return const Center(
+                        child: Text('Unexpected Error'),
+                      );
+                    }
+
+                    if (state.selectionEnabled) {
                       return GridView.builder(
                         gridDelegate:
                             const SliverGridDelegateWithFixedCrossAxisCount(
@@ -89,22 +95,8 @@ class _BatchPageState extends State<BatchPage> {
                               image: FileImage(File(state.images[index])),
                               onTap: () {
                                 // toggle
-                                if (state.selectedImages
-                                    .contains(state.images[index])) {
-                                  batchBloc.add(BatchImagesSelected(
-                                    selectedImages: state.selectedImages
-                                        .where((element) =>
-                                            element != state.images[index])
-                                        .toList(),
-                                  ));
-                                } else {
-                                  batchBloc.add(BatchImagesSelected(
-                                    selectedImages: [
-                                      ...state.selectedImages,
-                                      state.images[index]
-                                    ],
-                                  ));
-                                }
+                                batchBloc.add(
+                                    BatchImageSelectionToggled(index: index));
                               },
                               child: state.selectedImages
                                       .contains(state.images[index])
@@ -126,51 +118,47 @@ class _BatchPageState extends State<BatchPage> {
                       );
                     }
 
-                    if (state is BatchSuccess) {
-                      return GridView.builder(
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          mainAxisExtent: 200,
-                        ),
-                        itemCount: state.images.length,
-                        itemBuilder: (context, index) {
-                          return Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: ImageTile(
-                              image: FileImage(File(state.images[index])),
-                              onTap: () {
-                                Navigator.of(context).push(MaterialPageRoute(
-                                    builder: (context) => const ImagePage()));
-                              },
-                              onLongPress: () {
-                                batchBloc.add(BatchImagesSelected(
-                                  selectedImages: [state.images[index]],
-                                ));
-                              },
-                            ),
-                          );
-                        },
-                      );
-                    }
-
-                    return const Center(
-                      child: Text('Unexpected Error'),
+                    return GridView.builder(
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        mainAxisExtent: 200,
+                      ),
+                      itemCount: state.images.length,
+                      itemBuilder: (context, index) {
+                        return Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: ImageTile(
+                            image: FileImage(File(state.images[index])),
+                            onTap: () {
+                              Navigator.of(context).push(MaterialPageRoute(
+                                  builder: (context) => const ImagePage()));
+                            },
+                            onLongPress: () {
+                              batchBloc.add(BatchImageSelectionEnabled(
+                                startingSelectedIndex: index,
+                              ));
+                            },
+                          ),
+                        );
+                      },
                     );
                   },
                 ),
                 bottomNavigationBar: BottomAppBar(
                   child: BlocBuilder<BatchBloc, BatchState>(
                     builder: (context, state) {
-                      if (state is BatchSelectionModeState) {
+                      if (state is! BatchSuccess) {
+                        return const SizedBox.shrink();
+                      }
+
+                      if (state.selectionEnabled) {
                         return Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
                             IconButton(
                               onPressed: () {
-                                batchBloc.add(BatchImagesDeleted(
-                                  images: state.selectedImages,
-                                ));
+                                batchBloc.add(BatchSelectedImagesDeleted());
                               },
                               icon: const Icon(Icons.delete),
                             ),
@@ -230,30 +218,30 @@ class BatchAppBar extends StatelessWidget implements PreferredSizeWidget {
 
     return BlocBuilder<BatchBloc, BatchState>(
       builder: (context, state) {
-        if (state is BatchSelectionModeState) {
+        if (state is! BatchSuccess) {
+          return AppBar(title: Text(title));
+        }
+
+        if (state.selectionEnabled) {
           return AppBar(
             title: Text('${state.selectedImages.length} selected'),
             leading: IconButton(
               onPressed: () {
-                batchBloc.add(BatchImageSelectionCanceled());
+                batchBloc.add(BatchImageSelectionDisabled());
               },
               icon: const Icon(Icons.close),
             ),
             actions: [
               IconButton(
                 onPressed: () {
-                  batchBloc.add(BatchImagesSelected(
-                    selectedImages: [...state.images],
-                  ));
+                  batchBloc.add(BatchAllImagesSelected());
                 },
                 icon: const Icon(Icons.select_all),
               ),
               IconButton(
                 // deselect
                 onPressed: () {
-                  batchBloc.add(BatchImagesSelected(
-                    selectedImages: const [],
-                  ));
+                  batchBloc.add(BatchAllImagesDeselected());
                 },
                 icon: const Icon(Icons.deselect),
               ),
@@ -261,20 +249,14 @@ class BatchAppBar extends StatelessWidget implements PreferredSizeWidget {
           );
         }
 
-        if (state is BatchSuccess) {
-          return AppBar(title: Text(title), actions: [
-            IconButton(
-              onPressed: () {
-                batchBloc.add(BatchImagesSelected(
-                  selectedImages: const [],
-                ));
-              },
-              icon: const Icon(Icons.checklist),
-            )
-          ]);
-        }
-
-        return AppBar(title: Text(title));
+        return AppBar(title: Text(title), actions: [
+          IconButton(
+            onPressed: () {
+              batchBloc.add(BatchImageSelectionEnabled());
+            },
+            icon: const Icon(Icons.checklist),
+          )
+        ]);
       },
     );
   }
