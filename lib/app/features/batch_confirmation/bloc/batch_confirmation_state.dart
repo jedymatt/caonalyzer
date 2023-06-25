@@ -29,13 +29,10 @@ class BatchConfirmationInitial extends BatchConfirmationState {
   }
 }
 
-class BatchConfirmationLoadingSaveBatchState extends BatchConfirmationState {}
+class BatchConfirmatSaveBatchInProgress extends BatchConfirmationState {}
 
-class BatchConfirmationAddImageState extends BatchConfirmationActionState {}
-
-class BatchConfirmationNavigateToBatchPageActionState
-    extends BatchConfirmationActionState {
+class BatchConfirmationSaveBatchSuccess extends BatchConfirmationActionState {
   final String batchPath;
 
-  BatchConfirmationNavigateToBatchPageActionState({required this.batchPath});
+  BatchConfirmationSaveBatchSuccess({required this.batchPath});
 }

@@ -40,7 +40,7 @@ class BatchConfirmationBloc
 
     final state_ = state as BatchConfirmationInitial;
 
-    emit(BatchConfirmationLoadingSaveBatchState());
+    emit(BatchConfirmatSaveBatchInProgress());
 
     // if batchPath is does not exist, create it
     if (!GalleryReader.batchExists(state_.batchPath!)) {
@@ -49,9 +49,7 @@ class BatchConfirmationBloc
 
     await GalleryWriter.appendImages(state_.images, state_.batchPath!);
 
-    emit(BatchConfirmationNavigateToBatchPageActionState(
-      batchPath: state_.batchPath!,
-    ));
+    emit(BatchConfirmationSaveBatchSuccess(batchPath: state_.batchPath!));
   }
 
   FutureOr<void> _onImageAdded(

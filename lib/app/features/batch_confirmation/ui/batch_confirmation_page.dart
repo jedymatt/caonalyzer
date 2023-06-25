@@ -52,7 +52,7 @@ class _BatchConfirmationPageState extends State<BatchConfirmationPage> {
         listenWhen: (previous, current) =>
             current is BatchConfirmationActionState,
         listener: (context, state) {
-          if (state is BatchConfirmationNavigateToBatchPageActionState) {
+          if (state is BatchConfirmationSaveBatchSuccess) {
             batchConfirmationBloc.close();
             if (widget.isFromBatchPage) {
               // pop until batch page
@@ -76,10 +76,6 @@ class _BatchConfirmationPageState extends State<BatchConfirmationPage> {
                 (route) => route.isFirst,
               );
             }
-          }
-
-          if (state is BatchConfirmationAddImageState) {
-            Navigator.of(context).pop();
           }
         },
         child: Scaffold(
@@ -137,10 +133,12 @@ class _BatchConfirmationPageState extends State<BatchConfirmationPage> {
                     return;
                   }
 
+                  // add image
                   if (index == 1) {
                     Navigator.of(context).pop();
                   }
 
+                  // confirm
                   if (index == 2) {
                     batchConfirmationBloc.add(BatchConfirmationBatchSaved());
                   }
