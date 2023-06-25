@@ -56,7 +56,6 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
 
     try {
       emit(CameraCaptureInProgress());
-
       final image = await _cameraController.takePicture();
       await _cameraController.setFlashMode(FlashMode.off);
       await _cameraController.setFlashMode(FlashMode.auto);

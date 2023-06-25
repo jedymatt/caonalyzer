@@ -151,8 +151,7 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
                                     if (state is! BatchConfirmationInitial ||
                                         state.images.isEmpty) {
                                       return const SizedBox.square(
-                                        dimension: 24,
-                                      );
+                                          dimension: 24);
                                     }
 
                                     return Container(
@@ -195,9 +194,7 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
                                     );
                                   }),
                             if (state.mode == CameraCaptureMode.single)
-                              const SizedBox.square(
-                                dimension: 24,
-                              ),
+                              const SizedBox.square(dimension: 24),
                           ],
                         ),
                       ],
