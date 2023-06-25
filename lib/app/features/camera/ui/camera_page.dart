@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:caonalyzer/app/data/enums/capture_mode.dart';
 import 'package:caonalyzer/app/features/batch_confirmation/bloc/batch_confirmation_bloc.dart';
 import 'package:caonalyzer/app/features/batch_confirmation/ui/batch_confirmation_page.dart';
 import 'package:caonalyzer/app/features/camera/bloc/camera_bloc.dart';
@@ -43,26 +44,22 @@ class CameraPage extends StatefulWidget {
 
 class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
   late final CameraBloc cameraBloc;
-  DateTime? timeCaptured;
 
   @override
   void initState() {
-    WidgetsBinding.instance.addObserver(this);
     super.initState();
 
-    cameraBloc = CameraBloc(mode: widget.mode)..add(CameraStarted());
-  }
-
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    super.dispose();
+    cameraBloc = BlocProvider.of<CameraBloc>(context)
+      ..add(CameraStarted(mode: widget.mode));
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+    debugPrint('AppLifecycleState: ${state.toString()}');
     cameraBloc.add(
-      state == AppLifecycleState.resumed ? CameraStarted() : CameraStopped(),
+      state == AppLifecycleState.resumed
+          ? CameraStarted(mode: widget.mode)
+          : CameraStopped(),
     );
   }
 
@@ -71,12 +68,20 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
     return Scaffold(
       body: BlocConsumer<CameraBloc, CameraState>(
         bloc: cameraBloc,
+        listenWhen: (previous, current) => current is CameraActionState,
+        buildWhen: (previous, current) => current is! CameraActionState,
         listener: (context, state) {
           if (state is CameraCaptureSuccess) {
             widget.onCapture(state.path);
           }
         },
         builder: (context, state) {
+          if (state is CameraStopped) {
+            return const Center(
+              child: Text('camera stopped'),
+            );
+          }
+
           if (state is! CameraReady) {
             return const Center(
               child: CircularProgressIndicator(),
@@ -85,7 +90,7 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
           return Stack(
             fit: StackFit.expand,
             children: [
-              ScaledCameraPreview(cameraBloc.controller),
+              ScaledCameraPreview(state.controller),
               Align(
                 alignment: Alignment.topLeft,
                 child: Padding(
@@ -103,64 +108,89 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
                 alignment: Alignment.bottomCenter,
                 child: Padding(
                   padding: const EdgeInsets.only(bottom: 32),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.max,
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      const SizedBox.square(
-                        dimension: 24,
+                      Center(child: Text('${state.mode}')),
+                      const SizedBox(
+                        height: 12,
                       ),
-                      Container(
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.white,
-                        ),
-                        child: IconButton(
-                          onPressed: () async {
-                            cameraBloc.add(CameraCaptured());
-                          },
-                          icon: const Icon(Icons.camera_alt),
-                        ),
-                      ),
-                      BlocBuilder<BatchConfirmationBloc,
-                              BatchConfirmationState>(
-                          bloc: BlocProvider.of<BatchConfirmationBloc>(context),
-                          builder: (context, state) {
-                            if (state is! BatchConfirmationInitial ||
-                                state.images.isEmpty) {
-                              return const SizedBox.square(
-                                dimension: 24,
-                              );
-                            }
+                      Row(
+                        mainAxisSize: MainAxisSize.max,
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          const SizedBox.square(
+                            dimension: 24,
+                          ),
+                          Container(
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.white,
+                            ),
+                            child: IconButton(
+                              onPressed: () {
+                                cameraBloc.add(CameraCaptured());
+                              },
+                              icon: const Icon(Icons.camera_alt),
+                            ),
+                          ),
+                          if (state.mode == CameraCaptureMode.batch)
+                            BlocBuilder<BatchConfirmationBloc,
+                                    BatchConfirmationState>(
+                                bloc: BlocProvider.of<BatchConfirmationBloc>(
+                                    context),
+                                builder: (context, state) {
+                                  if (state is! BatchConfirmationInitial ||
+                                      state.images.isEmpty) {
+                                    return const SizedBox.square(
+                                      dimension: 24,
+                                    );
+                                  }
 
-                            return Container(
-                              decoration: const BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: Colors.white,
-                              ),
-                              child: CircleAvatar(
-                                backgroundImage:
-                                    FileImage(File(state.images.last)),
-                                child: IconButton(
-                                  onPressed: () {
-                                    final batchConfirmationBloc =
-                                        BlocProvider.of<BatchConfirmationBloc>(
-                                            context);
-                                    Navigator.of(context).push(
-                                        MaterialPageRoute(
+                                  return Container(
+                                    decoration: const BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: Colors.white,
+                                    ),
+                                    child: CircleAvatar(
+                                      backgroundImage:
+                                          FileImage(File(state.images.last)),
+                                      child: IconButton(
+                                        onPressed: () async {
+                                          cameraBloc.add(CameraStopped());
+                                          final batchConfirmationBloc =
+                                              BlocProvider.of<
+                                                      BatchConfirmationBloc>(
+                                                  context);
+
+                                          await Navigator.of(context)
+                                              .push(MaterialPageRoute(
                                             builder: (context) =>
                                                 BlocProvider.value(
-                                                  value: batchConfirmationBloc,
-                                                  child:
-                                                      const BatchConfirmationPage(),
-                                                )));
-                                  },
-                                  icon: const Icon(Icons.check),
-                                  color: Colors.green,
-                                ),
-                              ),
-                            );
-                          }),
+                                              value: batchConfirmationBloc,
+                                              child: BlocProvider.value(
+                                                value: cameraBloc,
+                                                child:
+                                                    const BatchConfirmationPage(),
+                                              ),
+                                            ),
+                                          ));
+
+                                          cameraBloc.add(
+                                              CameraStarted(mode: widget.mode));
+                                        },
+                                        icon: const Icon(Icons.check),
+                                        color: Colors.green,
+                                      ),
+                                    ),
+                                  );
+                                }),
+                          if (state.mode == CameraCaptureMode.single)
+                            const SizedBox.square(
+                              dimension: 24,
+                            ),
+                        ],
+                      ),
                     ],
                   ),
                 ),

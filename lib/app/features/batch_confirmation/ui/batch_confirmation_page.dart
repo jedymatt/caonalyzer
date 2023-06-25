@@ -124,21 +124,32 @@ class _BatchConfirmationPageState extends State<BatchConfirmationPage> {
                 onTap: (index) async {
                   if (index == 0) {
                     // retake
+                    final cameraBloc = CameraBloc(
+                      mode: CameraCaptureMode.single,
+                    );
                     Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) => BlocProvider.value(
-                        value: batchConfirmationBloc,
+                      builder: (context) => MultiBlocProvider(
+                        providers: [
+                          BlocProvider.value(value: batchConfirmationBloc),
+                          BlocProvider.value(value: cameraBloc),
+                        ],
                         child: CameraPage(
                           existingBatchPath: state.batchPath,
                           mode: CameraCaptureMode.single,
                           onCapture: (path) {
                             batchConfirmationBloc.add(
-                                BatchConfirmationImageRetaked(imagePath: path));
+                              BatchConfirmationImageRetaked(
+                                imagePath: path,
+                              ),
+                            );
 
                             Navigator.of(context).pop();
                           },
                         ),
                       ),
                     ));
+
+                    return;
                   }
 
                   if (index == 1) {

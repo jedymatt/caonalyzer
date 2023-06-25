@@ -78,19 +78,17 @@ class BatchConfirmationBloc
     ));
   }
 
-  FutureOr<void> _onImageRetaked(event, emit) {
+  FutureOr<void> _onImageRetaked(BatchConfirmationImageRetaked event,
+      Emitter<BatchConfirmationState> emit) {
     if (state is! BatchConfirmationInitial) return null;
 
     final state_ = state as BatchConfirmationInitial;
 
+    List<String> images = List.from(state_.images);
+    images[state_.currentIndex] = event.imagePath;
     emit(state_.copyWith(
       currentIndex: state_.currentIndex,
-      images: List.from(state_.images)
-        ..replaceRange(
-          state_.currentIndex,
-          state_.currentIndex + 1,
-          [event.imagePath],
-        ),
+      images: images,
     ));
   }
 }

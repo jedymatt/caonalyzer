@@ -22,7 +22,6 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
   FutureOr<void> _onStarted(
       CameraStarted event, Emitter<CameraState> emit) async {
     if (state is! CameraInitial) return;
-    final state_ = state as CameraInitial;
     try {
       _cameraController = CameraController(
         Globals.cameras.first,
@@ -32,7 +31,7 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
 
       await _cameraController.initialize();
 
-      emit(CameraReady(mode: state_.mode));
+      emit(CameraReady(mode: event.mode, controller: _cameraController));
     } on CameraException catch (e) {
       _cameraController.dispose();
       emit(CameraFailure(message: e.description!));
@@ -61,7 +60,7 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
       final image = await _cameraController.takePicture();
 
       emit(CameraCaptureSuccess(path: image.path, mode: state_.mode));
-      emit(CameraReady(mode: state_.mode));
+      emit(CameraReady(mode: state_.mode, controller: _cameraController));
     } on CameraException catch (e) {
       emit(CameraCaptureFailure(message: e.description!));
     }

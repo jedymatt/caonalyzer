@@ -5,6 +5,8 @@ enum CameraCaptureMode { single, batch }
 @immutable
 abstract class CameraState {}
 
+abstract class CameraActionState extends CameraState {}
+
 class CameraInitial extends CameraState {
   final CameraCaptureMode mode;
   CameraInitial({
@@ -14,8 +16,10 @@ class CameraInitial extends CameraState {
 
 class CameraReady extends CameraState {
   final CameraCaptureMode mode;
+  final CameraController controller;
   CameraReady({
     required this.mode,
+    required this.controller,
   });
 }
 
@@ -25,9 +29,9 @@ class CameraFailure extends CameraState {
   CameraFailure({required this.message});
 }
 
-class CameraCaptureInProgress extends CameraState {}
+class CameraCaptureInProgress extends CameraActionState {}
 
-class CameraCaptureSuccess extends CameraState {
+class CameraCaptureSuccess extends CameraActionState {
   final String path;
   final CameraCaptureMode mode;
   final String? batchPath;
@@ -38,7 +42,7 @@ class CameraCaptureSuccess extends CameraState {
   });
 }
 
-class CameraCaptureFailure extends CameraState {
+class CameraCaptureFailure extends CameraActionState {
   final String message;
 
   CameraCaptureFailure({required this.message});

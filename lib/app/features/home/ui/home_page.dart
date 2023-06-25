@@ -80,10 +80,14 @@ class _HomePageState extends State<HomePage> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           final batchConfirmationBloc = BatchConfirmationBloc();
+          final cameraBloc = CameraBloc(mode: CameraCaptureMode.batch);
           bool isFirstCapture = true;
           Navigator.of(context).push(MaterialPageRoute(
-            builder: (context) => BlocProvider.value(
-              value: batchConfirmationBloc,
+            builder: (context) => MultiBlocProvider(
+              providers: [
+                BlocProvider.value(value: batchConfirmationBloc),
+                BlocProvider.value(value: cameraBloc),
+              ],
               child: CameraPage(
                 mode: CameraCaptureMode.batch,
                 onCapture: (path) {
@@ -93,9 +97,7 @@ class _HomePageState extends State<HomePage> {
                   }
 
                   batchConfirmationBloc.add(
-                    BatchConfirmationImageAdded(
-                      imagePath: path,
-                    ),
+                    BatchConfirmationImageAdded(imagePath: path),
                   );
                 },
               ),
