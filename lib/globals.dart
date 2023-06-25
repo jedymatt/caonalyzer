@@ -16,7 +16,6 @@ RxList<String> labels = <String>[].obs;
 Future<void> initGlobals() async {}
 
 abstract final class Globals {
-  static final batches = <Batch>[].obs;
   static final preferredMode = PreferredMode.offline.obs;
   static final cameras = <CameraDescription>[].obs;
 
