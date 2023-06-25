@@ -131,15 +131,6 @@ class _BatchConfirmationPageState extends State<BatchConfirmationPage> {
                         child: CameraPage(
                           existingBatchPath: state.batchPath,
                           mode: CameraCaptureMode.single,
-                          onCapture: (path) {
-                            batchConfirmationBloc.add(
-                              BatchConfirmationImageRetaked(
-                                imagePath: path,
-                              ),
-                            );
-
-                            Navigator.of(context).pop();
-                          },
                         ),
                       ),
                     ));

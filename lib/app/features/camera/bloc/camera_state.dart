@@ -34,11 +34,9 @@ class CameraCaptureInProgress extends CameraActionState {}
 class CameraCaptureSuccess extends CameraActionState {
   final String path;
   final CameraCaptureMode mode;
-  final String? batchPath;
   CameraCaptureSuccess({
     required this.path,
     required this.mode,
-    this.batchPath,
   });
 }
 

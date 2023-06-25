@@ -79,28 +79,12 @@ class _HomePageState extends State<HomePage> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          final batchConfirmationBloc = BatchConfirmationBloc();
-          bool isFirstCapture = true;
-          Navigator.of(context)
-              .push(MaterialPageRoute(
-                builder: (context) => BlocProvider.value(
-                  value: batchConfirmationBloc,
-                  child: CameraPage(
-                    mode: CameraCaptureMode.batch,
-                    onCapture: (path) {
-                      if (isFirstCapture) {
-                        batchConfirmationBloc.add(BatchConfirmationStarted());
-                        isFirstCapture = false;
-                      }
-
-                      batchConfirmationBloc.add(
-                        BatchConfirmationImageAdded(imagePath: path),
-                      );
-                    },
-                  ),
-                ),
-              ))
-              .then((_) => batchConfirmationBloc.close());
+          Navigator.of(context).push(MaterialPageRoute(
+            builder: (context) => BlocProvider(
+              create: (context) => BatchConfirmationBloc(),
+              child: const CameraPage(mode: CameraCaptureMode.batch),
+            ),
+          ));
         },
         label: const Text('Camera'),
         icon: const Icon(Icons.camera_alt),
