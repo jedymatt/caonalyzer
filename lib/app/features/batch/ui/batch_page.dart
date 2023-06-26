@@ -40,8 +40,8 @@ class _BatchPageState extends State<BatchPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => batchBloc,
+    return BlocProvider.value(
+      value: batchBloc,
       child: BlocConsumer<BatchBloc, BatchState>(
         listenWhen: (previous, current) => current is BatchActionState,
         buildWhen: (previous, current) => current is! BatchActionState,
@@ -218,7 +218,7 @@ class BatchAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    final batchBloc = context.read<BatchBloc>();
+    final batchBloc = BlocProvider.of<BatchBloc>(context);
 
     return BlocBuilder<BatchBloc, BatchState>(
       builder: (context, state) {
