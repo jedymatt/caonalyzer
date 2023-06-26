@@ -98,7 +98,7 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
             return Stack(
               fit: StackFit.expand,
               children: [
-                ScaledCameraPreview(state.controller),
+                ScaledCameraPreview(cameraBloc.controller),
                 Align(
                   alignment: Alignment.topLeft,
                   child: Padding(

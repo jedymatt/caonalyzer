@@ -31,7 +31,7 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
 
       await _cameraController.initialize();
 
-      emit(CameraReady(mode: event.mode, controller: _cameraController));
+      emit(CameraReady(mode: event.mode));
     } on CameraException catch (e) {
       _cameraController.dispose();
       emit(CameraFailure(message: e.description!));
@@ -57,10 +57,8 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
     try {
       emit(CameraCaptureInProgress());
       final image = await _cameraController.takePicture();
-      await _cameraController.setFlashMode(FlashMode.off);
-      await _cameraController.setFlashMode(FlashMode.auto);
       emit(CameraCaptureSuccess(path: image.path, mode: state_.mode));
-      emit(CameraReady(mode: state_.mode, controller: _cameraController));
+      emit(CameraReady(mode: state_.mode));
     } on CameraException catch (e) {
       emit(CameraCaptureFailure(message: e.description!));
     }

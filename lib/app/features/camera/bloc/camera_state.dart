@@ -16,11 +16,7 @@ class CameraInitial extends CameraState {
 
 class CameraReady extends CameraState {
   final CameraCaptureMode mode;
-  final CameraController controller;
-  CameraReady({
-    required this.mode,
-    required this.controller,
-  });
+  CameraReady({required this.mode});
 }
 
 class CameraFailure extends CameraState {

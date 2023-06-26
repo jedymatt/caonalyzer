@@ -132,7 +132,11 @@ class _BatchPageState extends State<BatchPage> {
                             image: FileImage(File(state.images[index])),
                             onTap: () {
                               Navigator.of(context).push(MaterialPageRoute(
-                                  builder: (context) => const ImagePage()));
+                                builder: (context) => ImagePage(
+                                  images: state.images,
+                                  index: index,
+                                ),
+                              ));
                             },
                             onLongPress: () {
                               batchBloc.add(BatchImageSelectionEnabled(
