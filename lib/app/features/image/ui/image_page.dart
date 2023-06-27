@@ -29,32 +29,44 @@ class _ImagePageState extends State<ImagePage> {
   Widget build(BuildContext context) {
     return BlocProvider.value(
       value: imageBloc,
-      child: Scaffold(
-        appBar: const ImageAppBar(),
-        body: BlocBuilder<ImageBloc, ImageState>(
-          bloc: imageBloc,
-          builder: (context, state) {
-            if (state is! ImageInitial) return const SizedBox.shrink();
+      child: BlocBuilder<ImageBloc, ImageState>(
+        builder: (context, state) {
+          return Scaffold(
+            appBar: const ImageAppBar(),
+            body: BlocBuilder<ImageBloc, ImageState>(
+              bloc: imageBloc,
+              builder: (context, state) {
+                if (state is! ImageInitial) return const SizedBox.shrink();
 
-            return PhotoViewGallery.builder(
-              pageController: imageBloc.controller,
-              itemCount: widget.images.length,
-              builder: (context, index) {
-                return PhotoViewGalleryPageOptions(
-                  imageProvider: FileImage(File(widget.images[index])),
-                  minScale: PhotoViewComputedScale.contained,
-                  maxScale: PhotoViewComputedScale.contained * 2.5,
+                return Stack(
+                  children: [
+                    PhotoViewGallery.builder(
+                      pageController: imageBloc.controller,
+                      itemCount: widget.images.length,
+                      builder: (context, index) {
+                        return PhotoViewGalleryPageOptions(
+                          imageProvider: FileImage(File(widget.images[index])),
+                          minScale: PhotoViewComputedScale.contained,
+                          maxScale: PhotoViewComputedScale.contained * 2.5,
+                        );
+                      },
+                      onPageChanged: (index) {
+                        imageBloc.add(ImagePageChanged(index: index));
+                      },
+                      backgroundDecoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.background,
+                      ),
+                    ),
+                    if (state.detectionInProgress)
+                      const Center(
+                        child: CircularProgressIndicator(),
+                      ),
+                  ],
                 );
               },
-              onPageChanged: (index) {
-                imageBloc.add(ImagePageChanged(index: index));
-              },
-              backgroundDecoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.background,
-              ),
-            );
-          },
-        ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -75,6 +87,20 @@ class ImageAppBar extends StatelessWidget implements PreferredSizeWidget {
         return AppBar(
           title: Text('${state.index + 1}/${state.images.length}'),
           centerTitle: true,
+          actions: [
+            // show/hide button
+            IconButton(
+              icon: Icon(state.showDetection
+                  ? Icons.visibility
+                  : Icons.visibility_off),
+              onPressed: state.detectionInProgress
+                  ? null
+                  : () {
+                      BlocProvider.of<ImageBloc>(context)
+                          .add(ImageDetectionToggled());
+                    },
+            ),
+          ],
         );
       },
     );
