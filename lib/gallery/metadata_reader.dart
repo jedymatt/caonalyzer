@@ -14,4 +14,8 @@ class MetadataReader {
 
     return ImageMetadata.fromJson(jsonString);
   }
+
+  static bool exists(String imagePath) {
+    return File('$imagePath.metadata.json').existsSync();
+  }
 }
