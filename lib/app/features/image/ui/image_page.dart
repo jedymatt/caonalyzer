@@ -35,26 +35,31 @@ class _ImagePageState extends State<ImagePage> {
             appBar: const ImageAppBar(),
             body: BlocBuilder<ImageBloc, ImageState>(
               bloc: imageBloc,
+              buildWhen: (previous, current) => current is ImageInitial,
               builder: (context, state) {
                 if (state is! ImageInitial) return const SizedBox.shrink();
 
                 return Stack(
                   children: [
-                    PhotoViewGallery.builder(
-                      pageController: imageBloc.controller,
-                      itemCount: widget.images.length,
-                      builder: (context, index) {
-                        return PhotoViewGalleryPageOptions(
-                          imageProvider: FileImage(File(widget.images[index])),
-                          minScale: PhotoViewComputedScale.contained,
-                          maxScale: PhotoViewComputedScale.contained * 2.5,
-                        );
-                      },
-                      onPageChanged: (index) {
-                        imageBloc.add(ImagePageChanged(index: index));
-                      },
-                      backgroundDecoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.background,
+                    // do custom paint instead of saving a preview image
+                    CustomPaint(
+                      // painter: BoundingBoxPainter(), TODO: supply arguments
+                      child: PhotoViewGallery.builder(
+                        pageController: imageBloc.controller,
+                        itemCount: widget.images.length,
+                        builder: (context, index) {
+                          return PhotoViewGalleryPageOptions(
+                            imageProvider: FileImage(File(state.images[index])),
+                            minScale: PhotoViewComputedScale.contained,
+                            maxScale: PhotoViewComputedScale.contained * 2.5,
+                          );
+                        },
+                        onPageChanged: (index) {
+                          imageBloc.add(ImagePageChanged(index: index));
+                        },
+                        backgroundDecoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.background,
+                        ),
                       ),
                     ),
                     if (state.detectionInProgress)
@@ -79,6 +84,7 @@ class ImageAppBar extends StatelessWidget implements PreferredSizeWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<ImageBloc, ImageState>(
       bloc: BlocProvider.of<ImageBloc>(context),
+      buildWhen: (previous, current) => current is ImageInitial,
       builder: (context, state) {
         if (state is! ImageInitial) {
           return AppBar();
