@@ -7,3 +7,5 @@ class ImagePageChanged extends ImageEvent {
   final int index;
   ImagePageChanged({required this.index});
 }
+
+class ImageDetectionToggled extends ImageEvent {}
