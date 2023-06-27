@@ -17,14 +17,20 @@ part 'image_state.dart';
 
 class ImageBloc extends Bloc<ImageEvent, ImageState> {
   final PageController _pageController;
+  final List<String> _images;
 
   ImageBloc({required List<String> images, int initialIndex = 0})
-      : _pageController = PageController(initialPage: initialIndex),
+      : _images = List.from(images),
+        _pageController = PageController(initialPage: initialIndex),
         super(ImageInitial(images: images, index: initialIndex)) {
     on<ImagePageChanged>((event, emit) {
       final state_ = state;
 
       if (state_ is! ImageInitial) return null;
+
+      if (state_.showDetection) {
+        // todo: display preview
+      }
 
       emit(state_.copyWith(index: event.index));
     });
@@ -37,7 +43,10 @@ class ImageBloc extends Bloc<ImageEvent, ImageState> {
 
       emit(state_);
 
-      if (!state_.showDetection) return;
+      if (!state_.showDetection) {
+        emit(state_.copyWith(images: List.from(_images)));
+        return;
+      }
 
       final currentImagePath = state_.images[state_.index];
 
@@ -53,6 +62,16 @@ class ImageBloc extends Bloc<ImageEvent, ImageState> {
 
       if (MetadataReader.exists(currentImagePath) && previewExists) {
         // load preview
+        emit(state_.copyWith(
+          images: List.from(state_.images)
+            ..replaceRange(
+              state_.index,
+              state_.index + 1,
+              [
+                '${path_lib.withoutExtension(currentImagePath)}.preview${path_lib.extension(currentImagePath)}',
+              ],
+            ),
+        ));
         return;
       }
       // check if preview exists
@@ -79,14 +98,26 @@ class ImageBloc extends Bloc<ImageEvent, ImageState> {
       final previewImage = decodedImage.clone();
 
       for (var detected in detections) {
-        final absoluteBoundingBox = detected.boundingBox
-            .toPixel(previewImage.height, previewImage.width);
+        final boxes = detected.boundingBox
+            .toPixel(previewImage.height, previewImage.width)
+            .toLTRBList()
+            .map((e) => e.toInt())
+            .toList();
         drawRect(
           previewImage,
-          x1: absoluteBoundingBox.left.toInt(),
-          y1: absoluteBoundingBox.top.toInt(),
-          x2: absoluteBoundingBox.right.toInt(),
-          y2: absoluteBoundingBox.bottom.toInt(),
+          x1: boxes[0],
+          y1: boxes[1],
+          x2: boxes[2],
+          y2: boxes[3],
+          color: ColorRgb8(255, 0, 0),
+        );
+
+        drawString(
+          previewImage,
+          '${detected.label} ${(detected.confidence * 100).toStringAsFixed(2)}%',
+          font: arial14,
+          x: boxes[0],
+          y: boxes[1],
           color: ColorRgb8(255, 0, 0),
         );
       }
@@ -113,7 +144,12 @@ class ImageBloc extends Bloc<ImageEvent, ImageState> {
       File('$pathWithoutExtension.preview$fileExtenstion')
           .writeAsBytesSync(encodeJpg(previewImage));
 
-      emit(state_.copyWith(detectionInProgress: false));
+      emit(state_.copyWith(
+        detectionInProgress: false,
+        images: List.from(state_.images)
+          ..replaceRange(state_.index, state_.index + 1,
+              ['$pathWithoutExtension.preview$fileExtenstion']),
+      ));
     });
   }
 
