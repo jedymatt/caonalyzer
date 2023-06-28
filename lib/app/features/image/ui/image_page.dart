@@ -1,10 +1,12 @@
 import 'dart:io';
 
 import 'package:caonalyzer/app/features/image/bloc/image_bloc.dart';
+import 'package:caonalyzer/app/features/image/ui/bounding_box_painter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
+import 'package:caonalyzer/app/features/image/models/image.dart' as models;
 
 class ImagePage extends StatefulWidget {
   const ImagePage({super.key, required this.images, this.index = 0});
@@ -22,7 +24,9 @@ class _ImagePageState extends State<ImagePage> {
   @override
   void initState() {
     super.initState();
-    imageBloc = ImageBloc(images: widget.images, initialIndex: widget.index);
+    imageBloc = ImageBloc(
+        images: widget.images.map((e) => models.Image(path: e)).toList(),
+        initialIndex: widget.index);
   }
 
   @override
@@ -42,24 +46,34 @@ class _ImagePageState extends State<ImagePage> {
                 return Stack(
                   children: [
                     // do custom paint instead of saving a preview image
-                    CustomPaint(
-                      // painter: BoundingBoxPainter(), TODO: supply arguments
-                      child: PhotoViewGallery.builder(
-                        pageController: imageBloc.controller,
-                        itemCount: widget.images.length,
-                        builder: (context, index) {
-                          return PhotoViewGalleryPageOptions(
-                            imageProvider: FileImage(File(state.images[index])),
-                            minScale: PhotoViewComputedScale.contained,
-                            maxScale: PhotoViewComputedScale.contained * 2.5,
-                          );
-                        },
-                        onPageChanged: (index) {
-                          imageBloc.add(ImagePageChanged(index: index));
-                        },
-                        backgroundDecoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.background,
-                        ),
+                    PhotoViewGallery.builder(
+                      pageController: imageBloc.controller,
+                      itemCount: widget.images.length,
+                      builder: (context, index) {
+                        return PhotoViewGalleryPageOptions.customChild(
+                          child: CustomPaint(
+                            foregroundPainter: BoundingBoxPainter(
+                              state.showDetection &&
+                                      state.images[state.index]
+                                              .detectedObjects !=
+                                          null
+                                  ? state.images[state.index].detectedObjects!
+                                  : [],
+                            ),
+                            child: Image.file(
+                              File(state.images[index].path),
+                              fit: BoxFit.contain,
+                            ),
+                          ),
+                          minScale: PhotoViewComputedScale.contained,
+                          maxScale: PhotoViewComputedScale.contained * 2.5,
+                        );
+                      },
+                      onPageChanged: (index) {
+                        imageBloc.add(ImagePageChanged(index: index));
+                      },
+                      backgroundDecoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.background,
                       ),
                     ),
                     if (state.detectionInProgress)
