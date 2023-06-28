@@ -10,8 +10,7 @@ dependencies:
     sdk: flutter
 
   cupertino_icons: ^1.0.2
-  http: ^0.13.6
-  image_picker: ^0.8.7+5
+  http: ^1.1.0
   tflite_flutter: ^0.10.1
   camera: ^0.10.5+1
   get: ^4.6.5
