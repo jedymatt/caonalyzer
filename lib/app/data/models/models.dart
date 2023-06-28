@@ -1,0 +1,1 @@
+export 'detected_object.dart';
