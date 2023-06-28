@@ -35,7 +35,7 @@ class ImageBloc extends Bloc<ImageEvent, ImageState> {
         if (!MetadataReader.exists(currentImage.path)) {
           emit(state_.copyWith(detectionInProgress: true));
 
-          final box = await Hive.openBox(kSettingsBoxName);
+          final box = await Hive.openBox<PreferredMode>(kSettingsBoxName);
 
           final PreferredMode mode = box.get(
             'preferredMode',
@@ -135,7 +135,7 @@ class ImageBloc extends Bloc<ImageEvent, ImageState> {
 
       emit(state_.copyWith(detectionInProgress: true));
 
-      final box = await Hive.openBox(kSettingsBoxName);
+      final box = await Hive.openBox<PreferredMode>(kSettingsBoxName);
 
       final PreferredMode mode = box.get(
         'preferredMode',
