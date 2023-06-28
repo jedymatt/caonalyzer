@@ -3,7 +3,7 @@ import 'package:hive_flutter/adapters.dart';
 
 class PreferredModeAdapter extends TypeAdapter<PreferredMode> {
   @override
-  final int typeId = 0;
+  final int typeId = 1;
 
   @override
   PreferredMode read(BinaryReader reader) {
