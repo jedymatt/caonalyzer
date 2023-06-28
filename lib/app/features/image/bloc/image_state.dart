@@ -4,7 +4,7 @@ part of 'image_bloc.dart';
 abstract class ImageState {}
 
 class ImageInitial extends ImageState {
-  final List<String> images;
+  final List<Image> images;
   final int index;
   final bool showDetection;
   final bool detectionInProgress;
@@ -16,7 +16,7 @@ class ImageInitial extends ImageState {
   });
 
   ImageInitial copyWith({
-    List<String>? images,
+    List<Image>? images,
     int? index,
     bool? showDetection,
     bool? detectionInProgress,
