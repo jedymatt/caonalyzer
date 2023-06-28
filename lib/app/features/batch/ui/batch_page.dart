@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:caonalyzer/app/features/batch/bloc/batch_bloc.dart';
 import 'package:caonalyzer/app/features/batch/ui/widgets/image_tile.dart';
 import 'package:caonalyzer/app/features/batch_confirmation/bloc/batch_confirmation_bloc.dart';
+import 'package:caonalyzer/app/features/batch_insights/ui/batch_insights_page.dart';
 import 'package:caonalyzer/app/features/camera/bloc/camera_bloc.dart';
 import 'package:caonalyzer/app/features/camera/ui/camera_page.dart';
 import 'package:caonalyzer/app/features/gallery/bloc/gallery_bloc.dart';
@@ -192,7 +193,11 @@ class _BatchPageState extends State<BatchPage> {
                           ),
                           IconButton(
                             onPressed: () {
-                              // todo: navigate to show results page
+                              Navigator.of(context).push(MaterialPageRoute(
+                                builder: (context) => BatchInsightsPage(
+                                  images: state.images,
+                                ),
+                              ));
                             },
                             icon: const Icon(
                               Icons.insights,
