@@ -58,7 +58,7 @@ class TfServingObjectDetector implements ObjectDetector {
     List<dynamic> reshaped,
   ) async {
     final uri = Uri.parse(
-      'http://${host.value}:8501/v1/models/faster_rcnn:predict',
+      'http://${Globals.host.value}:8501/v1/models/faster_rcnn:predict',
     );
 
     final response = await http.post(
@@ -114,7 +114,7 @@ class ObjectDetectionResponse {
     return List.generate(
       numDetections,
       (index) => ObjectDetectionOutput(
-        labels[detectionClasses[index] - 1],
+        Globals.labels[detectionClasses[index] - 1],
         detectionScores[index],
         BoundingBox.fromPercent(
           left: detectionBoxes[index][1],

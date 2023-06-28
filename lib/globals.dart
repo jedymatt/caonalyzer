@@ -9,9 +9,6 @@ const String kSettingsBoxName = 'settings';
 
 final box = GetStorage();
 
-RxString host = '192.168.1.8'.obs;
-RxList<String> labels = <String>[].obs;
-
 Future<void> initGlobals() async {}
 
 abstract final class Globals {
@@ -19,6 +16,7 @@ abstract final class Globals {
   static final cameras = <CameraDescription>[].obs;
   static final host = '192.168.1.8'.obs;
   static final port = '8000'.obs;
+  static final labels = <String>[].obs;
 
   static Future<void> init() async {
     cameras.value = await availableCameras();
