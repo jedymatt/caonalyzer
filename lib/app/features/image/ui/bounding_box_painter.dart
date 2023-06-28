@@ -1,8 +1,5 @@
-import 'dart:ui';
-
+import 'package:caonalyzer/app/data/models/detected_object.dart';
 import 'package:flutter/material.dart';
-
-import 'package:caonalyzer/app/features/image/models/image.dart';
 
 class BoundingBoxPainter extends CustomPainter {
   final List<DetectedObject> outputs;
