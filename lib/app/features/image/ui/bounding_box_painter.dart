@@ -2,37 +2,52 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
-import 'package:caonalyzer/object_detectors/object_detection_output.dart';
+import 'package:caonalyzer/app/features/image/models/image.dart';
 
 class BoundingBoxPainter extends CustomPainter {
-  final List<ObjectDetectionOutput> outputs;
+  final List<DetectedObject> outputs;
 
   BoundingBoxPainter(this.outputs);
 
   @override
   void paint(Canvas canvas, Size size) {
-    final Paint paint = Paint();
+    final Paint paint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.0
+      ..color = Colors.red;
 
     for (var output in outputs) {
-      final box =
-          output.boundingBox.toPixel(size.height, size.width).toLTRBList();
+      final box = output.absoluteBoundingBox(size.height, size.width);
       final rect = Rect.fromLTRB(box[0], box[1], box[2], box[3]);
 
       canvas.drawRect(rect, paint);
 
-      final paragraphBuilder = ParagraphBuilder(ParagraphStyle(
-        textAlign: TextAlign.left,
-      ))
-        ..addText(
-          '${output.label} ${(output.confidence * 100).toStringAsFixed(2)}%',
-        );
-      canvas.drawParagraph(paragraphBuilder.build(), Offset(box[0], box[1]));
+      final textPainter = TextPainter(
+        text: TextSpan(
+          text: output.displayLabel,
+          style: const TextStyle(
+            color: Colors.red,
+            fontSize: 20.0,
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+      );
+
+      textPainter.layout();
+
+      textPainter.paint(
+        canvas,
+        Offset(
+          rect.left,
+          rect.top - textPainter.height - 4.0,
+        ),
+      );
     }
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    // TODO: implement shouldRepaint
-    throw UnimplementedError();
+  bool shouldRepaint(covariant BoundingBoxPainter oldDelegate) {
+    return oldDelegate.outputs != outputs ||
+        oldDelegate.outputs.isEmpty != outputs.isEmpty;
   }
 }
