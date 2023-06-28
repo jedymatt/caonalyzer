@@ -9,7 +9,7 @@ class PreferredModeAdapter extends TypeAdapter<PreferredMode> {
   }
 
   @override
-  int get typeId => 1;
+  int get typeId => 0;
 
   @override
   void write(BinaryWriter writer, PreferredMode obj) {
