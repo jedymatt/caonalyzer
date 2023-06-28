@@ -8,9 +8,12 @@ import 'package:path/path.dart' as path_lib;
 
 class GalleryReader {
   static Future<List<File>> getImages(String path) async {
-    final dir = Directory(path);
+    final glob = Glob(path_lib.join(
+      Glob.quote(path),
+      '*[^.preview_].{jpg,jpeg,png}',
+    ));
 
-    return dir.listSync().map((e) => File(e.path)).toList();
+    return glob.listSync().map((e) => File(e.path)).toList();
   }
 
   static Future<List<String>> getBatchPaths() async {
@@ -24,17 +27,6 @@ class GalleryReader {
         .map((e) => e.path)
         .where((element) => Directory(element).listSync().isNotEmpty)
         .toList();
-  }
-
-  static List<String> getImagesFromBatch(String batchPath) {
-    // batchPath add escape character for regex characters
-    batchPath = batchPath.replaceAllMapped(
-      RegExp(r'([\\^$*+?{}\[\]().])'),
-      (match) => '\\${match.group(1)}',
-    );
-    final imageFile = Glob(path_lib.join(batchPath, '*.{jpg,jpeg,png}'));
-
-    return imageFile.listSync().map((e) => e.path).toList();
   }
 
   static Future<List<Batch>> getBatches() async {

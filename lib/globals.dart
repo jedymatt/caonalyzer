@@ -4,9 +4,8 @@ import 'package:camera/camera.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
-import 'gallery/models/batch.dart';
-
 const String kAppName = 'Cao-nalyzer';
+const String kSettingsBoxName = 'settings';
 
 final box = GetStorage();
 
@@ -16,9 +15,10 @@ RxList<String> labels = <String>[].obs;
 Future<void> initGlobals() async {}
 
 abstract final class Globals {
-  static final batches = <Batch>[].obs;
   static final preferredMode = PreferredMode.offline.obs;
   static final cameras = <CameraDescription>[].obs;
+  static final host = '192.168.1.8'.obs;
+  static final port = '8000'.obs;
 
   static Future<void> init() async {
     cameras.value = await availableCameras();
