@@ -17,9 +17,12 @@ class GalleryReader {
   }
 
   static Future<List<String>> getBatchPaths() async {
-    final Directory externalStorageDir = (await getExternalStorageDirectory())!;
+    final Directory externalStorageDir =
+        await getApplicationDocumentsDirectory();
 
-    final dir = Directory(externalStorageDir.path);
+    final dir = Directory(path_lib.join(externalStorageDir.path, 'batches'));
+
+    if (!dir.existsSync()) dir.createSync();
 
     return dir
         .listSync()
