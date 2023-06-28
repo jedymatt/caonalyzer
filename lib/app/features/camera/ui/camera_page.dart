@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:caonalyzer/app/features/batch_confirmation/bloc/batch_confirmation_bloc.dart';
 import 'package:caonalyzer/app/features/batch_confirmation/ui/batch_confirmation_page.dart';
 import 'package:caonalyzer/app/features/camera/bloc/camera_bloc.dart';
-import 'package:caonalyzer/ui/components/camera_view.dart';
+import 'package:caonalyzer/app/global_widgets/scaled_camera_preview.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
