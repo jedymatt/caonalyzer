@@ -1,4 +1,5 @@
 import 'package:bloc/bloc.dart';
+import 'package:caonalyzer/app/features/image/models/image.dart';
 import 'package:caonalyzer/enums/preferred_mode.dart';
 import 'package:caonalyzer/gallery/metadata_reader.dart';
 import 'package:caonalyzer/gallery/metadata_writer.dart';
@@ -8,7 +9,7 @@ import 'package:flutter/material.dart' show PageController;
 import 'package:hive_flutter/adapters.dart';
 import 'package:image/image.dart' hide Image;
 import 'package:meta/meta.dart';
-import 'package:caonalyzer/app/features/image/models/image.dart';
+import 'package:caonalyzer/app/data/models/models.dart';
 
 part 'image_event.dart';
 part 'image_state.dart';
@@ -45,10 +46,10 @@ class ImageBloc extends Bloc<ImageEvent, ImageState> {
           final objectDetector = mode.objectDetector;
 
           final decodedImage = (await decodeImageFile(currentImage.path))!;
-          final preproccessImage = objectDetector.preprocessImage(decodedImage);
+          final preprocessImage = objectDetector.preprocessImage(decodedImage);
 
           final detections =
-              await objectDetector.runInference(preproccessImage);
+              await objectDetector.runInference(preprocessImage);
 
           final imageMetadata = ImageMetadata(
             imagePath: currentImage.path,
