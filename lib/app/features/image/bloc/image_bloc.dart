@@ -1,38 +1,95 @@
-import 'dart:io';
-
 import 'package:bloc/bloc.dart';
 import 'package:caonalyzer/enums/preferred_mode.dart';
 import 'package:caonalyzer/gallery/metadata_reader.dart';
 import 'package:caonalyzer/gallery/metadata_writer.dart';
 import 'package:caonalyzer/gallery/models/image_metadata.dart';
 import 'package:caonalyzer/globals.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' show PageController;
 import 'package:hive_flutter/adapters.dart';
-import 'package:image/image.dart';
+import 'package:image/image.dart' hide Image;
 import 'package:meta/meta.dart';
-import 'package:path/path.dart' as path_lib;
+import 'package:caonalyzer/app/features/image/models/image.dart';
 
 part 'image_event.dart';
 part 'image_state.dart';
 
 class ImageBloc extends Bloc<ImageEvent, ImageState> {
   final PageController _pageController;
-  final List<String> _images;
+  final List<Image> _images;
 
-  ImageBloc({required List<String> images, int initialIndex = 0})
+  ImageBloc({required List<Image> images, int initialIndex = 0})
       : _images = List.from(images),
         _pageController = PageController(initialPage: initialIndex),
         super(ImageInitial(images: images, index: initialIndex)) {
-    on<ImagePageChanged>((event, emit) {
-      final state_ = state;
+    on<ImagePageChanged>((event, emit) async {
+      ImageState state_ = state;
 
-      if (state_ is! ImageInitial) return null;
+      if (state_ is! ImageInitial) return;
+
+      emit(state_ = state_.copyWith(index: event.index));
 
       if (state_.showDetection) {
         // todo: display preview
-      }
+        var currentImage = state_.images[event.index];
 
-      emit(state_.copyWith(index: event.index));
+        if (!MetadataReader.exists(currentImage.path)) {
+          emit(state_.copyWith(detectionInProgress: true));
+
+          final box = await Hive.openBox(kSettingsBoxName);
+
+          final PreferredMode mode = box.get(
+            'preferredMode',
+            defaultValue: PreferredMode.offline,
+          )!;
+
+          final objectDetector = mode.objectDetector;
+
+          final decodedImage = (await decodeImageFile(currentImage.path))!;
+          final preproccessImage = objectDetector.preprocessImage(decodedImage);
+
+          final detections =
+              await objectDetector.runInference(preproccessImage);
+
+          final imageMetadata = ImageMetadata(
+            imagePath: currentImage.path,
+            objectDetectionMode: mode.toString(),
+            objectDetectionOutputs: detections
+                .map((e) => ObjectDetectionOutput(
+                      class_: e.label,
+                      confidence: e.confidence,
+                      boxes: e.boundingBox.toLTRBList(),
+                    ))
+                .toList(),
+          );
+
+          MetadataWriter.create(
+            currentImage.path,
+            imageMetadata,
+          );
+        }
+
+        emit(state_.copyWith(
+          index: event.index,
+          detectionInProgress: false,
+          images: List.from(state_.images)
+            ..replaceRange(
+              event.index,
+              event.index + 1,
+              [
+                currentImage.copyWith(
+                  detectedObjects: MetadataReader.read(currentImage.path)!
+                      .objectDetectionOutputs
+                      .map((e) => DetectedObject(
+                            label: e.class_,
+                            confidence: e.confidence,
+                            boundingBox: e.boxes,
+                          ))
+                      .toList(),
+                ),
+              ],
+            ),
+        ));
+      }
     });
 
     on<ImageDetectionToggled>((event, emit) async {
@@ -48,27 +105,25 @@ class ImageBloc extends Bloc<ImageEvent, ImageState> {
         return;
       }
 
-      final currentImagePath = state_.images[state_.index];
+      final currentImage = state_.images[state_.index];
 
-      final previewExists = File(
-        '${path_lib.withoutExtension(currentImagePath)}.preview${path_lib.extension(currentImagePath)}',
-      ).existsSync();
-
-      // check if metadata exists and preview does not exist
-      if (MetadataReader.exists(currentImagePath) && !previewExists) {
-        // create preview
-        return;
-      }
-
-      if (MetadataReader.exists(currentImagePath) && previewExists) {
-        // load preview
+      if (MetadataReader.exists(currentImage.path)) {
         emit(state_.copyWith(
           images: List.from(state_.images)
             ..replaceRange(
               state_.index,
               state_.index + 1,
               [
-                '${path_lib.withoutExtension(currentImagePath)}.preview${path_lib.extension(currentImagePath)}',
+                currentImage.copyWith(
+                  detectedObjects: MetadataReader.read(currentImage.path)!
+                      .objectDetectionOutputs
+                      .map((e) => DetectedObject(
+                            label: e.class_,
+                            confidence: e.confidence,
+                            boundingBox: e.boxes,
+                          ))
+                      .toList(),
+                ),
               ],
             ),
         ));
@@ -90,65 +145,42 @@ class ImageBloc extends Bloc<ImageEvent, ImageState> {
       final objectDetector = mode.objectDetector;
 
       final decodedImage =
-          (await decodeImageFile(state_.images[state_.index]))!;
+          (await decodeImageFile(state_.images[state_.index].path))!;
       final preproccessImage = objectDetector.preprocessImage(decodedImage);
 
       final detections = await objectDetector.runInference(preproccessImage);
 
-      final previewImage = decodedImage.clone();
-
-      for (var detected in detections) {
-        final boxes = detected.boundingBox
-            .toPixel(previewImage.height, previewImage.width)
-            .toLTRBList()
-            .map((e) => e.toInt())
-            .toList();
-        drawRect(
-          previewImage,
-          x1: boxes[0],
-          y1: boxes[1],
-          x2: boxes[2],
-          y2: boxes[3],
-          color: ColorRgb8(255, 0, 0),
-        );
-
-        drawString(
-          previewImage,
-          '${detected.label} ${(detected.confidence * 100).toStringAsFixed(2)}%',
-          font: arial14,
-          x: boxes[0],
-          y: boxes[1],
-          color: ColorRgb8(255, 0, 0),
-        );
-      }
-
-      MetadataWriter.create(
-        currentImagePath,
-        ImageMetadata(
-          imagePath: currentImagePath,
-          objectDetectionMode: mode.toString(),
-          objectDetectionOutputs: detections
-              .map((e) => ObjectDetectionOutput(
-                    class_: e.label,
-                    confidence: e.confidence,
-                    boxes: e.boundingBox.toLTRBList(),
-                  ))
-              .toList(),
-        ),
+      final imageMetadata = ImageMetadata(
+        imagePath: currentImage.path,
+        objectDetectionMode: mode.toString(),
+        objectDetectionOutputs: detections
+            .map((e) => ObjectDetectionOutput(
+                  class_: e.label,
+                  confidence: e.confidence,
+                  boxes: e.boundingBox.toLTRBList(),
+                ))
+            .toList(),
       );
 
-      final fileExtenstion = path_lib.extension(currentImagePath);
-      // path lib get filename without extension
-      final pathWithoutExtension = path_lib.withoutExtension(currentImagePath);
-
-      File('$pathWithoutExtension.preview$fileExtenstion')
-          .writeAsBytesSync(encodeJpg(previewImage));
+      MetadataWriter.create(
+        currentImage.path,
+        imageMetadata,
+      );
 
       emit(state_.copyWith(
         detectionInProgress: false,
         images: List.from(state_.images)
-          ..replaceRange(state_.index, state_.index + 1,
-              ['$pathWithoutExtension.preview$fileExtenstion']),
+          ..replaceRange(state_.index, state_.index + 1, [
+            currentImage.copyWith(
+              detectedObjects: detections
+                  .map((e) => DetectedObject(
+                        label: e.label,
+                        confidence: e.confidence,
+                        boundingBox: e.boundingBox.toLTRBList(),
+                      ))
+                  .toList(),
+            )
+          ]),
       ));
     });
   }
