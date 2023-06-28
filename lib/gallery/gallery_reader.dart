@@ -10,7 +10,7 @@ class GalleryReader {
   static Future<List<File>> getImages(String path) async {
     final glob = Glob(path_lib.join(
       Glob.quote(path),
-      '*[^.preview_].{jpg,jpeg,png}',
+      '*.{jpg,jpeg,png}',
     ));
 
     return glob.listSync().map((e) => File(e.path)).toList();
