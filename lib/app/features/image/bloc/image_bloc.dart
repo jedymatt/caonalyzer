@@ -1,4 +1,5 @@
 import 'package:bloc/bloc.dart';
+import 'package:caonalyzer/app/data/configs/object_detector_config.dart';
 import 'package:caonalyzer/app/features/image/models/image.dart';
 import 'package:caonalyzer/enums/preferred_mode.dart';
 import 'package:caonalyzer/gallery/metadata_reader.dart';
@@ -135,14 +136,7 @@ class ImageBloc extends Bloc<ImageEvent, ImageState> {
 
       emit(state_.copyWith(detectionInProgress: true));
 
-      final box = await Hive.openBox(kSettingsBoxName);
-
-      final PreferredMode mode = box.get(
-        'preferredMode',
-        defaultValue: PreferredMode.offline,
-      )!;
-
-      final objectDetector = mode.objectDetector;
+      final objectDetector = ObjectDetectorConfig.mode.objectDetector;
 
       final decodedImage =
           (await decodeImageFile(state_.images[state_.index].path))!;
@@ -152,7 +146,7 @@ class ImageBloc extends Bloc<ImageEvent, ImageState> {
 
       final imageMetadata = ImageMetadata(
         imagePath: currentImage.path,
-        objectDetectionMode: mode.toString(),
+        objectDetectionMode: ObjectDetectorConfig.mode.toString(),
         objectDetectionOutputs: detections
             .map((e) => ObjectDetectionOutput(
                   class_: e.label,
