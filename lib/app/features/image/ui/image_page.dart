@@ -51,18 +51,21 @@ class _ImagePageState extends State<ImagePage> {
                       itemCount: widget.images.length,
                       builder: (context, index) {
                         return PhotoViewGalleryPageOptions.customChild(
-                          child: CustomPaint(
-                            foregroundPainter: BoundingBoxPainter(
-                              state.showDetection &&
-                                      state.images[state.index]
-                                              .detectedObjects !=
-                                          null
-                                  ? state.images[state.index].detectedObjects!
-                                  : [],
-                            ),
-                            child: Image.file(
-                              File(state.images[index].path),
-                              fit: BoxFit.contain,
+                          child: FittedBox(
+                            fit: BoxFit.contain,
+                            child: CustomPaint(
+                              foregroundPainter: BoundingBoxPainter(
+                                state.showDetection &&
+                                        state.images[state.index]
+                                                .detectedObjects !=
+                                            null
+                                    ? state.images[state.index].detectedObjects!
+                                    : [],
+                              ),
+                              child: Image.file(
+                                File(state.images[index].path),
+                                fit: BoxFit.contain,
+                              ),
                             ),
                           ),
                           minScale: PhotoViewComputedScale.contained,
