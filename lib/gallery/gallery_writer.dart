@@ -1,6 +1,8 @@
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:glob/glob.dart';
+import 'package:glob/list_local_fs.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path_lib;
 
@@ -16,19 +18,23 @@ class GalleryWriter {
   }
 
   static Future<String> generateBatchPath(DateTime dateTime) async {
-    final Directory externalStorageDir = (await getExternalStorageDirectory())!;
-    var path =
-        '${externalStorageDir.path}/Cao-nalyzer ${dateTime.year}-${dateTime.month}-${dateTime.day} ${dateTime.hour}:${dateTime.minute}';
+    final Directory storageDir = await getApplicationDocumentsDirectory();
 
-    // if exists, append duplicate number
-    var duplicateNumber = 1;
-    while (Directory(path).existsSync()) {
-      path =
-          '${externalStorageDir.path}/Cao-nalyzer ${dateTime.year}-${dateTime.month}-${dateTime.day} ${dateTime.hour}:${dateTime.minute} ($duplicateNumber)';
-      duplicateNumber++;
+    final dirPath = path_lib.join(storageDir.path, 'batches');
+
+    String batchDirName =
+        'Cao-nalyzer ${dateTime.year}-${dateTime.month}-${dateTime.day} ${dateTime.hour}:${dateTime.minute}';
+
+    final glob = Glob(
+        path_lib.join(Glob.quote(dirPath), '${Glob.quote(batchDirName)}*'));
+
+    final existingBatchesCount = glob.listSync().length;
+
+    if (existingBatchesCount > 0) {
+      batchDirName = '$batchDirName ($existingBatchesCount)';
     }
 
-    return path;
+    return path_lib.join(dirPath, batchDirName);
   }
 
   static Future<String> appendImage(
