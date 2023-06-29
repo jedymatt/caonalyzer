@@ -1,5 +1,7 @@
 part of 'image_bloc.dart';
 
+enum ImageScale { none, zoomIn, zoomOut}
+
 @immutable
 abstract class ImageState {}
 
@@ -8,11 +10,14 @@ class ImageInitial extends ImageState {
   final int index;
   final bool showDetection;
   final bool detectionInProgress;
+  final ImageScale scale;
+
   ImageInitial({
     required this.images,
     this.index = 0,
     this.showDetection = false,
     this.detectionInProgress = false,
+    this.scale = ImageScale.none,
   });
 
   ImageInitial copyWith({
@@ -20,12 +25,14 @@ class ImageInitial extends ImageState {
     int? index,
     bool? showDetection,
     bool? detectionInProgress,
+    ImageScale? scale,
   }) {
     return ImageInitial(
       images: images ?? this.images,
       index: index ?? this.index,
       showDetection: showDetection ?? this.showDetection,
       detectionInProgress: detectionInProgress ?? this.detectionInProgress,
+      scale: scale ?? this.scale,
     );
   }
 }

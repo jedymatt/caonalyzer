@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:caonalyzer/app/data/configs/object_detector_config.dart';
 import 'package:caonalyzer/app/features/image/models/image.dart';
@@ -23,160 +24,172 @@ class ImageBloc extends Bloc<ImageEvent, ImageState> {
       : _images = List.from(images),
         _pageController = PageController(initialPage: initialIndex),
         super(ImageInitial(images: images, index: initialIndex)) {
-    on<ImagePageChanged>((event, emit) async {
-      ImageState state_ = state;
+    on<ImagePageChanged>(_onPageChanged);
+    on<ImageDetectionToggled>(_onDetectionToggled);
+    on<ImageScaleChanged>(_onImageScaleChanged);
+  }
 
-      if (state_ is! ImageInitial) return;
+  FutureOr<void> _onImageScaleChanged(ImageScaleChanged event, Emitter<ImageState> emit) {
+    var state_ = state;
 
-      emit(state_ = state_.copyWith(index: event.index));
+    if (state_ is! ImageInitial) return null;
 
-      if (state_.showDetection) {
-        // todo: display preview
-        var currentImage = state_.images[event.index];
+    emit(state_.copyWith(scale: event.scale));
+  }
 
-        if (!MetadataReader.exists(currentImage.path)) {
-          emit(state_.copyWith(detectionInProgress: true));
+  FutureOr<void> _onDetectionToggled(ImageDetectionToggled event, Emitter<ImageState> emit) async {
+    ImageState state_ = state;
 
-          final box = await Hive.openBox(kSettingsBoxName);
+    if (state_ is! ImageInitial) return;
+    state_ = state_.copyWith(showDetection: !state_.showDetection);
 
-          final PreferredMode mode = box.get(
-            'preferredMode',
-            defaultValue: PreferredMode.offline,
-          )!;
+    emit(state_);
 
-          final objectDetector = mode.objectDetector;
+    if (!state_.showDetection) {
+      emit(state_.copyWith(images: List.from(_images)));
+      return;
+    }
 
-          final decodedImage = (await decodeImageFile(currentImage.path))!;
-          final preprocessImage = objectDetector.preprocessImage(decodedImage);
+    final currentImage = state_.images[state_.index];
 
-          final detections = await objectDetector.runInference(preprocessImage);
+    if (MetadataReader.exists(currentImage.path)) {
+      emit(state_.copyWith(
+        images: List.from(state_.images)
+          ..replaceRange(
+            state_.index,
+            state_.index + 1,
+            [
+              currentImage.copyWith(
+                detectedObjects: MetadataReader.read(currentImage.path)!
+                    .objectDetectionOutputs
+                    .map((e) => DetectedObject(
+                          label: e.class_,
+                          confidence: e.confidence,
+                          boundingBox: e.boxes,
+                        ))
+                    .toList(),
+              ),
+            ],
+          ),
+      ));
+      return;
+    }
+    // check if preview exists
 
-          final imageMetadata = ImageMetadata(
-            imagePath: currentImage.path,
-            objectDetectionMode: mode.toString(),
-            objectDetectionOutputs: detections
-                .map((e) => ObjectDetectionOutput(
-                      class_: e.label,
+    // if not, run inference and save metadata and preview
+
+    emit(state_.copyWith(detectionInProgress: true));
+
+    final objectDetector = ObjectDetectorConfig.mode.value.objectDetector;
+
+    final decodedImage =
+        (await decodeImageFile(state_.images[state_.index].path))!;
+    final preproccessImage = objectDetector.preprocessImage(decodedImage);
+
+    final detections = await objectDetector.runInference(preproccessImage);
+
+    final imageMetadata = ImageMetadata(
+      imagePath: currentImage.path,
+      objectDetectionMode: ObjectDetectorConfig.mode.toString(),
+      objectDetectionOutputs: detections
+          .map((e) => ObjectDetectionOutput(
+                class_: e.label,
+                confidence: e.confidence,
+                boxes: e.boundingBox.toLTRBList(),
+              ))
+          .toList(),
+    );
+
+    MetadataWriter.create(
+      currentImage.path,
+      imageMetadata,
+    );
+
+    emit(state_.copyWith(
+      detectionInProgress: false,
+      images: List.from(state_.images)
+        ..replaceRange(state_.index, state_.index + 1, [
+          currentImage.copyWith(
+            detectedObjects: detections
+                .map((e) => DetectedObject(
+                      label: e.label,
                       confidence: e.confidence,
-                      boxes: e.boundingBox.toLTRBList(),
+                      boundingBox: e.boundingBox.toLTRBList(),
                     ))
                 .toList(),
-          );
+          )
+        ]),
+    ));
+  }
 
-          MetadataWriter.create(
-            currentImage.path,
-            imageMetadata,
-          );
-        }
+  FutureOr<void> _onPageChanged(ImagePageChanged event, Emitter<ImageState> emit) async {
+    ImageState state_ = state;
 
-        emit(state_.copyWith(
-          index: event.index,
-          detectionInProgress: false,
-          images: List.from(state_.images)
-            ..replaceRange(
-              event.index,
-              event.index + 1,
-              [
-                currentImage.copyWith(
-                  detectedObjects: MetadataReader.read(currentImage.path)!
-                      .objectDetectionOutputs
-                      .map((e) => DetectedObject(
-                            label: e.class_,
-                            confidence: e.confidence,
-                            boundingBox: e.boxes,
-                          ))
-                      .toList(),
-                ),
-              ],
-            ),
-        ));
+    if (state_ is! ImageInitial) return;
+
+    emit(state_ = state_.copyWith(index: event.index));
+
+    if (state_.showDetection) {
+      // todo: display preview
+      var currentImage = state_.images[event.index];
+
+      if (!MetadataReader.exists(currentImage.path)) {
+        emit(state_.copyWith(detectionInProgress: true));
+
+        final box = await Hive.openBox(kSettingsBoxName);
+
+        final PreferredMode mode = box.get(
+          'preferredMode',
+          defaultValue: PreferredMode.offline,
+        )!;
+
+        final objectDetector = mode.objectDetector;
+
+        final decodedImage = (await decodeImageFile(currentImage.path))!;
+        final preprocessImage = objectDetector.preprocessImage(decodedImage);
+
+        final detections = await objectDetector.runInference(preprocessImage);
+
+        final imageMetadata = ImageMetadata(
+          imagePath: currentImage.path,
+          objectDetectionMode: mode.toString(),
+          objectDetectionOutputs: detections
+              .map((e) => ObjectDetectionOutput(
+                    class_: e.label,
+                    confidence: e.confidence,
+                    boxes: e.boundingBox.toLTRBList(),
+                  ))
+              .toList(),
+        );
+
+        MetadataWriter.create(
+          currentImage.path,
+          imageMetadata,
+        );
       }
-    });
-
-    on<ImageDetectionToggled>((event, emit) async {
-      ImageState state_ = state;
-
-      if (state_ is! ImageInitial) return;
-      state_ = state_.copyWith(showDetection: !state_.showDetection);
-
-      emit(state_);
-
-      if (!state_.showDetection) {
-        emit(state_.copyWith(images: List.from(_images)));
-        return;
-      }
-
-      final currentImage = state_.images[state_.index];
-
-      if (MetadataReader.exists(currentImage.path)) {
-        emit(state_.copyWith(
-          images: List.from(state_.images)
-            ..replaceRange(
-              state_.index,
-              state_.index + 1,
-              [
-                currentImage.copyWith(
-                  detectedObjects: MetadataReader.read(currentImage.path)!
-                      .objectDetectionOutputs
-                      .map((e) => DetectedObject(
-                            label: e.class_,
-                            confidence: e.confidence,
-                            boundingBox: e.boxes,
-                          ))
-                      .toList(),
-                ),
-              ],
-            ),
-        ));
-        return;
-      }
-      // check if preview exists
-
-      // if not, run inference and save metadata and preview
-
-      emit(state_.copyWith(detectionInProgress: true));
-
-      final objectDetector = ObjectDetectorConfig.mode.value.objectDetector;
-
-      final decodedImage =
-          (await decodeImageFile(state_.images[state_.index].path))!;
-      final preproccessImage = objectDetector.preprocessImage(decodedImage);
-
-      final detections = await objectDetector.runInference(preproccessImage);
-
-      final imageMetadata = ImageMetadata(
-        imagePath: currentImage.path,
-        objectDetectionMode: ObjectDetectorConfig.mode.toString(),
-        objectDetectionOutputs: detections
-            .map((e) => ObjectDetectionOutput(
-                  class_: e.label,
-                  confidence: e.confidence,
-                  boxes: e.boundingBox.toLTRBList(),
-                ))
-            .toList(),
-      );
-
-      MetadataWriter.create(
-        currentImage.path,
-        imageMetadata,
-      );
 
       emit(state_.copyWith(
+        index: event.index,
         detectionInProgress: false,
         images: List.from(state_.images)
-          ..replaceRange(state_.index, state_.index + 1, [
-            currentImage.copyWith(
-              detectedObjects: detections
-                  .map((e) => DetectedObject(
-                        label: e.label,
-                        confidence: e.confidence,
-                        boundingBox: e.boundingBox.toLTRBList(),
-                      ))
-                  .toList(),
-            )
-          ]),
+          ..replaceRange(
+            event.index,
+            event.index + 1,
+            [
+              currentImage.copyWith(
+                detectedObjects: MetadataReader.read(currentImage.path)!
+                    .objectDetectionOutputs
+                    .map((e) => DetectedObject(
+                          label: e.class_,
+                          confidence: e.confidence,
+                          boundingBox: e.boxes,
+                        ))
+                    .toList(),
+              ),
+            ],
+          ),
       ));
-    });
+    }
   }
 
   PageController get controller => _pageController;

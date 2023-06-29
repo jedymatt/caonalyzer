@@ -72,6 +72,22 @@ class _ImagePageState extends State<ImagePage> {
                           maxScale: PhotoViewComputedScale.contained * 2.5,
                         );
                       },
+                      scaleStateChangedCallback: (scaleState) {
+                        ImageScale scale;
+
+                        switch (scaleState) {
+                          case PhotoViewScaleState.zoomedIn:
+                            scale = ImageScale.zoomIn;
+                            break;
+                          case PhotoViewScaleState.zoomedOut:
+                            scale = ImageScale.zoomOut;
+                            break;
+                          default:
+                            scale = ImageScale.none;
+                        }
+                        debugPrint('scale changed: $scale');
+                        imageBloc.add(ImageScaleChanged(scale: scale));
+                      },
                       onPageChanged: (index) {
                         imageBloc.add(ImagePageChanged(index: index));
                       },
@@ -83,6 +99,16 @@ class _ImagePageState extends State<ImagePage> {
                       const Center(
                         child: CircularProgressIndicator(),
                       ),
+                    if (state.showDetection && state.scale != ImageScale.zoomIn)
+                      Align(
+                        alignment: Alignment.topCenter,
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 16.0),
+                          child: Text(
+                            'Moldy Count: ${state.images[state.index].detectedObjects!.length}',
+                          ),
+                        ),
+                      )
                   ],
                 );
               },
