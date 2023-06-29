@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:caonalyzer/app/data/configs/object_detector_config.dart';
 import 'package:caonalyzer/globals.dart';
 import 'package:tflite_flutter/tflite_flutter.dart';
 import 'package:http/http.dart' as http;
@@ -57,9 +58,7 @@ class TfServingObjectDetector implements ObjectDetector {
   Future<http.Response> requestTfServingPrediction(
     List<dynamic> reshaped,
   ) async {
-    final uri = Uri.parse(
-      'http://${Globals.host.value}:8501/v1/models/faster_rcnn:predict',
-    );
+    final uri = Uri.parse(ObjectDetectorConfig.serverUrl);
 
     final response = await http.post(
       uri,
