@@ -36,7 +36,7 @@ class ImageBloc extends Bloc<ImageEvent, ImageState> {
         if (!MetadataReader.exists(currentImage.path)) {
           emit(state_.copyWith(detectionInProgress: true));
 
-          final box = await Hive.openBox<PreferredMode>(kSettingsBoxName);
+          final box = await Hive.openBox(kSettingsBoxName);
 
           final PreferredMode mode = box.get(
             'preferredMode',
@@ -48,8 +48,7 @@ class ImageBloc extends Bloc<ImageEvent, ImageState> {
           final decodedImage = (await decodeImageFile(currentImage.path))!;
           final preprocessImage = objectDetector.preprocessImage(decodedImage);
 
-          final detections =
-              await objectDetector.runInference(preprocessImage);
+          final detections = await objectDetector.runInference(preprocessImage);
 
           final imageMetadata = ImageMetadata(
             imagePath: currentImage.path,
@@ -136,7 +135,7 @@ class ImageBloc extends Bloc<ImageEvent, ImageState> {
 
       emit(state_.copyWith(detectionInProgress: true));
 
-      final box = await Hive.openBox<PreferredMode>(kSettingsBoxName);
+      final box = await Hive.openBox(kSettingsBoxName);
 
       final PreferredMode mode = box.get(
         'preferredMode',
