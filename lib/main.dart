@@ -1,3 +1,4 @@
+import 'package:caonalyzer/app/data/configs/object_detector_config.dart';
 import 'package:caonalyzer/app/features/gallery/bloc/gallery_bloc.dart';
 import 'package:caonalyzer/app/features/home/bloc/home_bloc.dart';
 import 'package:caonalyzer/app/features/home/ui/home_page.dart';
@@ -12,6 +13,8 @@ void main() async {
   await Globals.init();
   await Hive.initFlutter();
   Hive.registerAdapter(PreferredModeAdapter());
+
+  await ObjectDetectorConfig.init();
 
   Bloc.observer = AppBlocObserver();
   runApp(const App());
