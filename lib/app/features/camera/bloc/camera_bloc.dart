@@ -25,7 +25,7 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
     try {
       _cameraController = CameraController(
         Globals.cameras.first,
-        ResolutionPreset.low,
+        ResolutionPreset.medium,
         enableAudio: false,
       );
 
