@@ -136,7 +136,7 @@ class ImageBloc extends Bloc<ImageEvent, ImageState> {
 
       emit(state_.copyWith(detectionInProgress: true));
 
-      final objectDetector = ObjectDetectorConfig.mode.objectDetector;
+      final objectDetector = ObjectDetectorConfig.mode.value.objectDetector;
 
       final decodedImage =
           (await decodeImageFile(state_.images[state_.index].path))!;
