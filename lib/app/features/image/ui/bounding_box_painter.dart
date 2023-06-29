@@ -24,7 +24,7 @@ class BoundingBoxPainter extends CustomPainter {
           text: output.displayLabel,
           style: const TextStyle(
             color: Colors.red,
-            fontSize: 7.0,
+            fontSize: 11.0,
             backgroundColor: Colors.white,
           ),
         ),
