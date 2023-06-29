@@ -7,12 +7,25 @@ class PreferredModeAdapter extends TypeAdapter<PreferredMode> {
 
   @override
   PreferredMode read(BinaryReader reader) {
-    final mode = reader.readInt();
-    return PreferredMode.values[mode];
+    final mode = reader.readByte();
+
+    switch (mode) {
+      case 0:
+        return PreferredMode.offline;
+      case 1:
+        return PreferredMode.online;
+      default:
+        return PreferredMode.offline;
+    }
   }
 
   @override
   void write(BinaryWriter writer, PreferredMode obj) {
-    writer.writeInt(obj.index);
+    switch (obj) {
+      case PreferredMode.offline:
+        writer.writeByte(0);
+      case PreferredMode.online:
+        writer.writeByte(1);
+    }
   }
 }
