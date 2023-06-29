@@ -9,9 +9,9 @@ import 'package:hive_flutter/hive_flutter.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Globals.init();
   await Hive.initFlutter();
   Hive.registerAdapter(PreferredModeAdapter());
-  await Globals.init();
 
   Bloc.observer = AppBlocObserver();
   runApp(const App());
