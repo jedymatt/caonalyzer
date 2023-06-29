@@ -1,16 +1,13 @@
 import 'dart:async';
 import 'package:bloc/bloc.dart';
+import 'package:caonalyzer/app/data/configs/object_detector_config.dart';
 import 'package:caonalyzer/enums/preferred_mode.dart';
-import 'package:caonalyzer/globals.dart';
-import 'package:hive_flutter/adapters.dart';
 import 'package:meta/meta.dart';
 
 part 'settings_event.dart';
 part 'settings_state.dart';
 
 class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
-  late Box _box;
-
   SettingsBloc() : super(SettingsInitial()) {
     on<SettingsStarted>(_onStarted);
     on<SettingsPreferredModeChanged>(_onPreferredModeChanged);
@@ -23,8 +20,7 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
   FutureOr<void> _onServerSubmitted(event, emit) {
     final state_ = state;
     if (state_ is! SettingsLoadSuccess) return null;
-    _box.put('host', state_.host);
-    _box.put('port', state_.port);
+    ObjectDetectorConfig.ipAddress.save('${state_.host}:${state_.port}');
   }
 
   FutureOr<void> _onServerPortChanged(event, emit) {
@@ -47,7 +43,7 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
       SettingsPreferredModeSubmitted event, emit) async {
     final state_ = state;
     if (state_ is! SettingsLoadSuccess) return;
-    _box.put('preferredMode', state_.preferredMode);
+    ObjectDetectorConfig.mode.save(state_.preferredMode);
   }
 
   FutureOr<void> _onPreferredModeChanged(
@@ -61,18 +57,14 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
 
   FutureOr<void> _onStarted(SettingsStarted event, emit) async {
     emit(SettingsLoadInProgress());
-    _box = await Hive.openBox(kSettingsBoxName);
+    final PreferredMode preferredMode = ObjectDetectorConfig.mode.value;
 
-    final PreferredMode preferredMode =
-        _box.get('preferredMode', defaultValue: PreferredMode.offline);
-
-    final String host = _box.get('host', defaultValue: '192.168.1.8');
-    final String port = _box.get('port', defaultValue: '8000');
+    final hostAndPort = ObjectDetectorConfig.ipAddress.value.split(':');
 
     emit(SettingsLoadSuccess(
       preferredMode: preferredMode,
-      host: host,
-      port: port,
+      host: hostAndPort[0],
+      port: hostAndPort[1],
     ));
   }
 }
