@@ -24,7 +24,8 @@ class BoundingBoxPainter extends CustomPainter {
           text: output.displayLabel,
           style: const TextStyle(
             color: Colors.red,
-            fontSize: 16.0,
+            fontSize: 7.0,
+            backgroundColor: Colors.white,
           ),
         ),
         textDirection: TextDirection.ltr,
@@ -35,8 +36,8 @@ class BoundingBoxPainter extends CustomPainter {
       textPainter.paint(
         canvas,
         Offset(
-          rect.left,
-          rect.top - textPainter.height - 2,
+          rect.left + 1,
+          rect.top + 1,
         ),
       );
     }
