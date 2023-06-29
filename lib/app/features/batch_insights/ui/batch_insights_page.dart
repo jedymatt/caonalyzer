@@ -50,7 +50,7 @@ class _BatchInsightsPageState extends State<BatchInsightsPage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text('Average mold per image: ${state.averageMoldPerImage}'),
+                Text('Average mold per image: ${state.averageMoldPerImage.toStringAsFixed(2)}'),
                 Text(
                     'Average overall confidence: ${(state.averageOverallConfidence * 100).toStringAsFixed(2)}%'),
                 Text('Molds count: ${state.moldsCount}'),
