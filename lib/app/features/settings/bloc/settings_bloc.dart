@@ -47,7 +47,7 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
       SettingsPreferredModeSubmitted event, emit) async {
     final state_ = state;
     if (state_ is! SettingsLoadSuccess) return;
-    _box.put('preferredMode', state_.preferredMode.index);
+    _box.put('preferredMode', state_.preferredMode);
   }
 
   FutureOr<void> _onPreferredModeChanged(
@@ -63,14 +63,14 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     emit(SettingsLoadInProgress());
     _box = await Hive.openBox(kSettingsBoxName);
 
-    final int preferredModeIndex =
-        _box.get('preferredMode', defaultValue: PreferredMode.offline.index);
+    final PreferredMode preferredMode =
+        _box.get('preferredMode', defaultValue: PreferredMode.offline);
 
     final String host = _box.get('host', defaultValue: '192.168.1.8');
     final String port = _box.get('port', defaultValue: '8000');
 
     emit(SettingsLoadSuccess(
-      preferredMode: PreferredMode.values[preferredModeIndex],
+      preferredMode: preferredMode,
       host: host,
       port: port,
     ));
