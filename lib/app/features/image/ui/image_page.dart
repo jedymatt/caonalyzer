@@ -55,7 +55,7 @@ class _ImagePageState extends State<ImagePage> {
                             fit: BoxFit.contain,
                             child: CustomPaint(
                               foregroundPainter: BoundingBoxPainter(
-                                state.showDetection &&
+                                (state.showDetection && !state.detectionInProgress) &&
                                         state.images[state.index]
                                                 .detectedObjects !=
                                             null
@@ -99,13 +99,13 @@ class _ImagePageState extends State<ImagePage> {
                       const Center(
                         child: CircularProgressIndicator(),
                       ),
-                    if (state.showDetection && state.scale != ImageScale.zoomIn)
+                    if ((state.showDetection && !state.detectionInProgress) && state.scale != ImageScale.zoomIn)
                       Align(
                         alignment: Alignment.topCenter,
                         child: Padding(
                           padding: const EdgeInsets.only(top: 16.0),
                           child: Text(
-                            'Moldy Count: ${state.images[state.index].detectedObjects!.length}',
+                            'Moldy Count: ${state.images[state.index].detectedObjects?.length}',
                           ),
                         ),
                       )
