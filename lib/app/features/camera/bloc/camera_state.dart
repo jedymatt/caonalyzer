@@ -9,6 +9,7 @@ abstract class CameraActionState extends CameraState {}
 
 class CameraInitial extends CameraState {
   final CameraCaptureMode mode;
+
   CameraInitial({
     required this.mode,
   });
@@ -16,7 +17,30 @@ class CameraInitial extends CameraState {
 
 class CameraReady extends CameraState {
   final CameraCaptureMode mode;
-  CameraReady({required this.mode});
+  final bool detectionEnabled;
+  final List<DetectedObject>? detectedObjects;
+  final bool detectionPaused;
+
+  CameraReady({
+    required this.mode,
+    this.detectionEnabled = false,
+    this.detectedObjects,
+    this.detectionPaused = false,
+  });
+
+  CameraReady copyWith({
+    CameraCaptureMode? mode,
+    bool? detectionEnabled,
+    List<DetectedObject>? detectedObjects,
+    bool? detectionPaused,
+  }) {
+    return CameraReady(
+      mode: mode ?? this.mode,
+      detectionEnabled: detectionEnabled ?? this.detectionEnabled,
+      detectedObjects: detectedObjects ?? this.detectedObjects,
+      detectionPaused: detectionPaused ?? this.detectionPaused,
+    );
+  }
 }
 
 class CameraFailure extends CameraState {
@@ -30,6 +54,7 @@ class CameraCaptureInProgress extends CameraActionState {}
 class CameraCaptureSuccess extends CameraActionState {
   final String path;
   final CameraCaptureMode mode;
+
   CameraCaptureSuccess({
     required this.path,
     required this.mode,
