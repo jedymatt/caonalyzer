@@ -7,15 +7,18 @@ import 'package:caonalyzer/globals.dart';
 import 'package:meta/meta.dart';
 
 part 'camera_event.dart';
+
 part 'camera_state.dart';
 
 class CameraBloc extends Bloc<CameraEvent, CameraState> {
   late CameraController _cameraController;
   final RealtimePytorchObjectDetector _detector =
       RealtimePytorchObjectDetector();
+  final CameraCaptureMode _mode;
 
   CameraBloc({required CameraCaptureMode mode})
-      : super(CameraInitial(mode: mode)) {
+      : _mode = mode,
+        super(CameraInitial(mode: mode)) {
     on<CameraStarted>(_onStarted);
     on<CameraStopped>(_onStopped);
     on<CameraCaptured>(_onCaptured);
@@ -28,7 +31,7 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
       _CameraImageDetected event, Emitter<CameraState> emit) async {
     final state_ = state;
 
-    if (state_ is! CameraReady) return;
+    if (state_ is! CameraDetectionReady) return;
 
     final detectedObjects = (await _detector.runInferenceOnFrame(
             event.image.planes.map((plane) => plane.bytes).toList(),
@@ -46,7 +49,6 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
     }
 
     emit(state_.copyWith(
-      detectionEnabled: true,
       detectedObjects: detectedObjects,
     ));
   }
@@ -106,17 +108,16 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
       CameraDetectionToggled event, Emitter<CameraState> emit) async {
     final state_ = state;
 
-    if (state_ is! CameraReady) return null;
+    if (state_ is! CameraReady && state_ is! CameraDetectionReady) return;
 
-    if (state_.detectionEnabled) {
-      await _cameraController.stopImageStream();
-      emit(state_.copyWith(detectionEnabled: false));
-    } else {
-      if (_cameraController.value.isPreviewPaused) {
-        await _cameraController.resumePreview();
-      }
+    emit(CameraSwitchDisplayModeInProgress());
+
+    if (state_ is CameraReady) {
       await _cameraController.startImageStream(_processImageStream);
-      emit(state_.copyWith(detectionEnabled: true));
+      emit(CameraDetectionReady());
+    } else {
+      await _cameraController.stopImageStream();
+      emit(CameraReady(mode: _mode));
     }
   }
 

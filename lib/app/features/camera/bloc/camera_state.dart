@@ -43,6 +43,28 @@ class CameraReady extends CameraState {
   }
 }
 
+class CameraSwitchDisplayModeInProgress extends CameraState {}
+
+class CameraDetectionReady extends CameraState {
+  final List<DetectedObject> detectedObjects;
+  final bool paused;
+
+  CameraDetectionReady({
+    this.detectedObjects = const [],
+    this.paused = false,
+  });
+
+  CameraDetectionReady copyWith({
+    List<DetectedObject>? detectedObjects,
+    bool? paused,
+  }) {
+    return CameraDetectionReady(
+      detectedObjects: detectedObjects ?? this.detectedObjects,
+      paused: paused ?? this.paused,
+    );
+  }
+}
+
 class CameraFailure extends CameraState {
   final String message;
 
