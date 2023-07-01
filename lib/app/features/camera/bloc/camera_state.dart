@@ -17,28 +17,42 @@ class CameraInitial extends CameraState {
 
 class CameraReady extends CameraState {
   final CameraCaptureMode mode;
-  final bool detectionEnabled;
-  final List<DetectedObject>? detectedObjects;
-  final bool detectionPaused;
 
   CameraReady({
     required this.mode,
-    this.detectionEnabled = false,
-    this.detectedObjects,
-    this.detectionPaused = false,
   });
 
   CameraReady copyWith({
     CameraCaptureMode? mode,
-    bool? detectionEnabled,
-    List<DetectedObject>? detectedObjects,
-    bool? detectionPaused,
   }) {
     return CameraReady(
       mode: mode ?? this.mode,
-      detectionEnabled: detectionEnabled ?? this.detectionEnabled,
+    );
+  }
+}
+
+class CameraSwitchDisplayModeInProgress extends CameraState {}
+
+class CameraDetectionReady extends CameraState {
+  final List<DetectedObject> detectedObjects;
+  final bool paused;
+  final CameraImage? image;
+
+  CameraDetectionReady({
+    this.detectedObjects = const [],
+    this.paused = false,
+    this.image,
+  });
+
+  CameraDetectionReady copyWith({
+    List<DetectedObject>? detectedObjects,
+    bool? paused,
+    CameraImage? image,
+  }) {
+    return CameraDetectionReady(
       detectedObjects: detectedObjects ?? this.detectedObjects,
-      detectionPaused: detectionPaused ?? this.detectionPaused,
+      paused: paused ?? this.paused,
+      image: image ?? this.image,
     );
   }
 }

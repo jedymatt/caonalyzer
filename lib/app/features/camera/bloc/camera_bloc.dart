@@ -7,15 +7,19 @@ import 'package:caonalyzer/globals.dart';
 import 'package:meta/meta.dart';
 
 part 'camera_event.dart';
+
 part 'camera_state.dart';
 
 class CameraBloc extends Bloc<CameraEvent, CameraState> {
   late CameraController _cameraController;
   final RealtimePytorchObjectDetector _detector =
       RealtimePytorchObjectDetector();
+  final CameraCaptureMode _mode;
+  int _emptyPreviousCount = 0;
 
   CameraBloc({required CameraCaptureMode mode})
-      : super(CameraInitial(mode: mode)) {
+      : _mode = mode,
+        super(CameraInitial(mode: mode)) {
     on<CameraStarted>(_onStarted);
     on<CameraStopped>(_onStopped);
     on<CameraCaptured>(_onCaptured);
@@ -24,31 +28,41 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
     on<CameraDetectionPauseToggled>(_onDetectionPauseToggled);
   }
 
+  CameraController get controller => _cameraController;
+
   FutureOr<void> _onCameraImageDetected(
       _CameraImageDetected event, Emitter<CameraState> emit) async {
     final state_ = state;
 
-    if (state_ is! CameraReady) return;
+    if (state_ is! CameraDetectionReady) return;
 
-    final detectedObjects = (await _detector.runInferenceOnFrame(
-            event.image.planes.map((plane) => plane.bytes).toList(),
-            event.image.height,
-            event.image.width))
-        .map((e) => DetectedObject(
-              label: e.label,
-              confidence: e.confidence,
-              boundingBox: e.boundingBox.toLTRBList(),
-            ))
-        .toList();
+    final detectedObjects = await _detector.runInferenceOnFrame(
+        event.image.planes.map((plane) => plane.bytes).toList(),
+        event.image.height,
+        event.image.width);
 
     if (detectedObjects.isNotEmpty) {
-      print(detectedObjects.first.boundingBox);
+      emit(state_.copyWith(
+        detectedObjects: detectedObjects
+            .map((e) => DetectedObject(
+                  label: e.label,
+                  confidence: e.confidence,
+                  boundingBox: e.boundingBox.toLTRBList(),
+                ))
+            .toList(),
+        image: event.image,
+      ));
+      _emptyPreviousCount = 0;
+    } else {
+      _emptyPreviousCount++;
     }
 
-    emit(state_.copyWith(
-      detectionEnabled: true,
-      detectedObjects: detectedObjects,
-    ));
+    if (detectedObjects.isEmpty && _emptyPreviousCount >= 20) {
+      emit(state_.copyWith(
+        detectedObjects: [],
+        image: event.image,
+      ));
+    }
   }
 
   FutureOr<void> _onStarted(
@@ -57,7 +71,8 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
     try {
       _cameraController = CameraController(
         Globals.cameras.first,
-        ResolutionPreset.medium,
+        // set to low resolution for object detection to work
+        ResolutionPreset.low,
         enableAudio: false,
       );
 
@@ -86,10 +101,6 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
 
     final state_ = state as CameraReady;
 
-    if (state_.detectionEnabled) {
-      return;
-    }
-
     try {
       emit(CameraCaptureInProgress());
 
@@ -106,22 +117,22 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
       CameraDetectionToggled event, Emitter<CameraState> emit) async {
     final state_ = state;
 
-    if (state_ is! CameraReady) return null;
+    if (state_ is! CameraReady && state_ is! CameraDetectionReady) return;
 
-    if (state_.detectionEnabled) {
-      await _cameraController.stopImageStream();
-      emit(state_.copyWith(detectionEnabled: false));
-    } else {
-      if (_cameraController.value.isPreviewPaused) {
-        await _cameraController.resumePreview();
-      }
-      await _cameraController.startImageStream(_processImageStream);
-      emit(state_.copyWith(detectionEnabled: true));
+    emit(CameraSwitchDisplayModeInProgress());
+
+    if (state_ is CameraReady) {
+      await _cameraController.startImageStream(
+        (image) => add(_CameraImageDetected(image)),
+      );
+
+      emit(CameraDetectionReady());
     }
-  }
 
-  _processImageStream(image) {
-    add(_CameraImageDetected(image));
+    if (state_ is CameraDetectionReady) {
+      await _cameraController.stopImageStream();
+      emit(CameraReady(mode: _mode));
+    }
   }
 
   @override
@@ -138,15 +149,13 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
       CameraDetectionPauseToggled event, Emitter<CameraState> emit) async {
     final state_ = state;
 
-    if (state_ is! CameraReady) return;
+    if (state_ is! CameraDetectionReady) return;
 
-    if (!state_.detectionEnabled) return;
-
-    if (state_.detectionPaused) {
+    if (state_.paused) {
       await _cameraController.resumePreview();
     } else {
       await _cameraController.pausePreview();
     }
-    emit(state_.copyWith(detectionPaused: !state_.detectionPaused));
+    emit(state_.copyWith(paused: !state_.paused));
   }
 }
