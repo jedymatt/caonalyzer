@@ -36,19 +36,23 @@ class CameraSwitchDisplayModeInProgress extends CameraState {}
 class CameraDetectionReady extends CameraState {
   final List<DetectedObject> detectedObjects;
   final bool paused;
+  final CameraImage? image;
 
   CameraDetectionReady({
     this.detectedObjects = const [],
     this.paused = false,
+    this.image,
   });
 
   CameraDetectionReady copyWith({
     List<DetectedObject>? detectedObjects,
     bool? paused,
+    CameraImage? image,
   }) {
     return CameraDetectionReady(
       detectedObjects: detectedObjects ?? this.detectedObjects,
       paused: paused ?? this.paused,
+      image: image ?? this.image,
     );
   }
 }
