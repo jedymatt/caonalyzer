@@ -15,6 +15,7 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
   final RealtimePytorchObjectDetector _detector =
       RealtimePytorchObjectDetector();
   final CameraCaptureMode _mode;
+  int _emptyPreviousCount = 0;
 
   CameraBloc({required CameraCaptureMode mode})
       : _mode = mode,
@@ -35,24 +36,33 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
 
     if (state_ is! CameraDetectionReady) return;
 
-    final detectedObjects = (await _detector.runInferenceOnFrame(
-            event.image.planes.map((plane) => plane.bytes).toList(),
-            event.image.height,
-            event.image.width))
-        .map((e) => DetectedObject(
-              label: e.label,
-              confidence: e.confidence,
-              boundingBox: e.boundingBox.toLTRBList(),
-            ))
-        .toList();
+    final detectedObjects = await _detector.runInferenceOnFrame(
+        event.image.planes.map((plane) => plane.bytes).toList(),
+        event.image.height,
+        event.image.width);
 
     if (detectedObjects.isNotEmpty) {
-      print(detectedObjects.first.boundingBox);
+      emit(state_.copyWith(
+        detectedObjects: detectedObjects
+            .map((e) => DetectedObject(
+                  label: e.label,
+                  confidence: e.confidence,
+                  boundingBox: e.boundingBox.toLTRBList(),
+                ))
+            .toList(),
+        image: event.image,
+      ));
+      _emptyPreviousCount = 0;
+    } else {
+      _emptyPreviousCount++;
     }
 
-    emit(state_.copyWith(
-      detectedObjects: detectedObjects,
-    ));
+    if (detectedObjects.isEmpty && _emptyPreviousCount >= 20) {
+      emit(state_.copyWith(
+        detectedObjects: [],
+        image: event.image,
+      ));
+    }
   }
 
   FutureOr<void> _onStarted(
@@ -61,7 +71,8 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
     try {
       _cameraController = CameraController(
         Globals.cameras.first,
-        ResolutionPreset.medium,
+        // set to low resolution for object detection to work
+        ResolutionPreset.low,
         enableAudio: false,
       );
 
@@ -111,16 +122,17 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
     emit(CameraSwitchDisplayModeInProgress());
 
     if (state_ is CameraReady) {
-      await _cameraController.startImageStream(_processImageStream);
+      await _cameraController.startImageStream(
+        (image) => add(_CameraImageDetected(image)),
+      );
+
       emit(CameraDetectionReady());
-    } else {
+    }
+
+    if (state_ is CameraDetectionReady) {
       await _cameraController.stopImageStream();
       emit(CameraReady(mode: _mode));
     }
-  }
-
-  _processImageStream(image) {
-    add(_CameraImageDetected(image));
   }
 
   @override
