@@ -27,6 +27,8 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
     on<CameraDetectionPauseToggled>(_onDetectionPauseToggled);
   }
 
+  CameraController get controller => _cameraController;
+
   FutureOr<void> _onCameraImageDetected(
       _CameraImageDetected event, Emitter<CameraState> emit) async {
     final state_ = state;
@@ -88,10 +90,6 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
 
     final state_ = state as CameraReady;
 
-    if (state_.detectionEnabled) {
-      return;
-    }
-
     try {
       emit(CameraCaptureInProgress());
 
@@ -139,15 +137,13 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
       CameraDetectionPauseToggled event, Emitter<CameraState> emit) async {
     final state_ = state;
 
-    if (state_ is! CameraReady) return;
+    if (state_ is! CameraDetectionReady) return;
 
-    if (!state_.detectionEnabled) return;
-
-    if (state_.detectionPaused) {
+    if (state_.paused) {
       await _cameraController.resumePreview();
     } else {
       await _cameraController.pausePreview();
     }
-    emit(state_.copyWith(detectionPaused: !state_.detectionPaused));
+    emit(state_.copyWith(paused: !state_.paused));
   }
 }
