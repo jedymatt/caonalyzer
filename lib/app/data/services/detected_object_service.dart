@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:caonalyzer/app/data/models/models.dart';
 import 'package:hive/hive.dart';
 
@@ -6,21 +8,22 @@ class DetectedObjectService {
 
   DetectedObjectService(Box box) : _box = box;
 
-  List<DetectedObject> getAll(String imagePath) {
-    return List.from(_box.get(imagePath, defaultValue: []))
-        .map((e) => DetectedObject.fromJson(e))
+  List<DetectedObject>? getAll(String imagePath) {
+    final String? detectedObjects = _box.get(imagePath);
+
+    if (detectedObjects == null) {
+      return null;
+    }
+
+    return List.from(json.decode(detectedObjects))
+        .map((e) => DetectedObject.fromMap(e))
         .toList();
   }
 
-  void add(String imagePath, DetectedObject detectedObject) {
-    _box.put(
-        imagePath,
-        getAll(imagePath)
-          ..add(detectedObject)
-          ..map((e) => e.toJson()).toList());
-  }
-
   void putAll(String imagePath, List<DetectedObject> detectedObjects) {
-    _box.put(imagePath, detectedObjects.map((e) => e.toJson()).toList());
+    _box.put(
+      imagePath,
+      json.encode(detectedObjects.map((e) => e.toMap()).toList()),
+    );
   }
 }
