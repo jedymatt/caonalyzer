@@ -26,4 +26,8 @@ class DetectedObjectService {
       json.encode(detectedObjects.map((e) => e.toMap()).toList()),
     );
   }
+
+  void deleteAll(String imagePath) {
+    _box.delete(imagePath);
+  }
 }
