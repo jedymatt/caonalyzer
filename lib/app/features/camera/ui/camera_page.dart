@@ -90,180 +90,250 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
               );
             }
 
-            if (state is! CameraReady) {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
+            if (state is CameraReady) {
+              return _buildCameraReady(state, context);
             }
 
-            return Stack(
-              fit: StackFit.expand,
-              children: [
-                CustomPaint(
-                  foregroundPainter: state.detectionEnabled
-                      ? BoundingBoxPainter(state.detectedObjects ?? [])
-                      : null,
-                  child: ScaledCameraPreview(cameraBloc.controller),
-                ),
-                Align(
-                  alignment: Alignment.topLeft,
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 32, left: 16),
-                    child: IconButton(
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
-                      icon: const Icon(Icons.close),
-                    ),
-                  ),
-                ),
-                Align(
-                    alignment: Alignment.topRight,
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 32, right: 16),
-                      child: IconButton(
-                        onPressed: () {
-                          cameraBloc.add(CameraDetectionToggled());
-                        },
-                        icon: Icon(state.detectionEnabled
-                            ? Icons.visibility
-                            : Icons.visibility_off),
-                      ),
-                    )),
-                Align(
-                  alignment: Alignment.bottomCenter,
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: 32),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: !state.detectionEnabled
-                          ? [
-                              Row(
-                                mainAxisSize: MainAxisSize.max,
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                children: [
-                                  const SizedBox.square(
-                                    dimension: 24,
-                                  ),
-                                  // capture button disabled when detection is enabled
+            if (state is CameraDetectionReady) {
+              return _buildCameraDetectionReady(state, context);
+            }
 
-                                  Container(
+            return const SizedBox.shrink();
+          },
+        ),
+      ),
+    );
+  }
+
+  Stack _buildCameraReady(CameraReady state, BuildContext context) {
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        CustomPaint(
+          foregroundPainter: state.detectionEnabled
+              ? BoundingBoxPainter(state.detectedObjects ?? [])
+              : null,
+          child: ScaledCameraPreview(cameraBloc.controller),
+        ),
+        Align(
+          alignment: Alignment.topLeft,
+          child: Padding(
+            padding: const EdgeInsets.only(top: 32, left: 16),
+            child: IconButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              icon: const Icon(Icons.close),
+            ),
+          ),
+        ),
+        Align(
+            alignment: Alignment.topRight,
+            child: Padding(
+              padding: const EdgeInsets.only(top: 32, right: 16),
+              child: IconButton(
+                onPressed: () {
+                  cameraBloc.add(CameraDetectionToggled());
+                },
+                icon: Icon(state.detectionEnabled
+                    ? Icons.visibility
+                    : Icons.visibility_off),
+              ),
+            )),
+        Align(
+          alignment: Alignment.bottomCenter,
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 32),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: !state.detectionEnabled
+                  ? [
+                      Row(
+                        mainAxisSize: MainAxisSize.max,
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          const SizedBox.square(
+                            dimension: 24,
+                          ),
+                          // capture button disabled when detection is enabled
+
+                          Container(
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.white,
+                            ),
+                            child: IconButton(
+                              onPressed: state.detectionEnabled
+                                  ? null
+                                  : () => cameraBloc.add(CameraCaptured()),
+                              icon: Icon(state.detectionEnabled
+                                  ? Icons.disabled_by_default
+                                  : Icons.camera_alt),
+                            ),
+                          ),
+                          if (state.mode == CameraCaptureMode.batch)
+                            BlocBuilder<BatchConfirmationBloc,
+                                    BatchConfirmationState>(
+                                bloc: BlocProvider.of<BatchConfirmationBloc>(
+                                    context),
+                                builder: (context, state) {
+                                  if (state is! BatchConfirmationInitial ||
+                                      state.images.isEmpty) {
+                                    return const SizedBox.square(dimension: 24);
+                                  }
+
+                                  return Container(
                                     decoration: const BoxDecoration(
                                       shape: BoxShape.circle,
                                       color: Colors.white,
                                     ),
-                                    child: IconButton(
-                                      onPressed: state.detectionEnabled
-                                          ? null
-                                          : () =>
-                                              cameraBloc.add(CameraCaptured()),
-                                      icon: Icon(state.detectionEnabled
-                                          ? Icons.disabled_by_default
-                                          : Icons.camera_alt),
-                                    ),
-                                  ),
-                                  if (state.mode == CameraCaptureMode.batch)
-                                    BlocBuilder<BatchConfirmationBloc,
-                                            BatchConfirmationState>(
-                                        bloc: BlocProvider.of<
-                                            BatchConfirmationBloc>(context),
-                                        builder: (context, state) {
-                                          if (state
-                                                  is! BatchConfirmationInitial ||
-                                              state.images.isEmpty) {
-                                            return const SizedBox.square(
-                                                dimension: 24);
-                                          }
+                                    child: CircleAvatar(
+                                      backgroundImage:
+                                          FileImage(File(state.images.last)),
+                                      child: IconButton(
+                                        onPressed: () async {
+                                          cameraBloc.add(CameraStopped());
+                                          final batchConfirmationBloc =
+                                              BlocProvider.of<
+                                                      BatchConfirmationBloc>(
+                                                  context);
 
-                                          return Container(
-                                            decoration: const BoxDecoration(
-                                              shape: BoxShape.circle,
-                                              color: Colors.white,
-                                            ),
-                                            child: CircleAvatar(
-                                              backgroundImage: FileImage(
-                                                  File(state.images.last)),
-                                              child: IconButton(
-                                                onPressed: () async {
-                                                  cameraBloc
-                                                      .add(CameraStopped());
-                                                  final batchConfirmationBloc =
-                                                      BlocProvider.of<
-                                                              BatchConfirmationBloc>(
-                                                          context);
-
-                                                  Navigator.of(context)
-                                                      .push(MaterialPageRoute(
-                                                    builder: (context) =>
-                                                        BlocProvider.value(
-                                                      value:
-                                                          batchConfirmationBloc,
-                                                      child: BlocProvider.value(
-                                                        value: cameraBloc,
-                                                        child:
-                                                            const BatchConfirmationPage(),
-                                                      ),
-                                                    ),
-                                                  ))
-                                                      .then((_) {
-                                                    cameraBloc.add(
-                                                        CameraStarted(
-                                                            mode: widget.mode));
-                                                  });
-                                                },
-                                                icon: const Icon(Icons.check),
-                                                color: Colors.green,
+                                          Navigator.of(context)
+                                              .push(MaterialPageRoute(
+                                            builder: (context) =>
+                                                BlocProvider.value(
+                                              value: batchConfirmationBloc,
+                                              child: BlocProvider.value(
+                                                value: cameraBloc,
+                                                child:
+                                                    const BatchConfirmationPage(),
                                               ),
                                             ),
-                                          );
-                                        }),
-                                  if (state.mode == CameraCaptureMode.single)
-                                    const SizedBox.square(dimension: 24),
-                                ],
-                              ),
-                            ]
-                          : [],
+                                          ))
+                                              .then((_) {
+                                            cameraBloc.add(CameraStarted(
+                                                mode: widget.mode));
+                                          });
+                                        },
+                                        icon: const Icon(Icons.check),
+                                        color: Colors.green,
+                                      ),
+                                    ),
+                                  );
+                                }),
+                          if (state.mode == CameraCaptureMode.single)
+                            const SizedBox.square(dimension: 24),
+                        ],
+                      ),
+                    ]
+                  : [],
+            ),
+          ),
+        ),
+        if (state.detectionEnabled)
+          Align(
+            alignment: Alignment.centerRight,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // display number of moldy
+                Padding(
+                  padding: const EdgeInsets.only(right: 16),
+                  child: Text(
+                    '${state.detectedObjects?.length ?? 0} moldy',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
                     ),
                   ),
                 ),
-                if (state.detectionEnabled)
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // display number of moldy
-                        Padding(
-                          padding: const EdgeInsets.only(right: 16),
-                          child: Text(
-                            '${state.detectedObjects?.length ?? 0} moldy',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 24,
-                            ),
-                          ),
-                        ),
-                        // toggle pause/resume detection
-                        Padding(
-                          padding: const EdgeInsets.only(right: 16),
-                          child: IconButton(
-                            onPressed: () {
-                              cameraBloc.add(CameraDetectionPauseToggled());
-                            },
-                            icon: Icon(state.detectionPaused
-                                ? Icons.play_arrow
-                                : Icons.pause),
-                          ),
-                        ),
-                      ],
-                    ),
+                // toggle pause/resume detection
+                Padding(
+                  padding: const EdgeInsets.only(right: 16),
+                  child: IconButton(
+                    onPressed: () {
+                      cameraBloc.add(CameraDetectionPauseToggled());
+                    },
+                    icon: Icon(
+                        state.detectionPaused ? Icons.play_arrow : Icons.pause),
                   ),
+                ),
               ],
-            );
-          },
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildCameraDetectionReady(
+      CameraDetectionReady state, BuildContext context) {
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        CustomPaint(
+          foregroundPainter: BoundingBoxPainter(state.detectedObjects),
+          child: ScaledCameraPreview(cameraBloc.controller),
         ),
-      ),
+        Align(
+          alignment: Alignment.topLeft,
+          child: Padding(
+            padding: const EdgeInsets.only(top: 32, left: 16),
+            child: IconButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              icon: const Icon(Icons.close),
+            ),
+          ),
+        ),
+        Align(
+            alignment: Alignment.topRight,
+            child: Padding(
+              padding: const EdgeInsets.only(top: 32, right: 16),
+              child: IconButton(
+                onPressed: () {
+                  cameraBloc.add(CameraDetectionToggled());
+                },
+                icon: const Icon(Icons.visibility),
+              ),
+            )),
+        Align(
+          alignment: Alignment.bottomCenter,
+          child: Row(
+            children: [
+              // pause/play button
+              Padding(
+                padding: const EdgeInsets.only(right: 16),
+                child: IconButton(
+                  onPressed: () {
+                    cameraBloc.add(CameraDetectionPauseToggled());
+                  },
+                  icon: Icon(state.paused ? Icons.play_arrow : Icons.pause),
+                ),
+              ),
+            ],
+          ),
+        ),
+        Align(
+          alignment: Alignment.centerRight,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // display number of moldy
+              Padding(
+                padding: const EdgeInsets.only(right: 16),
+                child: Text(
+                  '${state.detectedObjects.length} moldy',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
