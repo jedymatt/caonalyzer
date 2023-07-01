@@ -10,8 +10,10 @@ class ImagePageChanged extends ImageEvent {
 
 class ImageDetectionToggled extends ImageEvent {}
 
-class ImageScaleChanged  extends ImageEvent {
+class ImageScaleChanged extends ImageEvent {
   final ImageScale scale;
 
   ImageScaleChanged({required this.scale});
 }
+
+class _ImageDetectionEnabled extends ImageEvent {}
