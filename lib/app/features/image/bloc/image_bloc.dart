@@ -1,14 +1,10 @@
 import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:caonalyzer/app/data/configs/object_detector_config.dart';
+import 'package:caonalyzer/app/data/services/detected_object_service.dart';
 import 'package:caonalyzer/app/features/image/models/image.dart';
-import 'package:caonalyzer/enums/preferred_mode.dart';
-import 'package:caonalyzer/gallery/metadata_reader.dart';
-import 'package:caonalyzer/gallery/metadata_writer.dart';
-import 'package:caonalyzer/gallery/models/image_metadata.dart';
-import 'package:caonalyzer/globals.dart';
+import 'package:caonalyzer/services.dart';
 import 'package:flutter/material.dart' show PageController;
-import 'package:hive_flutter/adapters.dart';
 import 'package:image/image.dart' hide Image;
 import 'package:meta/meta.dart';
 import 'package:caonalyzer/app/data/models/models.dart';
@@ -19,6 +15,7 @@ part 'image_state.dart';
 class ImageBloc extends Bloc<ImageEvent, ImageState> {
   final PageController _pageController;
   final List<Image> _images;
+  final DetectedObjectService service = getIt.get<DetectedObjectService>();
 
   ImageBloc({required List<Image> images, int initialIndex = 0})
       : _images = List.from(images),
@@ -27,9 +24,11 @@ class ImageBloc extends Bloc<ImageEvent, ImageState> {
     on<ImagePageChanged>(_onPageChanged);
     on<ImageDetectionToggled>(_onDetectionToggled);
     on<ImageScaleChanged>(_onImageScaleChanged);
+    on<_ImageDetectionEnabled>(_onImageDetectionEnabled);
   }
 
-  FutureOr<void> _onImageScaleChanged(ImageScaleChanged event, Emitter<ImageState> emit) {
+  FutureOr<void> _onImageScaleChanged(
+      ImageScaleChanged event, Emitter<ImageState> emit) {
     var state_ = state;
 
     if (state_ is! ImageInitial) return null;
@@ -37,7 +36,8 @@ class ImageBloc extends Bloc<ImageEvent, ImageState> {
     emit(state_.copyWith(scale: event.scale));
   }
 
-  FutureOr<void> _onDetectionToggled(ImageDetectionToggled event, Emitter<ImageState> emit) async {
+  FutureOr<void> _onDetectionToggled(
+      ImageDetectionToggled event, Emitter<ImageState> emit) async {
     ImageState state_ = state;
 
     if (state_ is! ImageInitial) return;
@@ -50,9 +50,43 @@ class ImageBloc extends Bloc<ImageEvent, ImageState> {
       return;
     }
 
+    add(_ImageDetectionEnabled());
+  }
+
+  FutureOr<void> _onPageChanged(
+      ImagePageChanged event, Emitter<ImageState> emit) async {
+    ImageState state_ = state;
+
+    if (state_ is! ImageInitial) return;
+
+    emit(state_ = state_.copyWith(index: event.index));
+
+    if (state_.showDetection) {
+      add(_ImageDetectionEnabled());
+    }
+  }
+
+  PageController get controller => _pageController;
+
+  @override
+  Future<void> close() {
+    _pageController.dispose();
+    return super.close();
+  }
+
+  FutureOr<void> _onImageDetectionEnabled(
+      _ImageDetectionEnabled event, Emitter<ImageState> emit) async {
+    final state_ = state;
+
+    if (state_ is! ImageInitial) return;
+
+    if (!state_.showDetection) return;
+
     final currentImage = state_.images[state_.index];
 
-    if (MetadataReader.exists(currentImage.path)) {
+    var detectedObjects = service.getAll(currentImage.path);
+
+    if (detectedObjects != null) {
       emit(state_.copyWith(
         images: List.from(state_.images)
           ..replaceRange(
@@ -60,24 +94,14 @@ class ImageBloc extends Bloc<ImageEvent, ImageState> {
             state_.index + 1,
             [
               currentImage.copyWith(
-                detectedObjects: MetadataReader.read(currentImage.path)!
-                    .objectDetectionOutputs
-                    .map((e) => DetectedObject(
-                          label: e.class_,
-                          confidence: e.confidence,
-                          boundingBox: e.boxes,
-                        ))
-                    .toList(),
+                detectedObjects: List.from(detectedObjects),
               ),
             ],
           ),
       ));
       return;
     }
-    // check if preview exists
-
-    // if not, run inference and save metadata and preview
-
+    // if not, run inference and save result
     emit(state_.copyWith(detectionInProgress: true));
 
     final objectDetector = ObjectDetectorConfig.mode.value.objectDetector;
@@ -88,21 +112,18 @@ class ImageBloc extends Bloc<ImageEvent, ImageState> {
 
     final detections = await objectDetector.runInference(preproccessImage);
 
-    final imageMetadata = ImageMetadata(
-      imagePath: currentImage.path,
-      objectDetectionMode: ObjectDetectorConfig.mode.toString(),
-      objectDetectionOutputs: detections
-          .map((e) => ObjectDetectionOutput(
-                class_: e.label,
-                confidence: e.confidence,
-                boxes: e.boundingBox.toLTRBList(),
-              ))
-          .toList(),
-    );
+    detectedObjects = detections
+        .map(
+          (e) => DetectedObject(
+              label: e.label,
+              confidence: e.confidence,
+              boundingBox: e.boundingBox.toLTRBList()),
+        )
+        .toList();
 
-    MetadataWriter.create(
+    service.putAll(
       currentImage.path,
-      imageMetadata,
+      detectedObjects,
     );
 
     emit(state_.copyWith(
@@ -110,93 +131,9 @@ class ImageBloc extends Bloc<ImageEvent, ImageState> {
       images: List.from(state_.images)
         ..replaceRange(state_.index, state_.index + 1, [
           currentImage.copyWith(
-            detectedObjects: detections
-                .map((e) => DetectedObject(
-                      label: e.label,
-                      confidence: e.confidence,
-                      boundingBox: e.boundingBox.toLTRBList(),
-                    ))
-                .toList(),
+            detectedObjects: List.from(detectedObjects),
           )
         ]),
     ));
-  }
-
-  FutureOr<void> _onPageChanged(ImagePageChanged event, Emitter<ImageState> emit) async {
-    ImageState state_ = state;
-
-    if (state_ is! ImageInitial) return;
-
-    emit(state_ = state_.copyWith(index: event.index));
-
-    if (state_.showDetection) {
-      // todo: display preview
-      var currentImage = state_.images[event.index];
-
-      if (!MetadataReader.exists(currentImage.path)) {
-        emit(state_.copyWith(detectionInProgress: true));
-
-        final box = await Hive.openBox(kSettingsBoxName);
-
-        final PreferredMode mode = box.get(
-          'preferredMode',
-          defaultValue: PreferredMode.offline,
-        )!;
-
-        final objectDetector = mode.objectDetector;
-
-        final decodedImage = (await decodeImageFile(currentImage.path))!;
-        final preprocessImage = objectDetector.preprocessImage(decodedImage);
-
-        final detections = await objectDetector.runInference(preprocessImage);
-
-        final imageMetadata = ImageMetadata(
-          imagePath: currentImage.path,
-          objectDetectionMode: mode.toString(),
-          objectDetectionOutputs: detections
-              .map((e) => ObjectDetectionOutput(
-                    class_: e.label,
-                    confidence: e.confidence,
-                    boxes: e.boundingBox.toLTRBList(),
-                  ))
-              .toList(),
-        );
-
-        MetadataWriter.create(
-          currentImage.path,
-          imageMetadata,
-        );
-      }
-
-      emit(state_.copyWith(
-        index: event.index,
-        detectionInProgress: false,
-        images: List.from(state_.images)
-          ..replaceRange(
-            event.index,
-            event.index + 1,
-            [
-              currentImage.copyWith(
-                detectedObjects: MetadataReader.read(currentImage.path)!
-                    .objectDetectionOutputs
-                    .map((e) => DetectedObject(
-                          label: e.class_,
-                          confidence: e.confidence,
-                          boundingBox: e.boxes,
-                        ))
-                    .toList(),
-              ),
-            ],
-          ),
-      ));
-    }
-  }
-
-  PageController get controller => _pageController;
-
-  @override
-  Future<void> close() {
-    _pageController.dispose();
-    return super.close();
   }
 }
