@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 class ScaledCameraPreview extends StatelessWidget {
   final CameraController controller;
 
-  const ScaledCameraPreview(this.controller, {super.key});
+  const ScaledCameraPreview(this.controller, {super.key, this.child});
+
+  final Widget? child;
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +28,13 @@ class ScaledCameraPreview extends StatelessWidget {
 
     return Transform.scale(
       scale: scale,
-      child: Center(child: CameraPreview(controller)),
+      child: Center(
+        child: CameraPreview(
+          key: super.key,
+          controller,
+          child: child,
+        ),
+      ),
     );
   }
 }
