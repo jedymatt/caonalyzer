@@ -12,11 +12,13 @@ class BatchInsightsSuccess extends BatchInsightsState {
   final int moldsCount;
   final double averageMoldPerImage;
   final double averageOverallConfidence;
+  final List<int> moldsCountPerImage;
 
   BatchInsightsSuccess({
     required this.imagesDetectedObjects,
     required this.moldsCount,
     required this.averageMoldPerImage,
     required this.averageOverallConfidence,
+    required this.moldsCountPerImage,
   });
 }
