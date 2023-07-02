@@ -3,7 +3,7 @@ import 'package:caonalyzer/app/data/configs/configs.dart';
 import 'package:caonalyzer/app/data/models/models.dart';
 import 'package:caonalyzer/app/data/services/detected_object_service.dart';
 
-import 'package:caonalyzer/services.dart';
+import 'package:caonalyzer/locator.dart';
 import 'package:image/image.dart' show decodeImageFile;
 import 'package:meta/meta.dart';
 import 'package:collection/collection.dart';
@@ -12,7 +12,7 @@ part 'batch_insights_event.dart';
 part 'batch_insights_state.dart';
 
 class BatchInsightsBloc extends Bloc<BatchInsightsEvent, BatchInsightsState> {
-  final service = getIt.get<DetectedObjectService>();
+  final service = locator.get<DetectedObjectService>();
 
   BatchInsightsBloc() : super(BatchInsightsInitial()) {
     on<BatchInsightsStarted>((event, emit) async {

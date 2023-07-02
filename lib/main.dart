@@ -4,7 +4,7 @@ import 'package:caonalyzer/app/features/home/bloc/home_bloc.dart';
 import 'package:caonalyzer/app/features/home/ui/home_page.dart';
 import 'package:caonalyzer/globals.dart';
 import 'package:caonalyzer/hive_adapters.dart';
-import 'package:caonalyzer/services.dart';
+import 'package:caonalyzer/locator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -15,7 +15,7 @@ void main() async {
   await Hive.initFlutter();
   Hive.registerAdapter(PreferredModeAdapter());
 
-  await setup();
+  setupLocator();
 
   await ObjectDetectorConfig.init();
 

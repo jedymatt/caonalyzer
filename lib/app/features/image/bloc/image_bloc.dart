@@ -3,7 +3,7 @@ import 'package:bloc/bloc.dart';
 import 'package:caonalyzer/app/data/configs/object_detector_config.dart';
 import 'package:caonalyzer/app/data/services/detected_object_service.dart';
 import 'package:caonalyzer/app/features/image/models/image.dart';
-import 'package:caonalyzer/services.dart';
+import 'package:caonalyzer/locator.dart';
 import 'package:flutter/material.dart' show PageController;
 import 'package:image/image.dart' hide Image;
 import 'package:meta/meta.dart';
@@ -15,7 +15,7 @@ part 'image_state.dart';
 class ImageBloc extends Bloc<ImageEvent, ImageState> {
   final PageController _pageController;
   final List<Image> _images;
-  final DetectedObjectService service = getIt.get<DetectedObjectService>();
+  final DetectedObjectService service = locator.get<DetectedObjectService>();
 
   ImageBloc({required List<Image> images, int initialIndex = 0})
       : _images = List.from(images),
