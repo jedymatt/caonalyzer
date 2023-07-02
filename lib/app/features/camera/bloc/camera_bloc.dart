@@ -122,15 +122,24 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
     emit(CameraSwitchDisplayModeInProgress());
 
     if (state_ is CameraReady) {
-      await _cameraController.startImageStream(
-        (image) => add(_CameraImageDetected(image)),
-      );
+      if (!_cameraController.value.isStreamingImages) {
+        await _cameraController.startImageStream(
+          (image) => add(_CameraImageDetected(image)),
+        );
+      }
 
       emit(CameraDetectionReady());
     }
 
     if (state_ is CameraDetectionReady) {
-      await _cameraController.stopImageStream();
+      if (_cameraController.value.isPreviewPaused) {
+        await _cameraController.resumePreview();
+      }
+
+      if (_cameraController.value.isStreamingImages) {
+        await _cameraController.stopImageStream();
+      }
+
       emit(CameraReady(mode: _mode));
     }
   }
