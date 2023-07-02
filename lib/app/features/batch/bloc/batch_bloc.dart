@@ -3,7 +3,7 @@ import 'package:bloc/bloc.dart';
 import 'package:caonalyzer/app/data/services/detected_object_service.dart';
 import 'package:caonalyzer/gallery/gallery_reader.dart';
 import 'package:caonalyzer/gallery/gallery_writer.dart';
-import 'package:caonalyzer/services.dart';
+import 'package:caonalyzer/locator.dart';
 import 'package:meta/meta.dart';
 import 'package:path/path.dart' as path_lib;
 
@@ -89,7 +89,7 @@ class BatchBloc extends Bloc<BatchEvent, BatchState> {
       emit(BatchDeletingImagesState());
 
       GalleryWriter.removeImages(state_.selectedImages);
-      final service = getIt.get<DetectedObjectService>();
+      final service = locator.get<DetectedObjectService>();
       for (var e in state_.selectedImages) {
         service.deleteAll(e);
       }
