@@ -47,7 +47,7 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
             .map((e) => DetectedObject(
                   label: e.label,
                   confidence: e.confidence,
-                  boundingBox: e.boundingBox.toLTRBList(),
+                  box: e.boundingBox.toLTRBList(),
                 ))
             .toList(),
         image: event.image,

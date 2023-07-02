@@ -37,7 +37,7 @@ class BatchInsightsBloc extends Bloc<BatchInsightsEvent, BatchInsightsState> {
               .map((e) => DetectedObject(
                     label: e.label,
                     confidence: e.confidence,
-                    boundingBox: e.boundingBox.toLTRBList(),
+                    box: e.boundingBox.toLTRBList(),
                   ))
               .toList();
 

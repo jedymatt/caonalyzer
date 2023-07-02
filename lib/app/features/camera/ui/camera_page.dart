@@ -323,7 +323,7 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
     Color colorPick = Colors.white;
 
     return results.map((result) {
-      final box = result.absoluteBoundingBox(
+      final box = result.absoluteBox(
         cameraImage?.height.toDouble() ?? 1.0,
         cameraImage?.width.toDouble() ?? 1.0,
       );

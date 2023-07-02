@@ -3,19 +3,19 @@ import 'dart:convert';
 class DetectedObject {
   final String label;
   final double confidence;
-  final List<double> boundingBox;
+  final List<double> box;
   DetectedObject({
     required this.label,
     required this.confidence,
-    required this.boundingBox,
+    required this.box,
   });
 
-  List<double> absoluteBoundingBox(double height, double width) {
+  List<double> absoluteBox(double height, double width) {
     return [
-      boundingBox[0] * width,
-      boundingBox[1] * height,
-      boundingBox[2] * width,
-      boundingBox[3] * height,
+      box[0] * width,
+      box[1] * height,
+      box[2] * width,
+      box[3] * height,
     ];
   }
 
@@ -25,7 +25,7 @@ class DetectedObject {
     return {
       'label': label,
       'confidence': confidence,
-      'boundingBox': boundingBox,
+      'box': box,
     };
   }
 
@@ -33,7 +33,7 @@ class DetectedObject {
     return DetectedObject(
       label: map['label'] ?? '',
       confidence: map['confidence']?.toDouble() ?? 0.0,
-      boundingBox: List<double>.from(map['boundingBox']),
+      box: List<double>.from(map['box']),
     );
   }
 
@@ -44,5 +44,5 @@ class DetectedObject {
 
   @override
   String toString() =>
-      'DetectedObject(label: $label, confidence: $confidence, boundingBox: $boundingBox)';
+      'DetectedObject(label: $label, confidence: $confidence, box: $box)';
 }

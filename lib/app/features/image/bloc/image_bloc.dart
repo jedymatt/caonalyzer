@@ -117,7 +117,7 @@ class ImageBloc extends Bloc<ImageEvent, ImageState> {
           (e) => DetectedObject(
               label: e.label,
               confidence: e.confidence,
-              boundingBox: e.boundingBox.toLTRBList()),
+              box: e.boundingBox.toLTRBList()),
         )
         .toList();
 
