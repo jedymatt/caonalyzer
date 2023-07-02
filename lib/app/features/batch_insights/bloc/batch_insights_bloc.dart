@@ -62,6 +62,7 @@ class BatchInsightsBloc extends Bloc<BatchInsightsEvent, BatchInsightsState> {
         averageMoldPerImage: imagesDetectedObjects.map((e) => e.length).sum /
             imagesDetectedObjects.length,
         averageOverallConfidence: imagesConfidences / moldsCount,
+        moldsCountPerImage: imagesDetectedObjects.map((e) => e.length).toList(),
       ));
     });
   }
