@@ -3,6 +3,7 @@ import 'package:bloc/bloc.dart';
 import 'package:camera/camera.dart';
 import 'package:caonalyzer/app/data/models/models.dart';
 import 'package:caonalyzer/app/data/services/realtime_pytorch_object_detector.dart';
+import 'package:caonalyzer/app/data/utils/image_utils.dart';
 import 'package:caonalyzer/globals.dart';
 import 'package:caonalyzer/object_detectors/object_detectors.dart';
 import 'package:flutter/foundation.dart';
@@ -10,7 +11,6 @@ import 'package:meta/meta.dart';
 import 'package:image/image.dart' as image_lib;
 
 part 'camera_event.dart';
-
 part 'camera_state.dart';
 
 class CameraBloc extends Bloc<CameraEvent, CameraState> {
@@ -38,7 +38,8 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
 
     if (state_ is! CameraDetectionReady) return;
 
-    var image = _convertCameraImage(event.image);
+    var image = ImageUtils.convertCameraImage(event.image)!;
+    image = image_lib.copyRotate(image, 90);
     image = _detector.preprocessImage(image);
 
     final detectedObjects = await _detector.runInference(image);
