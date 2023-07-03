@@ -5,6 +5,7 @@ import 'package:caonalyzer/app/data/models/detected_object.dart';
 import 'package:caonalyzer/app/features/batch_confirmation/bloc/batch_confirmation_bloc.dart';
 import 'package:caonalyzer/app/features/batch_confirmation/ui/batch_confirmation_page.dart';
 import 'package:caonalyzer/app/features/camera/bloc/camera_bloc.dart';
+import 'package:caonalyzer/app/features/image/ui/bounding_box_painter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -223,8 +224,6 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
 
   Widget _buildCameraDetectionReady(
       CameraDetectionReady state, BuildContext context) {
-    final size = MediaQuery.of(context).size;
-
     return BlocBuilder<CameraBloc, CameraState>(
       bloc: cameraBloc,
       builder: (context, state) {
@@ -237,10 +236,11 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
               aspectRatio: cameraBloc.controller.value.aspectRatio,
               child: CameraPreview(cameraBloc.controller),
             ),
-            ...displayBoxesAroundRecognizedObjects(
-              size,
-              state.detectedObjects,
-              state.image,
+            AspectRatio(
+              aspectRatio: cameraBloc.controller.value.aspectRatio,
+              child: CustomPaint(
+                foregroundPainter: BoundingBoxPainter(state.detectedObjects),
+              ),
             ),
             Align(
               alignment: Alignment.topCenter,
