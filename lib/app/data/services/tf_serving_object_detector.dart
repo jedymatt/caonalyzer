@@ -8,8 +8,7 @@ import 'package:tflite_flutter/tflite_flutter.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:caonalyzer/object_detectors/object_detectors.dart';
-import 'package:image/image.dart'
-    show ChannelOrder, Image, Interpolation, copyResize;
+import 'package:image/image.dart' show Format, Image, Interpolation, copyResize;
 
 class TfServingObjectDetector implements ObjectDetector {
   @override
@@ -34,7 +33,7 @@ class TfServingObjectDetector implements ObjectDetector {
   @override
   Future<List<ObjectDetectionOutput>> runInference(Image image) async {
     final reshaped = image
-        .getBytes(order: ChannelOrder.rgb)
+        .getBytes(format: Format.rgb)
         .reshape([1, image.height, image.width, 3]);
 
     http.Response response = await requestTfServingPrediction(reshaped);

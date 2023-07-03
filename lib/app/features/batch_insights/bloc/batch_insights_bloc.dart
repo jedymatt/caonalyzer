@@ -1,10 +1,12 @@
+import 'dart:io';
+
 import 'package:bloc/bloc.dart';
 import 'package:caonalyzer/app/data/configs/configs.dart';
 import 'package:caonalyzer/app/data/models/models.dart';
 import 'package:caonalyzer/app/data/services/detected_object_service.dart';
 
 import 'package:caonalyzer/locator.dart';
-import 'package:image/image.dart' show decodeImageFile;
+import 'package:image/image.dart' show decodeImage;
 import 'package:meta/meta.dart';
 import 'package:collection/collection.dart';
 
@@ -27,9 +29,10 @@ class BatchInsightsBloc extends Bloc<BatchInsightsEvent, BatchInsightsState> {
           // detect objects
           final objectDetector = ObjectDetectorConfig.mode.value.objectDetector;
 
-          final decodeImage = (await decodeImageFile(image))!;
+          final decodedImage = (decodeImage(File(image).readAsBytesSync()))!;
 
-          final preprocessedImage = objectDetector.preprocessImage(decodeImage);
+          final preprocessedImage =
+              objectDetector.preprocessImage(decodedImage);
 
           final outputs = await objectDetector.runInference(preprocessedImage);
 
