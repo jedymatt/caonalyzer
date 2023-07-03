@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'dart:typed_data';
 
 import 'package:caonalyzer/object_detectors/object_detectors.dart';
 import 'package:image/image.dart'
@@ -36,7 +37,7 @@ class PytorchObjectDetector implements ObjectDetector {
     final model = await getModel();
 
     final results = await model.yoloOnImage(
-      bytesList: encodeBmp(image),
+      bytesList: encodeBmp(image) as Uint8List,
       imageHeight: image.height,
       imageWidth: image.width,
     );

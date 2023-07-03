@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:bloc/bloc.dart';
 import 'package:caonalyzer/app/data/configs/object_detector_config.dart';
 import 'package:caonalyzer/app/data/services/detected_object_service.dart';
@@ -106,8 +107,9 @@ class ImageBloc extends Bloc<ImageEvent, ImageState> {
 
     final objectDetector = ObjectDetectorConfig.mode.value.objectDetector;
 
-    final decodedImage =
-        (await decodeImageFile(state_.images[state_.index].path))!;
+    final decodedImage = decodeJpg(
+      File(state_.images[state_.index].path).readAsBytesSync(),
+    )!;
     final preproccessImage = objectDetector.preprocessImage(decodedImage);
 
     final detections = await objectDetector.runInference(preproccessImage);
