@@ -20,6 +20,7 @@ void main() async {
   await ObjectDetectorConfig.init();
 
   Bloc.observer = AppBlocObserver();
+
   runApp(const App());
 }
 
