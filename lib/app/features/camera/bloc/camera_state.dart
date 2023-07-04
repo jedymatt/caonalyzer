@@ -34,12 +34,10 @@ class CameraReady extends CameraState {
 class CameraSwitchDisplayModeInProgress extends CameraState {}
 
 class CameraDetectionReady extends CameraState {
-  final List<DetectedObject> detectedObjects;
   final bool paused;
   final CameraImage? image;
 
   CameraDetectionReady({
-    this.detectedObjects = const [],
     this.paused = false,
     this.image,
   });
