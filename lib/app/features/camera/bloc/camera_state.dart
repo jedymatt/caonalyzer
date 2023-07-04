@@ -45,12 +45,10 @@ class CameraDetectionReady extends CameraState {
   });
 
   CameraDetectionReady copyWith({
-    List<DetectedObject>? detectedObjects,
     bool? paused,
     CameraImage? image,
   }) {
     return CameraDetectionReady(
-      detectedObjects: detectedObjects ?? this.detectedObjects,
       paused: paused ?? this.paused,
       image: image ?? this.image,
     );
@@ -79,4 +77,10 @@ class CameraCaptureFailure extends CameraActionState {
   final String message;
 
   CameraCaptureFailure({required this.message});
+}
+
+class CameraDetectionImageFrame extends CameraState {
+  final CameraImage image;
+
+  CameraDetectionImageFrame(this.image);
 }
