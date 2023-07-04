@@ -69,7 +69,8 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
         body: BlocConsumer<CameraBloc, CameraState>(
           bloc: cameraBloc,
           listenWhen: (previous, current) => current is CameraActionState,
-          buildWhen: (previous, current) => previous != current,
+          buildWhen: (previous, current) =>
+              previous.runtimeType != current.runtimeType,
           listener: (context, state) {
             if (state is CameraCaptureSuccess) {
               if (state.mode == CameraCaptureMode.batch) {
@@ -97,7 +98,7 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
             }
 
             if (state is CameraDetectionReady) {
-              return _buildCameraDetectionReady(state, context);
+              return _buildCameraDetectionReady();
             }
 
             return const SizedBox.shrink();
@@ -222,94 +223,125 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
     );
   }
 
-  Widget _buildCameraDetectionReady(
-      CameraDetectionReady state, BuildContext context) {
-    return BlocBuilder<CameraBloc, CameraState>(
-      bloc: cameraBloc,
-      builder: (context, state) {
-        if (state is! CameraDetectionReady) return const SizedBox.shrink();
+  Widget _buildCameraDetectionReady() {
+    print('>>>>>>>> rebuild: _buildCameraDetectionReady');
 
-        return Stack(
-          fit: StackFit.expand,
-          children: [
-            AspectRatio(
-              aspectRatio: cameraBloc.controller.value.aspectRatio,
-              child: CameraPreview(cameraBloc.controller),
-            ),
-            AspectRatio(
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        AspectRatio(
+          aspectRatio: cameraBloc.controller.value.aspectRatio,
+          child: CameraPreview(cameraBloc.controller),
+        ),
+        BlocBuilder<CameraBloc, CameraState>(
+          bloc: cameraBloc,
+          buildWhen: (previous, current) =>
+              previous is CameraDetectionReady &&
+              current is CameraDetectionReady &&
+              current.detectedObjects != previous.detectedObjects,
+          builder: (context, state) {
+            if (state is! CameraDetectionReady) return const SizedBox.shrink();
+
+            return AspectRatio(
               aspectRatio: cameraBloc.controller.value.aspectRatio,
               child: CustomPaint(
                 foregroundPainter: BoundingBoxPainter(state.detectedObjects),
               ),
-            ),
-            Align(
-              alignment: Alignment.topCenter,
-              child: Padding(
-                padding: const EdgeInsets.only(top: 32),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    IconButton(
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
-                      icon: const Icon(Icons.close),
-                    ),
-                    // count of detected objects
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.5),
-                        borderRadius:
-                            const BorderRadius.all(Radius.circular(10)),
-                      ),
-                      child: Text(
+            );
+          },
+        ),
+        Align(
+          alignment: Alignment.topCenter,
+          child: Padding(
+            padding: const EdgeInsets.only(top: 32),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                IconButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  icon: const Icon(Icons.close),
+                ),
+                // count of detected objects
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.5),
+                    borderRadius: const BorderRadius.all(Radius.circular(10)),
+                  ),
+                  child: BlocBuilder<CameraBloc, CameraState>(
+                    bloc: cameraBloc,
+                    buildWhen: (previous, current) =>
+                        previous is CameraDetectionReady &&
+                        current is CameraDetectionReady &&
+                        current.detectedObjects.length !=
+                            previous.detectedObjects.length,
+                    builder: (context, state) {
+                      if (state is! CameraDetectionReady) {
+                        return const SizedBox();
+                      }
+
+                      return Text(
                         '${state.detectedObjects.length}',
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 24,
                           // fontWeight: FontWeight.bold,
                         ),
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: () {
-                        cameraBloc.add(CameraDetectionToggled());
-                      },
-                      icon: const Icon(Icons.visibility),
-                    ),
-                  ],
+                      );
+                    },
+                  ),
                 ),
-              ),
+                IconButton(
+                  onPressed: () {
+                    cameraBloc.add(CameraDetectionToggled());
+                  },
+                  icon: const Icon(Icons.visibility),
+                ),
+              ],
             ),
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: 32),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Container(
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white,
-                      ),
-                      child: IconButton(
+          ),
+        ),
+        Align(
+          alignment: Alignment.bottomCenter,
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 32),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Container(
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white,
+                  ),
+                  child: BlocBuilder<CameraBloc, CameraState>(
+                    bloc: cameraBloc,
+                    buildWhen: (previous, current) =>
+                        previous is CameraDetectionReady &&
+                        current is CameraDetectionReady &&
+                        current.paused != previous.paused,
+                    builder: (context, state) {
+                      if (state is! CameraDetectionReady) {
+                        return const SizedBox.shrink();
+                      }
+
+                      return IconButton(
                         onPressed: () =>
                             cameraBloc.add(CameraDetectionPauseToggled()),
                         icon:
                             Icon(state.paused ? Icons.play_arrow : Icons.pause),
-                      ),
-                    ),
-                  ],
+                      );
+                    },
+                  ),
                 ),
-              ),
+              ],
             ),
-          ],
-        );
-      },
+          ),
+        ),
+      ],
     );
   }
 
