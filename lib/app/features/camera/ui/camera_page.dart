@@ -5,6 +5,7 @@ import 'package:caonalyzer/app/data/models/detected_object.dart';
 import 'package:caonalyzer/app/features/batch_confirmation/bloc/batch_confirmation_bloc.dart';
 import 'package:caonalyzer/app/features/batch_confirmation/ui/batch_confirmation_page.dart';
 import 'package:caonalyzer/app/features/camera/bloc/camera_bloc.dart';
+import 'package:caonalyzer/app/features/detector/bloc/detector_bloc.dart';
 import 'package:caonalyzer/app/features/image/ui/bounding_box_painter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -26,6 +27,7 @@ class CameraPage extends StatefulWidget {
 class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
   late final CameraBloc cameraBloc;
   late final BatchConfirmationBloc batchConfirmationBloc;
+  late final DetectorBloc detectorBloc;
   String? batchPath;
 
   @override
@@ -35,6 +37,7 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
     cameraBloc = CameraBloc(mode: widget.mode)
       ..add(CameraStarted(mode: widget.mode));
     batchConfirmationBloc = BlocProvider.of<BatchConfirmationBloc>(context);
+    detectorBloc = DetectorBloc();
   }
 
   @override
@@ -226,122 +229,111 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
   Widget _buildCameraDetectionReady() {
     print('>>>>>>>> rebuild: _buildCameraDetectionReady');
 
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        AspectRatio(
-          aspectRatio: cameraBloc.controller.value.aspectRatio,
-          child: CameraPreview(cameraBloc.controller),
-        ),
-        BlocBuilder<CameraBloc, CameraState>(
-          bloc: cameraBloc,
-          buildWhen: (previous, current) =>
-              previous is CameraDetectionReady &&
-              current is CameraDetectionReady &&
-              current.detectedObjects != previous.detectedObjects,
-          builder: (context, state) {
-            if (state is! CameraDetectionReady) return const SizedBox.shrink();
-
-            return AspectRatio(
-              aspectRatio: cameraBloc.controller.value.aspectRatio,
-              child: CustomPaint(
-                foregroundPainter: BoundingBoxPainter(state.detectedObjects),
+    return BlocListener<CameraBloc, CameraState>(
+      listenWhen: (_, current) => current is CameraDetectionImageFrame,
+      listener: (_, state) => detectorBloc.add(
+          DetectorStarted(image: (state as CameraDetectionImageFrame).image)),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          AspectRatio(
+            aspectRatio: cameraBloc.controller.value.aspectRatio,
+            child: CameraPreview(cameraBloc.controller),
+          ),
+          BlocBuilder<DetectorBloc, DetectorState>(
+            builder: (context, state) {
+              return AspectRatio(
+                aspectRatio: cameraBloc.controller.value.aspectRatio,
+                child: CustomPaint(
+                  foregroundPainter: BoundingBoxPainter(state.detectedObjects),
+                ),
+              );
+            },
+          ),
+          Align(
+            alignment: Alignment.topCenter,
+            child: Padding(
+              padding: const EdgeInsets.only(top: 32),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  IconButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    icon: const Icon(Icons.close),
+                  ),
+                  // count of detected objects
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.5),
+                      borderRadius: const BorderRadius.all(Radius.circular(10)),
+                    ),
+                    child: BlocBuilder<DetectorBloc, DetectorState>(
+                      bloc: detectorBloc,
+                      builder: (context, state) {
+                        return Text(
+                          '${state.detectedObjects.length}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 24,
+                            // fontWeight: FontWeight.bold,
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () {
+                      cameraBloc.add(CameraDetectionToggled());
+                    },
+                    icon: const Icon(Icons.visibility),
+                  ),
+                ],
               ),
-            );
-          },
-        ),
-        Align(
-          alignment: Alignment.topCenter,
-          child: Padding(
-            padding: const EdgeInsets.only(top: 32),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                IconButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  icon: const Icon(Icons.close),
-                ),
-                // count of detected objects
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.5),
-                    borderRadius: const BorderRadius.all(Radius.circular(10)),
-                  ),
-                  child: BlocBuilder<CameraBloc, CameraState>(
-                    bloc: cameraBloc,
-                    buildWhen: (previous, current) =>
-                        previous is CameraDetectionReady &&
-                        current is CameraDetectionReady &&
-                        current.detectedObjects.length !=
-                            previous.detectedObjects.length,
-                    builder: (context, state) {
-                      if (state is! CameraDetectionReady) {
-                        return const SizedBox();
-                      }
-
-                      return Text(
-                        '${state.detectedObjects.length}',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 24,
-                          // fontWeight: FontWeight.bold,
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                IconButton(
-                  onPressed: () {
-                    cameraBloc.add(CameraDetectionToggled());
-                  },
-                  icon: const Icon(Icons.visibility),
-                ),
-              ],
             ),
           ),
-        ),
-        Align(
-          alignment: Alignment.bottomCenter,
-          child: Padding(
-            padding: const EdgeInsets.only(bottom: 32),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                Container(
-                  decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.white,
-                  ),
-                  child: BlocBuilder<CameraBloc, CameraState>(
-                    bloc: cameraBloc,
-                    buildWhen: (previous, current) =>
-                        previous is CameraDetectionReady &&
-                        current is CameraDetectionReady &&
-                        current.paused != previous.paused,
-                    builder: (context, state) {
-                      if (state is! CameraDetectionReady) {
-                        return const SizedBox.shrink();
-                      }
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 32),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Container(
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white,
+                    ),
+                    child: BlocBuilder<CameraBloc, CameraState>(
+                      bloc: cameraBloc,
+                      buildWhen: (previous, current) =>
+                          previous is CameraDetectionReady &&
+                          current is CameraDetectionReady &&
+                          current.paused != previous.paused,
+                      builder: (context, state) {
+                        if (state is! CameraDetectionReady) {
+                          return const SizedBox.shrink();
+                        }
 
-                      return IconButton(
-                        onPressed: () =>
-                            cameraBloc.add(CameraDetectionPauseToggled()),
-                        icon:
-                            Icon(state.paused ? Icons.play_arrow : Icons.pause),
-                      );
-                    },
+                        return IconButton(
+                          onPressed: () =>
+                              cameraBloc.add(CameraDetectionPauseToggled()),
+                          icon: Icon(
+                              state.paused ? Icons.play_arrow : Icons.pause),
+                        );
+                      },
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
