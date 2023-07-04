@@ -196,11 +196,25 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
 
     if (state_ is! CameraDetectionReady) return;
 
+    // if current is paused then start image stream
+    if (state_.paused) {
+      await _cameraController.startImageStream(
+        (image) => add(_CameraImageDetected(image)),
+      );
+    }
+
+    // if current resumed then stop image stream
+    if (!state_.paused) {
+      await _cameraController.stopImageStream();
+    }
+
+    // resume/pause preview
     if (state_.paused) {
       await _cameraController.resumePreview();
     } else {
       await _cameraController.pausePreview();
     }
+
     emit(state_.copyWith(paused: !state_.paused));
   }
 }
