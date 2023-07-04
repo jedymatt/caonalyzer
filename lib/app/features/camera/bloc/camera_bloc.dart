@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:camera/camera.dart';
-import 'package:caonalyzer/app/data/models/models.dart';
 import 'package:caonalyzer/globals.dart';
 import 'package:flutter/foundation.dart';
 import 'package:meta/meta.dart';
