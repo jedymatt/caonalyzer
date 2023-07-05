@@ -244,6 +244,8 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
 
   Widget _buildCameraDetectionReady() {
     print('>>>>>>>> rebuild: _buildCameraDetectionReady');
+    // only show empty detection when there is no detection for the last 2 seconds
+    DateTime? lastDetectionTime;
 
     return Stack(
       fit: StackFit.expand,
@@ -252,10 +254,24 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
           aspectRatio: cameraBloc.controller.value.aspectRatio,
           child: CameraPreview(cameraBloc.controller),
         ),
-        BlocBuilder<DetectorBloc, DetectorState>(
+        BlocConsumer<DetectorBloc, DetectorState>(
           bloc: detectorBloc,
+          listener: (context, state) {
+            if (state is DetectorSuccess && state.detectedObjects.isNotEmpty) {
+              lastDetectionTime = DateTime.now();
+            }
+          },
           buildWhen: (previous, current) {
-            return previous.detectedObjects != current.detectedObjects;
+            if (current.detectedObjects.isNotEmpty) {
+              return true;
+            }
+            // only show empty detection when there is no detection for the last 2 seconds
+            if (lastDetectionTime == null) {
+              return false;
+            }
+
+            return DateTime.now().difference(lastDetectionTime!) >
+                const Duration(seconds: 1);
           },
           builder: (context, state) {
             return AspectRatio(
@@ -290,6 +306,18 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
                   ),
                   child: BlocBuilder<DetectorBloc, DetectorState>(
                     bloc: detectorBloc,
+                    buildWhen: (previous, current) {
+                      if (current.detectedObjects.isNotEmpty) {
+                        return true;
+                      }
+                      // only show empty detection when there is no detection for the last 2 seconds
+                      if (lastDetectionTime == null) {
+                        return false;
+                      }
+
+                      return DateTime.now().difference(lastDetectionTime!) >
+                          const Duration(seconds: 1);
+                    },
                     builder: (context, state) {
                       return Text(
                         '${state.detectedObjects.length}',
