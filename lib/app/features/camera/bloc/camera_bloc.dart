@@ -18,21 +18,12 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
     on<CameraStarted>(_onStarted);
     on<CameraStopped>(_onStopped);
     on<CameraCaptured>(_onCaptured);
-    on<CameraDetectionToggled>(_onDetectionToggled);
-    on<_CameraImageDetected>(_onCameraImageDetected);
     on<CameraDetectionPauseToggled>(_onDetectionPauseToggled);
+    on<CameraDetectionStarted>(_onDetectionStarted);
+    on<CameraDetectionStopped>(_onDetectionStopped);
   }
 
   CameraController get controller => _cameraController;
-
-  FutureOr<void> _onCameraImageDetected(
-      _CameraImageDetected event, Emitter<CameraState> emit) async {
-    final state_ = state;
-
-    if (state_ is! CameraDetectionReady) return;
-
-    emit(CameraDetectionImageFrame(event.image));
-  }
 
   FutureOr<void> _onStarted(
       CameraStarted event, Emitter<CameraState> emit) async {
@@ -82,37 +73,6 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
     }
   }
 
-  FutureOr<void> _onDetectionToggled(
-      CameraDetectionToggled event, Emitter<CameraState> emit) async {
-    final state_ = state;
-
-    if (state_ is! CameraReady && state_ is! CameraDetectionReady) return;
-
-    emit(CameraSwitchDisplayModeInProgress());
-
-    if (state_ is CameraReady) {
-      if (!_cameraController.value.isStreamingImages) {
-        await _cameraController.startImageStream(
-          (image) => add(_CameraImageDetected(image)),
-        );
-      }
-
-      emit(CameraDetectionReady());
-    }
-
-    if (state_ is CameraDetectionReady) {
-      if (_cameraController.value.isPreviewPaused) {
-        await _cameraController.resumePreview();
-      }
-
-      if (_cameraController.value.isStreamingImages) {
-        await _cameraController.stopImageStream();
-      }
-
-      emit(CameraReady(mode: _mode));
-    }
-  }
-
   @override
   Future<void> close() async {
     if (_cameraController.value.isStreamingImages) {
@@ -129,18 +89,6 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
 
     if (state_ is! CameraDetectionReady) return;
 
-    // if current is paused then start image stream
-    if (state_.paused) {
-      await _cameraController.startImageStream(
-        (image) => add(_CameraImageDetected(image)),
-      );
-    }
-
-    // if current resumed then stop image stream
-    if (!state_.paused) {
-      await _cameraController.stopImageStream();
-    }
-
     // resume/pause preview
     if (state_.paused) {
       await _cameraController.resumePreview();
@@ -149,5 +97,17 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
     }
 
     emit(state_.copyWith(paused: !state_.paused));
+  }
+
+  FutureOr<void> _onDetectionStopped(
+      CameraDetectionStopped event, Emitter<CameraState> emit) async {
+    await _cameraController.resumePreview();
+
+    emit(CameraReady(mode: _mode));
+  }
+
+  FutureOr<void> _onDetectionStarted(
+      CameraDetectionStarted event, Emitter<CameraState> emit) async {
+    emit(CameraDetectionReady());
   }
 }
