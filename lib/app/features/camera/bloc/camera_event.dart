@@ -15,8 +15,6 @@ class CameraStopped extends CameraEvent {}
 
 class CameraCaptured extends CameraEvent {}
 
-class CameraDetectionToggled extends CameraEvent {}
-
 class _CameraImageDetected extends CameraEvent {
   final CameraImage image;
 
@@ -24,3 +22,7 @@ class _CameraImageDetected extends CameraEvent {
 }
 
 class CameraDetectionPauseToggled extends CameraEvent {}
+
+class CameraDetectionStopped extends CameraEvent {}
+
+class CameraDetectionStarted extends CameraEvent {}

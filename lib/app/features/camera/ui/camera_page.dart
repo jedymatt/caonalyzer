@@ -1,10 +1,10 @@
 import 'dart:io';
 
 import 'package:camera/camera.dart';
-import 'package:caonalyzer/app/data/models/detected_object.dart';
 import 'package:caonalyzer/app/features/batch_confirmation/bloc/batch_confirmation_bloc.dart';
 import 'package:caonalyzer/app/features/batch_confirmation/ui/batch_confirmation_page.dart';
 import 'package:caonalyzer/app/features/camera/bloc/camera_bloc.dart';
+import 'package:caonalyzer/app/features/detector/bloc/detector_bloc.dart';
 import 'package:caonalyzer/app/features/image/ui/bounding_box_painter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -26,6 +26,7 @@ class CameraPage extends StatefulWidget {
 class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
   late final CameraBloc cameraBloc;
   late final BatchConfirmationBloc batchConfirmationBloc;
+  late final DetectorBloc detectorBloc;
   String? batchPath;
 
   @override
@@ -35,6 +36,7 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
     cameraBloc = CameraBloc(mode: widget.mode)
       ..add(CameraStarted(mode: widget.mode));
     batchConfirmationBloc = BlocProvider.of<BatchConfirmationBloc>(context);
+    detectorBloc = DetectorBloc();
   }
 
   @override
@@ -68,10 +70,9 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
       child: Scaffold(
         body: BlocConsumer<CameraBloc, CameraState>(
           bloc: cameraBloc,
-          listenWhen: (previous, current) => current is CameraActionState,
           buildWhen: (previous, current) =>
               previous.runtimeType != current.runtimeType,
-          listener: (context, state) {
+          listener: (context, state) async {
             if (state is CameraCaptureSuccess) {
               if (state.mode == CameraCaptureMode.batch) {
                 batchConfirmationBloc
@@ -83,6 +84,24 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
                     .add(BatchConfirmationImageRetaked(imagePath: state.path));
 
                 Navigator.of(context).pop();
+              }
+            }
+
+            if (state is CameraDetectionReady) {
+              if (state.paused) {
+                await cameraBloc.controller.stopImageStream();
+              } else {
+                await cameraBloc.controller.startImageStream(
+                  (image) => detectorBloc.add(DetectorStarted(
+                    image: image,
+                  )),
+                );
+              }
+            }
+
+            if (state is CameraReady) {
+              if (cameraBloc.controller.value.isStreamingImages) {
+                await cameraBloc.controller.stopImageStream();
               }
             }
           },
@@ -132,7 +151,7 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
                   const Spacer(),
                   IconButton(
                     onPressed: () {
-                      cameraBloc.add(CameraDetectionToggled());
+                      cameraBloc.add(CameraDetectionStarted());
                     },
                     icon: const Icon(Icons.visibility_off),
                   ),
@@ -225,6 +244,8 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
 
   Widget _buildCameraDetectionReady() {
     print('>>>>>>>> rebuild: _buildCameraDetectionReady');
+    // only show empty detection when there is no detection for the last 2 seconds
+    DateTime? lastDetectionTime;
 
     return Stack(
       fit: StackFit.expand,
@@ -233,15 +254,26 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
           aspectRatio: cameraBloc.controller.value.aspectRatio,
           child: CameraPreview(cameraBloc.controller),
         ),
-        BlocBuilder<CameraBloc, CameraState>(
-          bloc: cameraBloc,
-          buildWhen: (previous, current) =>
-              previous is CameraDetectionReady &&
-              current is CameraDetectionReady &&
-              current.detectedObjects != previous.detectedObjects,
-          builder: (context, state) {
-            if (state is! CameraDetectionReady) return const SizedBox.shrink();
+        BlocConsumer<DetectorBloc, DetectorState>(
+          bloc: detectorBloc,
+          listener: (context, state) {
+            if (state is DetectorSuccess && state.detectedObjects.isNotEmpty) {
+              lastDetectionTime = DateTime.now();
+            }
+          },
+          buildWhen: (previous, current) {
+            if (current.detectedObjects.isNotEmpty) {
+              return true;
+            }
+            // only show empty detection when there is no detection for the last 2 seconds
+            if (lastDetectionTime == null) {
+              return false;
+            }
 
+            return DateTime.now().difference(lastDetectionTime!) >
+                const Duration(seconds: 1);
+          },
+          builder: (context, state) {
             return AspectRatio(
               aspectRatio: cameraBloc.controller.value.aspectRatio,
               child: CustomPaint(
@@ -272,18 +304,21 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
                     color: Colors.black.withOpacity(0.5),
                     borderRadius: const BorderRadius.all(Radius.circular(10)),
                   ),
-                  child: BlocBuilder<CameraBloc, CameraState>(
-                    bloc: cameraBloc,
-                    buildWhen: (previous, current) =>
-                        previous is CameraDetectionReady &&
-                        current is CameraDetectionReady &&
-                        current.detectedObjects.length !=
-                            previous.detectedObjects.length,
-                    builder: (context, state) {
-                      if (state is! CameraDetectionReady) {
-                        return const SizedBox();
+                  child: BlocBuilder<DetectorBloc, DetectorState>(
+                    bloc: detectorBloc,
+                    buildWhen: (previous, current) {
+                      if (current.detectedObjects.isNotEmpty) {
+                        return true;
+                      }
+                      // only show empty detection when there is no detection for the last 2 seconds
+                      if (lastDetectionTime == null) {
+                        return false;
                       }
 
+                      return DateTime.now().difference(lastDetectionTime!) >
+                          const Duration(seconds: 1);
+                    },
+                    builder: (context, state) {
                       return Text(
                         '${state.detectedObjects.length}',
                         style: const TextStyle(
@@ -296,9 +331,8 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
                   ),
                 ),
                 IconButton(
-                  onPressed: () {
-                    cameraBloc.add(CameraDetectionToggled());
-                  },
+                  onPressed: () async =>
+                      cameraBloc.add(CameraDetectionStopped()),
                   icon: const Icon(Icons.visibility),
                 ),
               ],
@@ -343,42 +377,5 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
         ),
       ],
     );
-  }
-
-  List<Widget> displayBoxesAroundRecognizedObjects(
-      Size screen, List<DetectedObject> results, CameraImage? cameraImage) {
-    if (results.isEmpty) return [];
-
-    double factorX = screen.width / (cameraImage?.height ?? 1);
-    double factorY = screen.height / (cameraImage?.width ?? 1);
-
-    Color colorPick = Colors.white;
-
-    return results.map((result) {
-      final box = result.absoluteBox(
-        cameraImage?.height.toDouble() ?? 1.0,
-        cameraImage?.width.toDouble() ?? 1.0,
-      );
-
-      return Positioned(
-        left: box[0] * factorX,
-        top: box[1] * factorY,
-        width: (box[2] - box[0]) * factorX,
-        height: (box[3] - box[1]) * factorY,
-        child: Container(
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.red, width: 2.0),
-          ),
-          child: Text(
-            result.displayLabel,
-            style: TextStyle(
-              background: Paint()..color = colorPick,
-              color: Colors.red,
-              fontSize: 14.0,
-            ),
-          ),
-        ),
-      );
-    }).toList();
   }
 }
