@@ -35,20 +35,16 @@ class CameraSwitchDisplayModeInProgress extends CameraState {}
 
 class CameraDetectionReady extends CameraState {
   final bool paused;
-  final CameraImage? image;
 
   CameraDetectionReady({
     this.paused = false,
-    this.image,
   });
 
   CameraDetectionReady copyWith({
     bool? paused,
-    CameraImage? image,
   }) {
     return CameraDetectionReady(
       paused: paused ?? this.paused,
-      image: image ?? this.image,
     );
   }
 }
@@ -75,10 +71,4 @@ class CameraCaptureFailure extends CameraActionState {
   final String message;
 
   CameraCaptureFailure({required this.message});
-}
-
-class CameraDetectionImageFrame extends CameraState {
-  final CameraImage image;
-
-  CameraDetectionImageFrame(this.image);
 }
