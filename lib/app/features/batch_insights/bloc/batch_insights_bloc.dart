@@ -1,14 +1,16 @@
 import 'dart:io';
 
 import 'package:bloc/bloc.dart';
+import 'package:caonalyzer/app/data/services/tf_serving_object_detector.dart';
+import 'package:caonalyzer/object_detectors/object_detection_output.dart';
+import 'package:collection/collection.dart';
+import 'package:image/image.dart' show decodeImage;
+import 'package:meta/meta.dart';
+
 import 'package:caonalyzer/app/data/configs/configs.dart';
 import 'package:caonalyzer/app/data/models/models.dart';
 import 'package:caonalyzer/app/data/services/detected_object_service.dart';
-
 import 'package:caonalyzer/locator.dart';
-import 'package:image/image.dart' show decodeImage;
-import 'package:meta/meta.dart';
-import 'package:collection/collection.dart';
 
 part 'batch_insights_event.dart';
 part 'batch_insights_state.dart';
@@ -34,7 +36,28 @@ class BatchInsightsBloc extends Bloc<BatchInsightsEvent, BatchInsightsState> {
           final preprocessedImage =
               objectDetector.preprocessImage(decodedImage);
 
-          final outputs = await objectDetector.runInference(preprocessedImage);
+          List<ObjectDetectionOutput> outputs = [];
+
+          if (objectDetector is TfServingObjectDetector) {
+            try {
+              outputs = await objectDetector.runInference(preprocessedImage);
+
+              detectedObjects = outputs
+                  .map((e) => DetectedObject(
+                        label: e.label,
+                        confidence: e.confidence,
+                        box: e.boundingBox.toLTRBList(),
+                      ))
+                  .toList();
+            } catch (e) {
+              emit(BatchInsightsFailure(
+                  'Online mode failed, no network connection or server is down.'));
+
+              return;
+            }
+          } else {
+            outputs = await objectDetector.runInference(preprocessedImage);
+          }
 
           detectedObjects = outputs
               .map((e) => DetectedObject(
