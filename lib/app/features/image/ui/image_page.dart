@@ -33,7 +33,21 @@ class _ImagePageState extends State<ImagePage> {
   Widget build(BuildContext context) {
     return BlocProvider.value(
       value: imageBloc,
-      child: BlocBuilder<ImageBloc, ImageState>(
+      child: BlocConsumer<ImageBloc, ImageState>(
+        bloc: imageBloc,
+        listenWhen: (_, current) =>
+            current is ImageInitial &&
+            current.detectionStatus == ImageDetectionStatus.failure,
+        listener: (context, state) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Online mode failed, no network connection or server is down.',
+              ),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        },
         builder: (context, state) {
           return Scaffold(
             appBar: const ImageAppBar(),
@@ -55,7 +69,9 @@ class _ImagePageState extends State<ImagePage> {
                             fit: BoxFit.contain,
                             child: CustomPaint(
                               foregroundPainter: BoundingBoxPainter(
-                                (state.showDetection && !state.detectionInProgress) &&
+                                (state.showDetection &&
+                                            state.detectionStatus ==
+                                                ImageDetectionStatus.success) &&
                                         state.images[state.index]
                                                 .detectedObjects !=
                                             null
@@ -95,11 +111,15 @@ class _ImagePageState extends State<ImagePage> {
                         color: Theme.of(context).colorScheme.background,
                       ),
                     ),
-                    if (state.detectionInProgress)
+                    if (state.detectionStatus ==
+                        ImageDetectionStatus.inProgress)
                       const Center(
                         child: CircularProgressIndicator(),
                       ),
-                    if ((state.showDetection && !state.detectionInProgress) && state.scale != ImageScale.zoomIn)
+                    if ((state.showDetection &&
+                            state.detectionStatus ==
+                                ImageDetectionStatus.success) &&
+                        state.scale != ImageScale.zoomIn)
                       Align(
                         alignment: Alignment.topCenter,
                         child: Padding(
@@ -142,12 +162,11 @@ class ImageAppBar extends StatelessWidget implements PreferredSizeWidget {
               icon: Icon(state.showDetection
                   ? Icons.visibility
                   : Icons.visibility_off),
-              onPressed: state.detectionInProgress
-                  ? null
-                  : () {
-                      BlocProvider.of<ImageBloc>(context)
-                          .add(ImageDetectionToggled());
-                    },
+              onPressed:
+                  state.detectionStatus != ImageDetectionStatus.inProgress
+                      ? () => BlocProvider.of<ImageBloc>(context)
+                          .add(ImageDetectionToggled())
+                      : null,
             ),
           ],
         );
