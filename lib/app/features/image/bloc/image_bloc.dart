@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:bloc/bloc.dart';
 import 'package:caonalyzer/app/data/configs/object_detector_config.dart';
 import 'package:caonalyzer/app/data/services/detected_object_service.dart';
+import 'package:caonalyzer/app/data/services/tf_serving_object_detector.dart';
 import 'package:caonalyzer/app/features/image/models/image.dart';
 import 'package:caonalyzer/locator.dart';
 import 'package:flutter/material.dart' show PageController;
@@ -15,11 +16,11 @@ part 'image_state.dart';
 
 class ImageBloc extends Bloc<ImageEvent, ImageState> {
   final PageController _pageController;
-  final List<Image> _images;
+  final List<Image> _initialImages;
   final DetectedObjectService service = locator.get<DetectedObjectService>();
 
   ImageBloc({required List<Image> images, int initialIndex = 0})
-      : _images = List.from(images),
+      : _initialImages = List.from(images),
         _pageController = PageController(initialPage: initialIndex),
         super(ImageInitial(images: images, index: initialIndex)) {
     on<ImagePageChanged>(_onPageChanged);
@@ -39,19 +40,20 @@ class ImageBloc extends Bloc<ImageEvent, ImageState> {
 
   FutureOr<void> _onDetectionToggled(
       ImageDetectionToggled event, Emitter<ImageState> emit) async {
-    ImageState state_ = state;
+    final state_ = state;
 
     if (state_ is! ImageInitial) return;
-    state_ = state_.copyWith(showDetection: !state_.showDetection);
 
-    emit(state_);
-
-    if (!state_.showDetection) {
-      emit(state_.copyWith(images: List.from(_images)));
+    if (state_.showDetection) {
+      emit(state_.copyWith(
+        images: List.from(_initialImages),
+        detectionStatus: ImageDetectionStatus.none,
+        showDetection: false,
+      ));
       return;
+    } else {
+      add(_ImageDetectionEnabled());
     }
-
-    add(_ImageDetectionEnabled());
   }
 
   FutureOr<void> _onPageChanged(
@@ -81,7 +83,7 @@ class ImageBloc extends Bloc<ImageEvent, ImageState> {
 
     if (state_ is! ImageInitial) return;
 
-    if (!state_.showDetection) return;
+    if (state_.showDetection) return; // already showing detection
 
     final currentImage = state_.images[state_.index];
 
@@ -103,25 +105,44 @@ class ImageBloc extends Bloc<ImageEvent, ImageState> {
       return;
     }
     // if not, run inference and save result
-    emit(state_.copyWith(detectionInProgress: true));
+    emit(state_.copyWith(
+      showDetection: true,
+      detectionStatus: ImageDetectionStatus.inProgress,
+    ));
 
     final objectDetector = ObjectDetectorConfig.mode.value.objectDetector;
 
     final decodedImage = decodeJpg(
       File(state_.images[state_.index].path).readAsBytesSync(),
     )!;
-    final preproccessImage = objectDetector.preprocessImage(decodedImage);
+    final preprocessedImage = objectDetector.preprocessImage(decodedImage);
 
-    final detections = await objectDetector.runInference(preproccessImage);
-
-    detectedObjects = detections
-        .map(
-          (e) => DetectedObject(
-              label: e.label,
-              confidence: e.confidence,
-              box: e.boundingBox.toLTRBList()),
-        )
-        .toList();
+    if (objectDetector is TfServingObjectDetector) {
+      try {
+        detectedObjects =
+            (await await objectDetector.runInference(preprocessedImage))
+                .map((e) => DetectedObject(
+                      label: e.label,
+                      confidence: e.confidence,
+                      box: e.boundingBox.toLTRBList(),
+                    ))
+                .toList();
+      } catch (e) {
+        emit(state_.copyWith(
+          showDetection: true,
+          detectionStatus: ImageDetectionStatus.failure,
+        ));
+        return;
+      }
+    } else {
+      detectedObjects = (await objectDetector.runInference(preprocessedImage))
+          .map((e) => DetectedObject(
+                label: e.label,
+                confidence: e.confidence,
+                box: e.boundingBox.toLTRBList(),
+              ))
+          .toList();
+    }
 
     service.putAll(
       currentImage.path,
@@ -129,7 +150,8 @@ class ImageBloc extends Bloc<ImageEvent, ImageState> {
     );
 
     emit(state_.copyWith(
-      detectionInProgress: false,
+      showDetection: true,
+      detectionStatus: ImageDetectionStatus.success,
       images: List.from(state_.images)
         ..replaceRange(state_.index, state_.index + 1, [
           currentImage.copyWith(
