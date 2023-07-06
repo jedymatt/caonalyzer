@@ -1,5 +1,6 @@
 import 'package:caonalyzer/app/features/settings/bloc/settings_bloc.dart';
 import 'package:caonalyzer/enums/preferred_mode.dart';
+import 'package:caonalyzer/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -87,6 +88,22 @@ class _SettingsPageState extends State<SettingsPage> {
                     ),
                   );
                   settingsBloc.add(SettingsStarted());
+                },
+              ),
+              ListTile(
+                title: const Text('About'),
+                onTap: () {
+                  showAboutDialog(
+                    context: context,
+                    applicationName: kAppName,
+                    applicationVersion:
+                        '${Globals.appVersion}+${Globals.buildNumber}',
+                    children: const [
+                      Text(
+                        'This app is made by UMTC CS Students with ❤️.',
+                      ),
+                    ],
+                  );
                 },
               ),
             ],
