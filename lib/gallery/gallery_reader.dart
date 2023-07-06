@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:caonalyzer/gallery/models/batch.dart';
 import 'package:glob/glob.dart';
 import 'package:glob/list_local_fs.dart';
 import 'package:path_provider/path_provider.dart';
@@ -29,23 +28,6 @@ class GalleryReader {
         .reversed
         .map((e) => e.path)
         .where((element) => Directory(element).listSync().isNotEmpty)
-        .toList();
-  }
-
-  static Future<List<Batch>> getBatches() async {
-    final Directory externalStorageDir = (await getExternalStorageDirectory())!;
-
-    final dir = Directory(externalStorageDir.path);
-
-    return dir
-        .listSync()
-        .reversed
-        // where directory is not empty
-        .where((element) => Directory(element.path).listSync().isNotEmpty)
-        .map((e) => Batch(
-              title: path_lib.basename(e.path),
-              dirPath: e.path,
-            ))
         .toList();
   }
 
