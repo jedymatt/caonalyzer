@@ -22,3 +22,8 @@ class BatchInsightsSuccess extends BatchInsightsState {
     required this.moldsCountPerImage,
   });
 }
+
+class BatchInsightsFailure extends BatchInsightsState {
+  final String message;
+  BatchInsightsFailure(this.message);
+}
