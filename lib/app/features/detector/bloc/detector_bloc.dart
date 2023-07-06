@@ -2,10 +2,12 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:camera/camera.dart';
+import 'package:caonalyzer/app/data/configs/configs.dart';
 import 'package:caonalyzer/app/data/models/models.dart';
-import 'package:caonalyzer/app/data/services/pytorch_object_detector.dart';
+import 'package:caonalyzer/app/data/services/tf_serving_object_detector.dart';
 import 'package:caonalyzer/app/data/utils/image_utils.dart';
-import 'package:caonalyzer/object_detectors/object_detector.dart';
+import 'package:caonalyzer/enums/preferred_mode.dart';
+import 'package:caonalyzer/object_detectors/object_detectors.dart';
 import 'package:meta/meta.dart';
 import 'package:image/image.dart' as image_lib;
 
@@ -13,8 +15,6 @@ part 'detector_event.dart';
 part 'detector_state.dart';
 
 class DetectorBloc extends Bloc<DetectorEvent, DetectorState> {
-  final ObjectDetector _detector = PytorchObjectDetector();
-
   DetectorBloc() : super(DetectorInitial()) {
     on<DetectorStarted>(_onStarted);
   }
@@ -25,9 +25,26 @@ class DetectorBloc extends Bloc<DetectorEvent, DetectorState> {
 
     var image = ImageUtils.convertCameraImage(event.image)!;
     image = image_lib.copyRotate(image, 90);
-    image = _detector.preprocessImage(image);
 
-    final detectedObjects = await _detector.runInference(image);
+    final detector = ObjectDetectorConfig.mode.value.objectDetector;
+
+    image = detector.preprocessImage(image);
+
+    List<ObjectDetectionOutput> detectedObjects = [];
+
+    if (detector is TfServingObjectDetector) {
+      try {
+        detectedObjects = await detector.runInference(image);
+      } catch (e) {
+        ObjectDetectorConfig.mode.save(PreferredMode.offline);
+
+        emit(const DetectorFailure(
+          message: 'Online mode failed, switching to offline mode',
+        ));
+      }
+    } else {
+      detectedObjects = await detector.runInference(image);
+    }
 
     emit(DetectorSuccess(
       detectedObjects: detectedObjects
