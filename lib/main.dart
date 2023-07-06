@@ -1,7 +1,7 @@
 import 'package:caonalyzer/app/data/configs/object_detector_config.dart';
 import 'package:caonalyzer/app/features/gallery/bloc/gallery_bloc.dart';
+import 'package:caonalyzer/app/features/gallery/ui/gallery_page.dart';
 import 'package:caonalyzer/app/features/home/bloc/home_bloc.dart';
-import 'package:caonalyzer/app/features/home/ui/home_page.dart';
 import 'package:caonalyzer/globals.dart';
 import 'package:caonalyzer/hive_adapters.dart';
 import 'package:caonalyzer/locator.dart';
@@ -46,7 +46,7 @@ class App extends StatelessWidget {
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
           useMaterial3: true,
         ),
-        home: const HomePage(),
+        home: const GalleryPage(),
       ),
     );
   }
