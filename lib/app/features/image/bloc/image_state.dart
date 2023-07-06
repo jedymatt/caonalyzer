@@ -1,6 +1,8 @@
 part of 'image_bloc.dart';
 
-enum ImageScale { none, zoomIn, zoomOut}
+enum ImageScale { none, zoomIn, zoomOut }
+
+enum ImageDetectionStatus { none, inProgress, success, failure }
 
 @immutable
 abstract class ImageState {}
@@ -9,14 +11,14 @@ class ImageInitial extends ImageState {
   final List<Image> images;
   final int index;
   final bool showDetection;
-  final bool detectionInProgress;
+  final ImageDetectionStatus detectionStatus;
   final ImageScale scale;
 
   ImageInitial({
     required this.images,
     this.index = 0,
     this.showDetection = false,
-    this.detectionInProgress = false,
+    this.detectionStatus = ImageDetectionStatus.none,
     this.scale = ImageScale.none,
   });
 
@@ -24,14 +26,14 @@ class ImageInitial extends ImageState {
     List<Image>? images,
     int? index,
     bool? showDetection,
-    bool? detectionInProgress,
+    ImageDetectionStatus? detectionStatus,
     ImageScale? scale,
   }) {
     return ImageInitial(
       images: images ?? this.images,
       index: index ?? this.index,
       showDetection: showDetection ?? this.showDetection,
-      detectionInProgress: detectionInProgress ?? this.detectionInProgress,
+      detectionStatus: detectionStatus ?? this.detectionStatus,
       scale: scale ?? this.scale,
     );
   }
