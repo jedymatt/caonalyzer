@@ -260,6 +260,21 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
             if (state is DetectorSuccess && state.detectedObjects.isNotEmpty) {
               lastDetectionTime = DateTime.now();
             }
+
+            if (state is DetectorFailure) {
+              // snackbar
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.message),
+                  behavior: SnackBarBehavior.floating,
+                  onVisible: () {
+                    Future.delayed(const Duration(seconds: 2), () {
+                      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                    });
+                  },
+                ),
+              );
+            }
           },
           buildWhen: (previous, current) {
             if (current.detectedObjects.isNotEmpty) {
