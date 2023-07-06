@@ -98,7 +98,7 @@ class _SettingsPageState extends State<SettingsPage> {
 }
 
 class _ServerHostInput extends StatelessWidget {
-  const _ServerHostInput({super.key, this.initialValue = ''});
+  const _ServerHostInput({this.initialValue = ''});
 
   final String initialValue;
 
@@ -121,7 +121,7 @@ class _ServerHostInput extends StatelessWidget {
 }
 
 class _ServerPortInput extends StatelessWidget {
-  const _ServerPortInput({super.key, this.initialValue = ''});
+  const _ServerPortInput({this.initialValue = ''});
 
   final String initialValue;
 

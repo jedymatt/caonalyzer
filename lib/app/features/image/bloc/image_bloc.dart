@@ -119,14 +119,13 @@ class ImageBloc extends Bloc<ImageEvent, ImageState> {
 
     if (objectDetector is TfServingObjectDetector) {
       try {
-        detectedObjects =
-            (await await objectDetector.runInference(preprocessedImage))
-                .map((e) => DetectedObject(
-                      label: e.label,
-                      confidence: e.confidence,
-                      box: e.boundingBox.toLTRBList(),
-                    ))
-                .toList();
+        detectedObjects = (await objectDetector.runInference(preprocessedImage))
+            .map((e) => DetectedObject(
+                  label: e.label,
+                  confidence: e.confidence,
+                  box: e.boundingBox.toLTRBList(),
+                ))
+            .toList();
       } catch (e) {
         emit(state_.copyWith(
           showDetection: true,
