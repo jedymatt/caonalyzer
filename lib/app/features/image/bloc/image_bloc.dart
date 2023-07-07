@@ -91,6 +91,8 @@ class ImageBloc extends Bloc<ImageEvent, ImageState> {
 
     if (detectedObjects != null) {
       emit(state_.copyWith(
+        showDetection: true,
+        detectionStatus: ImageDetectionStatus.success,
         images: List.from(state_.images)
           ..replaceRange(
             state_.index,
