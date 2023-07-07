@@ -4,9 +4,10 @@ import 'package:bloc/bloc.dart';
 import 'package:camera/camera.dart';
 import 'package:caonalyzer/app/data/configs/configs.dart';
 import 'package:caonalyzer/app/data/models/models.dart';
-import 'package:caonalyzer/app/data/services/tf_serving_object_detector.dart';
+import 'package:caonalyzer/app/data/services/realtime_pytorch_object_detector.dart';
 import 'package:caonalyzer/app/data/utils/image_utils.dart';
 import 'package:caonalyzer/enums/preferred_mode.dart';
+import 'package:caonalyzer/locator.dart';
 import 'package:caonalyzer/object_detectors/object_detectors.dart';
 import 'package:meta/meta.dart';
 import 'package:image/image.dart' as image_lib;
@@ -23,16 +24,27 @@ class DetectorBloc extends Bloc<DetectorEvent, DetectorState> {
       DetectorStarted event, Emitter<DetectorState> emit) async {
     emit(DetectorInProgress());
 
-    var image = ImageUtils.convertCameraImage(event.image)!;
-    image = image_lib.copyRotate(image, 90);
-
-    final detector = ObjectDetectorConfig.mode.value.objectDetector;
-
-    image = detector.preprocessImage(image);
-
     List<ObjectDetectionOutput> detectedObjects = [];
 
-    if (detector is TfServingObjectDetector) {
+    final currentMode = ObjectDetectorConfig.mode.value;
+
+    if (currentMode == PreferredMode.offline) {
+      final detector = locator.get<RealtimePytorchObjectDetector>();
+
+      detectedObjects = await detector.runInferenceOnFrame(
+        event.image.planes.map((plane) => plane.bytes).toList(),
+        event.image.height,
+        event.image.width,
+      );
+    }
+    if (currentMode == PreferredMode.online) {
+      var image = ImageUtils.convertCameraImage(event.image)!;
+      image = image_lib.copyRotate(image, 90);
+
+      final detector = currentMode.objectDetector;
+
+      image = detector.preprocessImage(image);
+
       try {
         detectedObjects = await detector.runInference(image);
       } catch (e) {
@@ -42,8 +54,6 @@ class DetectorBloc extends Bloc<DetectorEvent, DetectorState> {
           message: 'Online mode failed, switching to offline mode',
         ));
       }
-    } else {
-      detectedObjects = await detector.runInference(image);
     }
 
     emit(DetectorSuccess(
