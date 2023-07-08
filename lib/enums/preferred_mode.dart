@@ -1,6 +1,4 @@
-import 'package:caonalyzer/app/data/services/pytorch_object_detector.dart';
-import 'package:caonalyzer/app/data/services/realtime_pytorch_object_detector.dart';
-import 'package:caonalyzer/app/data/services/tf_serving_object_detector.dart';
+import 'package:caonalyzer/app/data/detectors/detectors.dart';
 
 import 'package:caonalyzer/object_detectors/object_detectors.dart';
 

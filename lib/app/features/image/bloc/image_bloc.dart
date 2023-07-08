@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:bloc/bloc.dart';
 import 'package:caonalyzer/app/data/configs/object_detector_config.dart';
 import 'package:caonalyzer/app/data/services/detected_object_service.dart';
-import 'package:caonalyzer/app/data/services/tf_serving_object_detector.dart';
+import 'package:caonalyzer/app/data/detectors/detectors.dart';
 import 'package:caonalyzer/app/features/image/models/image.dart';
 import 'package:caonalyzer/locator.dart';
 import 'package:flutter/material.dart' show PageController;

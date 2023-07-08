@@ -4,7 +4,7 @@ import 'package:bloc/bloc.dart';
 import 'package:camera/camera.dart';
 import 'package:caonalyzer/app/data/configs/configs.dart';
 import 'package:caonalyzer/app/data/models/models.dart';
-import 'package:caonalyzer/app/data/services/tf_serving_object_detector.dart';
+import 'package:caonalyzer/app/data/detectors/detectors.dart';
 import 'package:caonalyzer/app/data/utils/image_utils.dart';
 import 'package:caonalyzer/enums/preferred_mode.dart';
 import 'package:caonalyzer/object_detectors/object_detectors.dart';
