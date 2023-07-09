@@ -83,9 +83,14 @@ class ImageBloc extends Bloc<ImageEvent, ImageState> {
 
     if (state_ is! ImageInitial) return;
 
-    if (state_.showDetection) return; // already showing detection
-
     final currentImage = state_.images[state_.index];
+
+    // check if detection result is already saved
+    if (currentImage.detectedObjects != null) return;
+
+    emit(state_.copyWith(
+      detectionStatus: ImageDetectionStatus.inProgress,
+    ));
 
     var detectedObjects = service.getAll(currentImage.path);
 

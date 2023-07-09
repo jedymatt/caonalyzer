@@ -7,7 +7,7 @@ import 'package:caonalyzer/app/data/models/models.dart';
 import 'package:caonalyzer/app/data/detectors/detectors.dart';
 import 'package:caonalyzer/app/data/utils/image_utils.dart';
 import 'package:caonalyzer/enums/preferred_mode.dart';
-import 'package:caonalyzer/object_detectors/object_detectors.dart';
+import 'package:caonalyzer/object_detector/object_detector.dart';
 import 'package:meta/meta.dart';
 import 'package:image/image.dart' as image_lib;
 
