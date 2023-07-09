@@ -1,4 +1,5 @@
 import 'package:caonalyzer/app/data/detectors/detectors.dart';
+import 'package:caonalyzer/locator.dart';
 
 import 'package:caonalyzer/object_detector/object_detector.dart';
 
@@ -9,9 +10,9 @@ enum PreferredMode {
   ObjectDetector get objectDetector {
     switch (this) {
       case PreferredMode.online:
-        return TfServingObjectDetector();
+        return locator.get<TfServingObjectDetector>();
       case PreferredMode.offline:
-        return PytorchObjectDetector();
+        return locator.get<PytorchObjectDetector>();
     }
   }
 
