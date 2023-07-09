@@ -6,7 +6,7 @@ import 'package:image/image.dart'
     show Image, Interpolation, copyResize, encodeBmp;
 import 'package:flutter_vision/flutter_vision.dart';
 
-class PytorchObjectDetector implements ObjectDetector {
+class PytorchObjectDetector extends ObjectDetector {
   FlutterVision? _model;
 
   @override
