@@ -268,10 +268,26 @@ packages:
     dependency: "direct main"
     description:
       name: image
-      sha256: "8e9d133755c3e84c73288363e6343157c383a0c6c56fc51afcc5d4d7180306d6"
+      sha256: a72242c9a0ffb65d03de1b7113bc4e189686fc07c7147b8b41811d0dd0e0d9bf
       url: "https://pub.dev"
     source: hosted
-    version: "3.3.0"
+    version: "4.0.17"
+  isolate_contactor:
+    dependency: transitive
+    description:
+      name: isolate_contactor
+      sha256: b3579eb4d576e1664c5c42f7ad4aaaa8569091bbdbecddf5774f13d802c994fe
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.0.0"
+  isolate_manager:
+    dependency: "direct main"
+    description:
+      name: isolate_manager
+      sha256: b15d4084e324f096a5144e1df06d21f9ede18d05992c8a275c53c7d6b25cec4a
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.0.1"
   js:
     dependency: transitive
     description:

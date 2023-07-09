@@ -1,12 +1,12 @@
 import 'dart:developer';
 import 'dart:typed_data';
 
-import 'package:caonalyzer/object_detectors/object_detectors.dart';
+import 'package:caonalyzer/object_detector/object_detector.dart';
 import 'package:image/image.dart'
     show Image, Interpolation, copyResize, encodeBmp;
 import 'package:flutter_vision/flutter_vision.dart';
 
-class PytorchObjectDetector implements ObjectDetector {
+class PytorchObjectDetector extends ObjectDetector {
   FlutterVision? _model;
 
   @override

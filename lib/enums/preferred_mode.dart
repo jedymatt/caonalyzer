@@ -1,8 +1,7 @@
-import 'package:caonalyzer/app/data/services/pytorch_object_detector.dart';
-import 'package:caonalyzer/app/data/services/realtime_pytorch_object_detector.dart';
-import 'package:caonalyzer/app/data/services/tf_serving_object_detector.dart';
+import 'package:caonalyzer/app/data/detectors/detectors.dart';
+import 'package:caonalyzer/locator.dart';
 
-import 'package:caonalyzer/object_detectors/object_detectors.dart';
+import 'package:caonalyzer/object_detector/object_detector.dart';
 
 enum PreferredMode {
   online,
@@ -11,9 +10,9 @@ enum PreferredMode {
   ObjectDetector get objectDetector {
     switch (this) {
       case PreferredMode.online:
-        return TfServingObjectDetector();
+        return locator.get<TfServingObjectDetector>();
       case PreferredMode.offline:
-        return PytorchObjectDetector();
+        return locator.get<PytorchObjectDetector>();
     }
   }
 
