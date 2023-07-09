@@ -4,7 +4,7 @@ import 'package:caonalyzer/object_detector/object_detector.dart';
 import 'package:caonalyzer/app/data/detectors/detectors.dart';
 import 'package:image/image.dart';
 
-class RealtimePytorchObjectDetector implements RealtimeObjectDetector {
+class RealtimePytorchObjectDetector extends RealtimeObjectDetector {
   final PytorchObjectDetector objectDetector = PytorchObjectDetector();
 
   @override
