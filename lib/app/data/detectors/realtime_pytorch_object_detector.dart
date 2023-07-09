@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 
-import 'package:caonalyzer/object_detectors/object_detectors.dart';
-import 'package:caonalyzer/app/data/services/pytorch_object_detector.dart';
+import 'package:caonalyzer/object_detector/object_detector.dart';
+import 'package:caonalyzer/app/data/detectors/detectors.dart';
 import 'package:image/image.dart';
 
 class RealtimePytorchObjectDetector implements RealtimeObjectDetector {

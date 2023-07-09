@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:bloc/bloc.dart';
 import 'package:caonalyzer/app/data/configs/object_detector_config.dart';
 import 'package:caonalyzer/app/data/services/detected_object_service.dart';
-import 'package:caonalyzer/app/data/services/tf_serving_object_detector.dart';
+import 'package:caonalyzer/app/data/detectors/detectors.dart';
 import 'package:caonalyzer/app/features/image/models/image.dart';
 import 'package:caonalyzer/locator.dart';
 import 'package:flutter/material.dart' show PageController;
@@ -83,9 +83,14 @@ class ImageBloc extends Bloc<ImageEvent, ImageState> {
 
     if (state_ is! ImageInitial) return;
 
-    if (state_.showDetection) return; // already showing detection
-
     final currentImage = state_.images[state_.index];
+
+    // check if detection result is already saved
+    if (currentImage.detectedObjects != null) return;
+
+    emit(state_.copyWith(
+      detectionStatus: ImageDetectionStatus.inProgress,
+    ));
 
     var detectedObjects = service.getAll(currentImage.path);
 

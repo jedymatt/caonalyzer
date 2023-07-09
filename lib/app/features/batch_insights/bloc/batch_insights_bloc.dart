@@ -1,8 +1,8 @@
 import 'dart:io';
 
 import 'package:bloc/bloc.dart';
-import 'package:caonalyzer/app/data/services/tf_serving_object_detector.dart';
-import 'package:caonalyzer/object_detectors/object_detection_output.dart';
+import 'package:caonalyzer/app/data/detectors/tf_serving_object_detector.dart';
+import 'package:caonalyzer/object_detector/object_detector.dart';
 import 'package:collection/collection.dart';
 import 'package:image/image.dart' show decodeImage;
 import 'package:meta/meta.dart';

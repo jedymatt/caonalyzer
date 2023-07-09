@@ -7,7 +7,7 @@ import 'package:caonalyzer/globals.dart';
 import 'package:tflite_flutter/tflite_flutter.dart';
 import 'package:http/http.dart' as http;
 
-import 'package:caonalyzer/object_detectors/object_detectors.dart';
+import 'package:caonalyzer/object_detector/object_detector.dart';
 import 'package:image/image.dart'
     show ChannelOrder, Image, Interpolation, copyResize;
 
