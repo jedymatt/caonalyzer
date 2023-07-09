@@ -11,7 +11,7 @@ import 'package:caonalyzer/object_detector/object_detector.dart';
 import 'package:image/image.dart'
     show ChannelOrder, Image, Interpolation, copyResize;
 
-class TfServingObjectDetector implements ObjectDetector {
+class TfServingObjectDetector extends ObjectDetector {
   @override
   Image preprocessImage(Image image) {
     if (image.width > image.height) {
