@@ -20,6 +20,8 @@ class DetectorBloc extends Bloc<DetectorEvent, DetectorState> {
 
   FutureOr<void> _onStarted(
       DetectorStarted event, Emitter<DetectorState> emit) async {
+    if (state is DetectorInProgress) return;
+
     emit(DetectorInProgress());
 
     var image = (await ImageUtilsIsolate.convertCameraImage(event.image))!;
