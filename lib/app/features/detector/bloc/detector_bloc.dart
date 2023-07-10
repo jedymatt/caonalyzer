@@ -5,10 +5,10 @@ import 'package:camera/camera.dart';
 import 'package:caonalyzer/app/data/configs/configs.dart';
 import 'package:caonalyzer/app/data/models/models.dart';
 import 'package:caonalyzer/app/data/detectors/detectors.dart';
-import 'package:caonalyzer/app/data/utils/image_utils_isolate.dart';
 import 'package:caonalyzer/enums/preferred_mode.dart';
 import 'package:caonalyzer/object_detector/object_detector.dart';
 import 'package:meta/meta.dart';
+import 'package:pytorch_lite/image_utils_isolate.dart';
 
 part 'detector_event.dart';
 part 'detector_state.dart';

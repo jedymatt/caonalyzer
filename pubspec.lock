@@ -464,6 +464,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.0.5"
+  pytorch_lite:
+    dependency: "direct main"
+    description:
+      name: pytorch_lite
+      sha256: "38d26fe3fc1a88cf1ce3d0d91453d24624fe293b18ba6654b8d05a51c1e29f41"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.0.0+1"
   quiver:
     dependency: transitive
     description:
