@@ -1,4 +1,4 @@
-// From https://github.com/zezo357/pytorch_lite/blob/testing-ffi/lib/image_utils_isolate.dart
+// From https://github.com/zezo357/pytorch_lite/blob/master/lib/image_utils_isolate.dart
 
 import 'dart:io';
 import 'dart:isolate';
