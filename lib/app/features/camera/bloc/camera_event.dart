@@ -17,6 +17,8 @@ class CameraCaptured extends CameraEvent {}
 
 class CameraDetectionPauseToggled extends CameraEvent {}
 
-class CameraDetectionStopped extends CameraEvent {}
+class CameraDisplayModeChanged extends CameraEvent {
+  final CameraDisplayMode displayMode;
 
-class CameraDetectionStarted extends CameraEvent {}
+  CameraDisplayModeChanged(this.displayMode);
+}
