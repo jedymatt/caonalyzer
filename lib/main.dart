@@ -8,6 +8,8 @@ import 'package:caonalyzer/locator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:pytorch_lite/image_utils_isolate.dart';
+import 'package:pytorch_lite/native_wrapper.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -16,6 +18,9 @@ void main() async {
   Hive.registerAdapter(PreferredModeAdapter());
 
   setupLocator();
+
+  PytorchFfi.init();
+  ImageUtilsIsolate.init();
 
   await ObjectDetectorConfig.init();
 
