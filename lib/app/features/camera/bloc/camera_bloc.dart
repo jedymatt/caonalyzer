@@ -32,7 +32,7 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
       _cameraController = CameraController(
         Globals.cameras.first,
         // set to low resolution for object detection to work
-        ResolutionPreset.low,
+        ResolutionPreset.medium,
         enableAudio: false,
       );
 
