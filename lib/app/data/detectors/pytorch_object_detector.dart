@@ -1,13 +1,12 @@
 import 'dart:developer';
-import 'dart:typed_data';
 
 import 'package:caonalyzer/object_detector/object_detector.dart';
 import 'package:image/image.dart'
-    show Image, Interpolation, copyResize, encodeBmp;
-import 'package:flutter_vision/flutter_vision.dart';
+    show Image, Interpolation, copyResize, encodeJpg;
+import 'package:pytorch_lite/pytorch_lite.dart';
 
 class PytorchObjectDetector extends ObjectDetector {
-  FlutterVision? _model;
+  ModelObjectDetection? _model;
 
   @override
   Image preprocessImage(Image image) {
@@ -36,24 +35,21 @@ class PytorchObjectDetector extends ObjectDetector {
   Future<List<ObjectDetectionOutput>> runInference(Image image) async {
     final model = await getModel();
 
-    final results = await model.yoloOnImage(
-      bytesList: encodeBmp(image) as Uint8List,
-      imageHeight: image.height,
-      imageWidth: image.width,
+    final results = await model.getImagePredictionList(
+      encodeJpg(image),
+      boxesLimit: 25,
     );
 
     log(results.toString());
 
     return results.map((e) {
-      final label = e['tag'];
-      final confidence = e['box'][4]; // this is api bug
-      final rect = BoundingBox.fromPixel(
-        left: e['box'][0],
-        top: e['box'][1],
-        right: e['box'][2],
-        bottom: e['box'][3],
-        imageHeight: image.height,
-        imageWidth: image.width,
+      final label = e!.className!;
+      final confidence = e.score;
+      final rect = BoundingBox.fromPercent(
+        left: e.rect.left,
+        top: e.rect.top,
+        right: e.rect.right,
+        bottom: e.rect.bottom,
       );
 
       return ObjectDetectionOutput(
@@ -64,18 +60,15 @@ class PytorchObjectDetector extends ObjectDetector {
     }).toList();
   }
 
-  Future<FlutterVision> getModel() async {
-    if (_model == null) {
-      _model = FlutterVision();
-
-      await _model!.loadYoloModel(
-        modelPath: 'assets/yolov8n.tflite',
-        labels: 'assets/labels.txt',
-        modelVersion: 'yolov8',
-        numThreads: 1,
-        useGpu: false,
-      );
-    }
+  Future<ModelObjectDetection> getModel() async {
+    _model ??= await PytorchLite.loadObjectDetectionModel(
+      'assets/yolov8n.torchscript.pt',
+      1,
+      640,
+      640,
+      labelPath: 'assets/labels.txt',
+      objectDetectionModelType: ObjectDetectionModelType.yolov8,
+    );
 
     return _model!;
   }
