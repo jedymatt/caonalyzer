@@ -88,7 +88,9 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
 
             if (state is CameraReady) {
               if (state.displayMode == CameraDisplayMode.analysis) {
-                if (!cameraBloc.controller.value.isStreamingImages) {
+                if (state.displayPaused) {
+                  await cameraBloc.controller.stopImageStream();
+                } else {
                   await cameraBloc.controller.startImageStream(
                     (image) => detectorBloc.add(DetectorStarted(
                       image: image,
