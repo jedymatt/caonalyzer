@@ -71,8 +71,6 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
       child: Scaffold(
         body: BlocConsumer<CameraBloc, CameraState>(
           bloc: cameraBloc,
-          buildWhen: (previous, current) =>
-              previous.runtimeType != current.runtimeType,
           listener: (context, state) async {
             if (state is CameraCaptureSuccess) {
               if (state.mode == CameraCaptureMode.batch) {
@@ -90,13 +88,13 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
 
             if (state is CameraReady) {
               if (state.displayMode == CameraDisplayMode.analysis) {
-                await cameraBloc.controller.stopImageStream();
-              } else {
-                await cameraBloc.controller.startImageStream(
-                  (image) => detectorBloc.add(DetectorStarted(
-                    image: image,
-                  )),
-                );
+                if (!cameraBloc.controller.value.isStreamingImages) {
+                  await cameraBloc.controller.startImageStream(
+                    (image) => detectorBloc.add(DetectorStarted(
+                      image: image,
+                    )),
+                  );
+                }
               }
 
               if (state.displayMode == CameraDisplayMode.photo) {
