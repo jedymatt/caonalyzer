@@ -71,8 +71,6 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
       child: Scaffold(
         body: BlocConsumer<CameraBloc, CameraState>(
           bloc: cameraBloc,
-          buildWhen: (previous, current) =>
-              previous.runtimeType != current.runtimeType,
           listener: (context, state) async {
             if (state is CameraCaptureSuccess) {
               if (state.mode == CameraCaptureMode.batch) {
@@ -88,21 +86,23 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
               }
             }
 
-            if (state is CameraDetectionReady) {
-              if (state.paused) {
-                await cameraBloc.controller.stopImageStream();
-              } else {
-                await cameraBloc.controller.startImageStream(
-                  (image) => detectorBloc.add(DetectorStarted(
-                    image: image,
-                  )),
-                );
-              }
-            }
-
             if (state is CameraReady) {
-              if (cameraBloc.controller.value.isStreamingImages) {
-                await cameraBloc.controller.stopImageStream();
+              if (state.displayMode == CameraDisplayMode.analysis) {
+                if (state.displayPaused) {
+                  await cameraBloc.controller.stopImageStream();
+                } else {
+                  await cameraBloc.controller.startImageStream(
+                    (image) => detectorBloc.add(DetectorStarted(
+                      image: image,
+                    )),
+                  );
+                }
+              }
+
+              if (state.displayMode == CameraDisplayMode.photo) {
+                if (cameraBloc.controller.value.isStreamingImages) {
+                  await cameraBloc.controller.stopImageStream();
+                }
               }
             }
           },
@@ -113,11 +113,13 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
               );
             }
 
-            if (state is CameraReady) {
+            if (state is CameraReady &&
+                state.displayMode == CameraDisplayMode.photo) {
               return _buildCameraReady(state, context);
             }
 
-            if (state is CameraDetectionReady) {
+            if (state is CameraReady &&
+                state.displayMode == CameraDisplayMode.analysis) {
               return _buildCameraDetectionReady();
             }
 
@@ -152,7 +154,8 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
                   const Spacer(),
                   IconButton(
                     onPressed: () {
-                      cameraBloc.add(CameraDetectionStarted());
+                      cameraBloc.add(
+                          CameraDisplayModeChanged(CameraDisplayMode.analysis));
                     },
                     icon: const Icon(Icons.visibility_off),
                   ),
@@ -185,7 +188,7 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
                         icon: const Icon(Icons.camera_alt),
                       ),
                     ),
-                    if (state.mode == CameraCaptureMode.batch)
+                    if (state.captureMode == CameraCaptureMode.batch)
                       BlocBuilder<BatchConfirmationBloc,
                               BatchConfirmationState>(
                           bloc: BlocProvider.of<BatchConfirmationBloc>(context),
@@ -231,7 +234,7 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
                               ),
                             );
                           }),
-                    if (state.mode == CameraCaptureMode.single)
+                    if (state.captureMode == CameraCaptureMode.single)
                       const SizedBox.square(dimension: 24),
                   ],
                 ),
@@ -347,8 +350,8 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
                   ),
                 ),
                 IconButton(
-                  onPressed: () async =>
-                      cameraBloc.add(CameraDetectionStopped()),
+                  onPressed: () => cameraBloc
+                      .add(CameraDisplayModeChanged(CameraDisplayMode.photo)),
                   icon: const Icon(Icons.visibility),
                 ),
               ],
@@ -369,20 +372,17 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
                   ),
                   child: BlocBuilder<CameraBloc, CameraState>(
                     bloc: cameraBloc,
-                    buildWhen: (previous, current) =>
-                        previous is CameraDetectionReady &&
-                        current is CameraDetectionReady &&
-                        current.paused != previous.paused,
                     builder: (context, state) {
-                      if (state is! CameraDetectionReady) {
+                      if (state is! CameraReady) {
                         return const SizedBox.shrink();
                       }
 
                       return IconButton(
                         onPressed: () =>
                             cameraBloc.add(CameraDetectionPauseToggled()),
-                        icon:
-                            Icon(state.paused ? Icons.play_arrow : Icons.pause),
+                        icon: Icon(state.displayPaused
+                            ? Icons.play_arrow
+                            : Icons.pause),
                       );
                     },
                   ),

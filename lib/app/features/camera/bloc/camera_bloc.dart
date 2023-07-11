@@ -10,17 +10,14 @@ part 'camera_state.dart';
 
 class CameraBloc extends Bloc<CameraEvent, CameraState> {
   late CameraController _cameraController;
-  final CameraCaptureMode _mode;
 
   CameraBloc({required CameraCaptureMode mode})
-      : _mode = mode,
-        super(CameraInitial(mode: mode)) {
+      : super(CameraInitial(mode: mode)) {
     on<CameraStarted>(_onStarted);
     on<CameraStopped>(_onStopped);
     on<CameraCaptured>(_onCaptured);
     on<CameraDetectionPauseToggled>(_onDetectionPauseToggled);
-    on<CameraDetectionStarted>(_onDetectionStarted);
-    on<CameraDetectionStopped>(_onDetectionStopped);
+    on<CameraDisplayModeChanged>(_onDisplayModeChanged);
   }
 
   CameraController get controller => _cameraController;
@@ -38,7 +35,7 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
 
       await _cameraController.initialize();
 
-      emit(CameraReady(mode: event.mode));
+      emit(CameraReady(captureMode: event.mode));
     } on CameraException catch (e) {
       _cameraController.dispose();
       emit(CameraFailure(message: e.description!));
@@ -47,12 +44,15 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
     }
   }
 
-  FutureOr<void> _onStopped(CameraStopped event, Emitter<CameraState> emit) {
+  FutureOr<void> _onStopped(
+      CameraStopped event, Emitter<CameraState> emit) async {
     _cameraController.dispose();
     if (state is! CameraReady) return null;
 
     final state_ = state as CameraReady;
-    emit(CameraInitial(mode: state_.mode));
+
+    await _cameraController.dispose();
+    emit(CameraInitial(mode: state_.captureMode));
   }
 
   FutureOr<void> _onCaptured(
@@ -66,8 +66,8 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
 
       final image = await _cameraController.takePicture();
 
-      emit(CameraCaptureSuccess(path: image.path, mode: state_.mode));
-      emit(CameraReady(mode: state_.mode));
+      emit(CameraCaptureSuccess(path: image.path, mode: state_.captureMode));
+      emit(CameraReady(captureMode: state_.captureMode));
     } on CameraException catch (e) {
       emit(CameraCaptureFailure(message: e.description!));
     }
@@ -87,27 +87,26 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
       CameraDetectionPauseToggled event, Emitter<CameraState> emit) async {
     final state_ = state;
 
-    if (state_ is! CameraDetectionReady) return;
+    if (state_ is! CameraReady) return;
+
+    if (state_.displayMode != CameraDisplayMode.analysis) return;
 
     // resume/pause preview
-    if (state_.paused) {
+    if (state_.displayPaused) {
       await _cameraController.resumePreview();
     } else {
       await _cameraController.pausePreview();
     }
 
-    emit(state_.copyWith(paused: !state_.paused));
+    emit(state_.copyWith(displayPaused: !state_.displayPaused));
   }
 
-  FutureOr<void> _onDetectionStopped(
-      CameraDetectionStopped event, Emitter<CameraState> emit) async {
-    await _cameraController.resumePreview();
+  FutureOr<void> _onDisplayModeChanged(
+      CameraDisplayModeChanged event, Emitter<CameraState> emit) async {
+    final state_ = state;
 
-    emit(CameraReady(mode: _mode));
-  }
+    if (state_ is! CameraReady) return;
 
-  FutureOr<void> _onDetectionStarted(
-      CameraDetectionStarted event, Emitter<CameraState> emit) async {
-    emit(CameraDetectionReady());
+    emit(state_.copyWith(displayMode: event.displayMode));
   }
 }

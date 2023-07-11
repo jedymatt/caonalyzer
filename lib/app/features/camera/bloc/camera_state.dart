@@ -2,6 +2,8 @@ part of 'camera_bloc.dart';
 
 enum CameraCaptureMode { single, batch }
 
+enum CameraDisplayMode { photo, analysis }
+
 @immutable
 abstract class CameraState {}
 
@@ -16,35 +18,25 @@ class CameraInitial extends CameraState {
 }
 
 class CameraReady extends CameraState {
-  final CameraCaptureMode mode;
+  final CameraCaptureMode captureMode;
+  final CameraDisplayMode displayMode;
+  final bool displayPaused;
 
   CameraReady({
-    required this.mode,
+    required this.captureMode,
+    this.displayMode = CameraDisplayMode.photo,
+    this.displayPaused = false,
   });
 
   CameraReady copyWith({
-    CameraCaptureMode? mode,
+    CameraCaptureMode? captureMode,
+    CameraDisplayMode? displayMode,
+    bool? displayPaused,
   }) {
     return CameraReady(
-      mode: mode ?? this.mode,
-    );
-  }
-}
-
-class CameraSwitchDisplayModeInProgress extends CameraState {}
-
-class CameraDetectionReady extends CameraState {
-  final bool paused;
-
-  CameraDetectionReady({
-    this.paused = false,
-  });
-
-  CameraDetectionReady copyWith({
-    bool? paused,
-  }) {
-    return CameraDetectionReady(
-      paused: paused ?? this.paused,
+      captureMode: captureMode ?? this.captureMode,
+      displayMode: displayMode ?? this.displayMode,
+      displayPaused: displayPaused ?? this.displayPaused,
     );
   }
 }
