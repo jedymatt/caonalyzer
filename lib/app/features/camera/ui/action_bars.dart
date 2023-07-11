@@ -14,13 +14,24 @@ class BottomActionBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        if (left != null) left! else Container(),
-        if (center != null) center! else Container(),
-        if (right != null) right! else Container(),
-      ],
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          if (left != null)
+            Align(
+              alignment: Alignment.centerLeft,
+              child: left!,
+            ),
+          if (center != null) center! else Container(),
+          if (right != null)
+            Align(
+              alignment: Alignment.centerRight,
+              child: right!,
+            ),
+        ],
+      ),
     );
   }
 }
