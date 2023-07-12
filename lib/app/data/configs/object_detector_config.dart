@@ -19,7 +19,7 @@ abstract class ObjectDetectorConfig {
   }
 
   static String get serverUrl =>
-      'http://$ipAddress/v1/models/faster_rcnn:predict';
+      'http://${ipAddress.value}/v1/models/faster_rcnn:predict';
 }
 
 class ConfigValue<T> {
