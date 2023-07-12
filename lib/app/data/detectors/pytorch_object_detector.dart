@@ -1,9 +1,8 @@
 import 'dart:developer';
-import 'dart:typed_data';
 
 import 'package:caonalyzer/object_detector/object_detector.dart';
 import 'package:image/image.dart'
-    show Image, Interpolation, copyResize, encodeBmp;
+    show Image, Interpolation, copyResize, encodeJpg;
 import 'package:flutter_vision/flutter_vision.dart';
 
 class PytorchObjectDetector extends ObjectDetector {
@@ -37,7 +36,7 @@ class PytorchObjectDetector extends ObjectDetector {
     final model = await getModel();
 
     final results = await model.yoloOnImage(
-      bytesList: encodeBmp(image) as Uint8List,
+      bytesList: encodeJpg(image),
       imageHeight: image.height,
       imageWidth: image.width,
     );
