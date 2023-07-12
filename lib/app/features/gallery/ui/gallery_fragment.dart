@@ -6,6 +6,7 @@ import 'package:caonalyzer/app/features/gallery/bloc/gallery_bloc.dart';
 import 'package:caonalyzer/app/features/gallery/models/batch.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class GalleryFragment extends StatefulWidget {
   const GalleryFragment({super.key});
@@ -63,21 +64,28 @@ class _GalleryFragmentState extends State<GalleryFragment> {
             // sync the indicator with the bloc
             return _refreshCompleter.future;
           },
-          child: GridView.builder(
-            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-              maxCrossAxisExtent: 150,
-              childAspectRatio: 1,
-              crossAxisSpacing: 8,
-              mainAxisSpacing: 8,
-            ),
-            itemCount: state.batches.length,
-            padding: const EdgeInsets.all(8),
-            itemBuilder: (context, index) {
-              return BatchTile(
-                batch: state.batches[index],
-              );
-            },
-          ),
+          child: state.batches.isNotEmpty
+              ? GridView.builder(
+                  gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                    maxCrossAxisExtent: 150,
+                    childAspectRatio: 1,
+                    crossAxisSpacing: 8,
+                    mainAxisSpacing: 8,
+                  ),
+                  itemCount: state.batches.length,
+                  padding: const EdgeInsets.all(8),
+                  itemBuilder: (context, index) {
+                    return BatchTile(
+                      batch: state.batches[index],
+                    );
+                  },
+                )
+              : Container(
+                  padding: const EdgeInsets.all(32),
+                  child: SvgPicture.asset(
+                    'assets/svgs/undraw_photograph_re_up3b.svg',
+                  ),
+                ),
         );
       },
     );
