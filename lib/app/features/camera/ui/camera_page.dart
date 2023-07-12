@@ -51,6 +51,7 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
   void dispose() {
     super.dispose();
     cameraBloc.close();
+    cameraPermissionBloc.close();
     detectorBloc.close();
   }
 
