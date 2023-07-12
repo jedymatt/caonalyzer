@@ -15,8 +15,4 @@ enum PreferredMode {
         return locator.get<PytorchObjectDetector>();
     }
   }
-
-  RealtimeObjectDetector get realtimeObjectDetector {
-    return RealtimePytorchObjectDetector();
-  }
 }
