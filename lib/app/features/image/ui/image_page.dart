@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:caonalyzer/app/features/image/bloc/image_bloc.dart';
-import 'package:caonalyzer/app/features/image/ui/bounding_box_painter.dart';
+import 'package:caonalyzer/app/global_widgets/bounding_box_painter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:photo_view/photo_view.dart';

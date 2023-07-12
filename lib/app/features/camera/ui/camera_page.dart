@@ -9,7 +9,7 @@ import 'package:caonalyzer/app/features/camera/ui/buttons.dart';
 import 'package:caonalyzer/app/features/camera/ui/camera_mode_selector.dart';
 import 'package:caonalyzer/app/features/camera_permission/bloc/camera_permission_bloc.dart';
 import 'package:caonalyzer/app/features/detector/bloc/detector_bloc.dart';
-import 'package:caonalyzer/app/features/image/ui/bounding_box_painter.dart';
+import 'package:caonalyzer/app/global_widgets/bounding_box_painter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:permission_handler/permission_handler.dart';
