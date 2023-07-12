@@ -7,10 +7,12 @@ import 'package:caonalyzer/app/features/camera/bloc/camera_bloc.dart';
 import 'package:caonalyzer/app/features/camera/ui/action_bars.dart';
 import 'package:caonalyzer/app/features/camera/ui/buttons.dart';
 import 'package:caonalyzer/app/features/camera/ui/camera_mode_selector.dart';
+import 'package:caonalyzer/app/features/camera_permission/bloc/camera_permission_bloc.dart';
 import 'package:caonalyzer/app/features/detector/bloc/detector_bloc.dart';
 import 'package:caonalyzer/app/features/image/ui/bounding_box_painter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class CameraPage extends StatefulWidget {
   const CameraPage({
@@ -28,6 +30,7 @@ class CameraPage extends StatefulWidget {
 
 class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
   late final CameraBloc cameraBloc;
+  late final CameraPermissionBloc cameraPermissionBloc;
   late final BatchConfirmationBloc batchConfirmationBloc;
   late final DetectorBloc detectorBloc;
   String? batchPath;
@@ -37,8 +40,9 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
   void initState() {
     super.initState();
 
-    cameraBloc = CameraBloc(mode: widget.mode)
-      ..add(CameraStarted(mode: widget.mode));
+    cameraBloc = CameraBloc(mode: widget.mode);
+    cameraPermissionBloc = CameraPermissionBloc()
+      ..add(CameraPermissionRequested());
     batchConfirmationBloc = BlocProvider.of<BatchConfirmationBloc>(context);
     detectorBloc = DetectorBloc();
   }
@@ -103,6 +107,30 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
             }
           },
         ),
+        BlocListener<CameraPermissionBloc, CameraPermissionState>(
+          bloc: cameraPermissionBloc,
+          listener: (context, state) {
+            if (state is CameraPermissionGranted) {
+              cameraBloc.add(CameraStarted(mode: widget.mode));
+            }
+
+            if (state is CameraPermissionDenied) {
+              openAppSettings();
+            }
+
+            if (state is CameraPermissionPermanentlyDenied) {
+              // snackbar
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Camera permission permanently denied'),
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+
+              Navigator.of(context).pop();
+            }
+          },
+        )
       ],
       child: Scaffold(
         body: BlocConsumer<CameraBloc, CameraState>(
