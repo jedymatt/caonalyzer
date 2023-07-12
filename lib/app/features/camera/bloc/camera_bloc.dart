@@ -9,7 +9,7 @@ part 'camera_event.dart';
 part 'camera_state.dart';
 
 class CameraBloc extends Bloc<CameraEvent, CameraState> {
-  late CameraController _cameraController;
+  CameraController? _cameraController;
 
   CameraBloc({required CameraCaptureMode mode})
       : super(CameraInitial(mode: mode)) {
@@ -20,7 +20,7 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
     on<CameraDisplayModeChanged>(_onDisplayModeChanged);
   }
 
-  CameraController get controller => _cameraController;
+  CameraController get controller => _cameraController!;
 
   FutureOr<void> _onStarted(
       CameraStarted event, Emitter<CameraState> emit) async {
@@ -33,11 +33,11 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
         enableAudio: false,
       );
 
-      await _cameraController.initialize();
+      await _cameraController!.initialize();
 
       emit(CameraReady(captureMode: event.mode));
     } on CameraException catch (e) {
-      _cameraController.dispose();
+      _cameraController!.dispose();
       emit(CameraFailure(message: e.description!));
     } catch (e) {
       emit(CameraFailure(message: e.toString()));
@@ -46,12 +46,12 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
 
   FutureOr<void> _onStopped(
       CameraStopped event, Emitter<CameraState> emit) async {
-    _cameraController.dispose();
+    _cameraController!.dispose();
     if (state is! CameraReady) return null;
 
     final state_ = state as CameraReady;
 
-    await _cameraController.dispose();
+    await _cameraController!.dispose();
     emit(CameraInitial(mode: state_.captureMode));
   }
 
@@ -64,7 +64,7 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
     try {
       emit(CameraCaptureInProgress());
 
-      final image = await _cameraController.takePicture();
+      final image = await _cameraController!.takePicture();
 
       emit(CameraCaptureSuccess(path: image.path, mode: state_.captureMode));
       emit(CameraReady(captureMode: state_.captureMode));
@@ -75,10 +75,12 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
 
   @override
   Future<void> close() async {
-    if (_cameraController.value.isStreamingImages) {
-      await _cameraController.stopImageStream();
+    if (_cameraController != null) {
+      if (_cameraController!.value.isStreamingImages) {
+        await _cameraController!.stopImageStream();
+      }
+      await _cameraController!.dispose();
     }
-    await _cameraController.dispose();
 
     return super.close();
   }
@@ -93,9 +95,9 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
 
     // resume/pause preview
     if (state_.displayPaused) {
-      await _cameraController.resumePreview();
+      await _cameraController?.resumePreview();
     } else {
-      await _cameraController.pausePreview();
+      await _cameraController?.pausePreview();
     }
 
     emit(state_.copyWith(displayPaused: !state_.displayPaused));

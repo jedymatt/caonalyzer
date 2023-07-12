@@ -29,6 +29,7 @@ dependencies:
   fl_chart: ^0.63.0
   collection: ^1.17.1
   isolate_manager: ^3.0.1
+  permission_handler: ^10.4.2
 
 dev_dependencies:
   flutter_test:
