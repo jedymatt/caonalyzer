@@ -17,6 +17,7 @@ class ImageUtilsIsolate {
     if (ImageUtilsIsolate.initiated) {
       return;
     }
+    // ignore: avoid_print
     print("ImageUtilsIsolate initialization");
     ImageUtilsIsolate.initiated = true;
     ImageUtilsIsolate.converterFromCameraToBytesIsolate = IsolateManager.create(
