@@ -30,6 +30,7 @@ dependencies:
   collection: ^1.17.1
   isolate_manager: ^3.0.1
   permission_handler: ^10.4.2
+  flutter_svg: ^2.0.7
 
 dev_dependencies:
   flutter_test:
@@ -41,6 +42,7 @@ flutter:
   uses-material-design: true
 
   assets:
-    - ./assets/labels.txt
+    - assets/labels.txt
     # - ./assets/yolov8n.torchscript.pt
-    - ./assets/yolov8n.tflite
+    - assets/yolov8n.tflite
+    - assets/svgs/undraw_photograph_re_up3b.svg
