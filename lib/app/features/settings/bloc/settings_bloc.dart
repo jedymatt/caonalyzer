@@ -1,13 +1,17 @@
 import 'dart:async';
 import 'package:bloc/bloc.dart';
-import 'package:caonalyzer/app/data/configs/object_detector_config.dart';
 import 'package:caonalyzer/app/data/enums/preferred_mode.dart';
+import 'package:caonalyzer/app/data/utils/object_detector_settings.dart';
+import 'package:caonalyzer/locator.dart';
 import 'package:meta/meta.dart';
 
 part 'settings_event.dart';
 part 'settings_state.dart';
 
 class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
+  final ObjectDetectorSettings _objectDetectorSettings =
+      locator.get<ObjectDetectorSettings>();
+
   SettingsBloc() : super(SettingsInitial()) {
     on<SettingsStarted>(_onStarted);
     on<SettingsPreferredModeChanged>(_onPreferredModeChanged);
@@ -20,7 +24,9 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
   FutureOr<void> _onServerSubmitted(event, emit) {
     final state_ = state;
     if (state_ is! SettingsLoadSuccess) return null;
-    ObjectDetectorConfig.ipAddress.save('${state_.host}:${state_.port}');
+
+    _objectDetectorSettings.serverHost = '${state_.host}:${state_.port}';
+    _objectDetectorSettings.save();
   }
 
   FutureOr<void> _onServerPortChanged(event, emit) {
@@ -43,7 +49,8 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
       SettingsPreferredModeSubmitted event, emit) async {
     final state_ = state;
     if (state_ is! SettingsLoadSuccess) return;
-    ObjectDetectorConfig.mode.save(state_.preferredMode);
+    _objectDetectorSettings.preferredMode = state_.preferredMode;
+    _objectDetectorSettings.save();
   }
 
   FutureOr<void> _onPreferredModeChanged(
@@ -57,14 +64,12 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
 
   FutureOr<void> _onStarted(SettingsStarted event, emit) async {
     emit(SettingsLoadInProgress());
-    final PreferredMode preferredMode = ObjectDetectorConfig.mode.value;
-
-    final hostAndPort = ObjectDetectorConfig.ipAddress.value.split(':');
+    final serverHost = _objectDetectorSettings.serverHost.split(':');
 
     emit(SettingsLoadSuccess(
-      preferredMode: preferredMode,
-      host: hostAndPort[0],
-      port: hostAndPort[1],
+      preferredMode: _objectDetectorSettings.preferredMode,
+      host: serverHost[0],
+      port: serverHost.length > 1 ? serverHost[1] : '8501',
     ));
   }
 }

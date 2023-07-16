@@ -2,9 +2,10 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:camera/camera.dart';
-import 'package:caonalyzer/app/data/configs/configs.dart';
 import 'package:caonalyzer/app/data/models/models.dart';
 import 'package:caonalyzer/app/data/utils/image_utils_isolate.dart';
+import 'package:caonalyzer/app/data/utils/object_detector_settings.dart';
+import 'package:caonalyzer/locator.dart';
 import 'package:caonalyzer/object_detector/object_detector.dart';
 import 'package:meta/meta.dart';
 
@@ -14,7 +15,7 @@ part 'camera_detector_state.dart';
 class CameraDetectorBloc
     extends Bloc<CameraDetectorEvent, CameraDetectorState> {
   final ObjectDetector<DetectedObject> _detector =
-      ObjectDetectorConfig.mode.value.makeObjectDetector;
+      locator.get<ObjectDetectorSettings>().preferredMode.makeObjectDetector;
 
   CameraDetectorBloc() : super(CameraDetectorInitial()) {
     ImageUtilsIsolate.init();

@@ -23,6 +23,12 @@ class _BatchInsightsPageState extends State<BatchInsightsPage> {
   }
 
   @override
+  void dispose() {
+    super.dispose();
+    batchInsightsBloc.close();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(

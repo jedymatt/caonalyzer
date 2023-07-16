@@ -1,12 +1,12 @@
 import 'dart:io';
 
 import 'package:bloc/bloc.dart';
+import 'package:caonalyzer/app/data/utils/object_detector_settings.dart';
 import 'package:caonalyzer/object_detector/object_detector.dart';
 import 'package:collection/collection.dart';
 import 'package:image/image.dart' show decodeImage;
 import 'package:meta/meta.dart';
 
-import 'package:caonalyzer/app/data/configs/configs.dart';
 import 'package:caonalyzer/app/data/models/models.dart';
 import 'package:caonalyzer/app/data/services/detected_object_service.dart';
 import 'package:caonalyzer/locator.dart';
@@ -16,7 +16,8 @@ part 'batch_insights_state.dart';
 
 class BatchInsightsBloc extends Bloc<BatchInsightsEvent, BatchInsightsState> {
   final service = locator.get<DetectedObjectService>();
-  final _detector = ObjectDetectorConfig.mode.value.makeObjectDetector;
+  final ObjectDetector<DetectedObject> _detector =
+      locator.get<ObjectDetectorSettings>().preferredMode.makeObjectDetector;
 
   BatchInsightsBloc() : super(BatchInsightsInitial()) {
     on<BatchInsightsStarted>((event, emit) async {
