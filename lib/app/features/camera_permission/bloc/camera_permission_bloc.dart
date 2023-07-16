@@ -19,10 +19,10 @@ class CameraPermissionBloc
 
     final status = await Permission.camera.request();
 
-    if (status.isDenied) {
-      emit(CameraPermissionDenied());
-    } else if (status.isGranted) {
+    if (status.isGranted) {
       emit(CameraPermissionGranted());
+    } else if (status.isDenied) {
+      emit(CameraPermissionDenied());
     } else if (status.isPermanentlyDenied) {
       emit(CameraPermissionPermanentlyDenied());
     }
