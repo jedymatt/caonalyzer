@@ -33,30 +33,12 @@ class BatchInsightsBloc extends Bloc<BatchInsightsEvent, BatchInsightsState> {
 
           final preprocessedImage = _detector.preprocessImage(decodedImage);
 
-          List<ObjectDetectionOutput> outputs = [];
-
           try {
-            outputs = await _detector.runInference(preprocessedImage);
-
-            detectedObjects = outputs
-                .map((e) => DetectedObject(
-                      label: e.label,
-                      confidence: e.confidence,
-                      box: e.boundingBox.toLTRBList(),
-                    ))
-                .toList();
+            detectedObjects = await _detector.runInference(preprocessedImage);
           } on ObjectDetectorInferenceException catch (e) {
             emit(BatchInsightsFailure(e.message));
             return;
           }
-
-          detectedObjects = outputs
-              .map((e) => DetectedObject(
-                    label: e.label,
-                    confidence: e.confidence,
-                    box: e.boundingBox.toLTRBList(),
-                  ))
-              .toList();
 
           service.putAll(
             image,

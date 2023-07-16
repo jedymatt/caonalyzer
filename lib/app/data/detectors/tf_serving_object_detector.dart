@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:caonalyzer/app/data/configs/object_detector_config.dart';
+import 'package:caonalyzer/app/data/models/models.dart';
 import 'package:caonalyzer/globals.dart';
 import 'package:tflite_flutter/tflite_flutter.dart';
 import 'package:http/http.dart' as http;
@@ -11,7 +12,7 @@ import 'package:caonalyzer/object_detector/object_detector.dart';
 import 'package:image/image.dart'
     show ChannelOrder, Image, Interpolation, copyResize;
 
-class TfServingObjectDetector extends ObjectDetector {
+class TfServingObjectDetector extends ObjectDetector<DetectedObject> {
   final _client = http.Client();
 
   @override
@@ -38,7 +39,7 @@ class TfServingObjectDetector extends ObjectDetector {
   }
 
   @override
-  Future<List<ObjectDetectionOutput>> runInference(Image image) async {
+  Future<List<DetectedObject>> runInference(Image image) async {
     final reshaped = image
         .getBytes(order: ChannelOrder.rgb)
         .reshape([1, image.height, image.width, 3]);
@@ -65,7 +66,7 @@ class TfServingObjectDetector extends ObjectDetector {
 
     final output = ObjectDetectionResponse.fromJson(response.body);
 
-    return output.toObjectDetectionOutputs(
+    return output.mapToDetectedObjects(
       image.height,
       image.width,
     );
@@ -128,20 +129,21 @@ class ObjectDetectionResponse {
     );
   }
 
-  List<ObjectDetectionOutput> toObjectDetectionOutputs(
-      int imageHeight, int imageWidth) {
+  List<DetectedObject> mapToDetectedObjects(int imageHeight, int imageWidth) {
     return List.generate(
       numDetections,
-      (index) => ObjectDetectionOutput(
-        Globals.labels[detectionClasses[index] - 1],
-        detectionScores[index],
-        BoundingBox.fromPercent(
-          left: detectionBoxes[index][1],
-          top: detectionBoxes[index][0],
-          right: detectionBoxes[index][3],
-          bottom: detectionBoxes[index][2],
-        ),
-      ),
+      (index) {
+        return DetectedObject(
+          label: Globals.labels[detectionClasses[index] - 1],
+          confidence: detectionScores[index],
+          box: [
+            detectionBoxes[index][1],
+            detectionBoxes[index][0],
+            detectionBoxes[index][3],
+            detectionBoxes[index][2],
+          ],
+        );
+      },
     );
   }
 }

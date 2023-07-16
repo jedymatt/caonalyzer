@@ -3,13 +3,17 @@ import 'dart:convert';
 class DetectedObject {
   final String label;
   final double confidence;
+
+  /// [left, top, right, bottom]
   final List<double> box;
+
   DetectedObject({
     required this.label,
     required this.confidence,
     required this.box,
   });
 
+  /// [left, top, right, bottom]
   List<double> absoluteBox(double height, double width) {
     return [
       box[0] * width,

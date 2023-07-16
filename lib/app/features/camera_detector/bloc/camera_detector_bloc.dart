@@ -13,7 +13,7 @@ part 'camera_detector_state.dart';
 
 class CameraDetectorBloc
     extends Bloc<CameraDetectorEvent, CameraDetectorState> {
-  final ObjectDetector _detector =
+  final ObjectDetector<DetectedObject> _detector =
       ObjectDetectorConfig.mode.value.makeObjectDetector;
 
   CameraDetectorBloc() : super(CameraDetectorInitial()) {
@@ -24,16 +24,16 @@ class CameraDetectorBloc
 
   FutureOr<void> _onStarted(
       CameraDetectorStarted event, Emitter<CameraDetectorState> emit) async {
-    if (state is CameraDetectorInProgress || state is CameraDetectorFailure)
+    if (state is CameraDetectorInProgress || state is CameraDetectorFailure) {
       return;
-
+    }
     emit(CameraDetectorInProgress());
 
     var image = (await ImageUtilsIsolate.convertCameraImage(event.image))!;
 
     image = _detector.preprocessImage(image);
 
-    List<ObjectDetectionOutput> detectedObjects = [];
+    List<DetectedObject> detectedObjects = [];
 
     try {
       detectedObjects = await _detector.runInference(image);
@@ -42,13 +42,7 @@ class CameraDetectorBloc
     }
 
     emit(CameraDetectorSuccess(
-      detectedObjects: detectedObjects
-          .map((e) => DetectedObject(
-                label: e.label,
-                confidence: e.confidence,
-                box: e.boundingBox.toLTRBList(),
-              ))
-          .toList(),
+      detectedObjects: detectedObjects,
     ));
   }
 

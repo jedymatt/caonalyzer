@@ -1,9 +1,7 @@
 import 'package:image/image.dart';
 
-import 'object_detection_output.dart';
-
-abstract class ObjectDetector {
+abstract class ObjectDetector<R> {
   Image preprocessImage(Image image);
-  Future<List<ObjectDetectionOutput>> runInference(Image image);
+  Future<List<R>> runInference(Image image);
   void dispose();
 }

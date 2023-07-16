@@ -1,11 +1,13 @@
 import 'dart:developer';
 
+import 'package:caonalyzer/app/data/models/models.dart';
+import 'package:caonalyzer/app/data/utils/bounding_box_util.dart';
 import 'package:caonalyzer/object_detector/object_detector.dart';
 import 'package:image/image.dart'
     show Image, Interpolation, copyResize, encodeJpg;
 import 'package:flutter_vision/flutter_vision.dart';
 
-class PytorchObjectDetector extends ObjectDetector {
+class PytorchObjectDetector extends ObjectDetector<DetectedObject> {
   FlutterVision? _model;
 
   @override
@@ -32,7 +34,7 @@ class PytorchObjectDetector extends ObjectDetector {
   }
 
   @override
-  Future<List<ObjectDetectionOutput>> runInference(Image image) async {
+  Future<List<DetectedObject>> runInference(Image image) async {
     final model = await getModel();
 
     final results = await model.yoloOnImage(
@@ -43,24 +45,22 @@ class PytorchObjectDetector extends ObjectDetector {
 
     log(results.toString());
 
-    return results.map((e) {
-      final label = e['tag'];
-      final confidence = e['box'][4]; // this is api bug
-      final rect = BoundingBox.fromPixel(
-        left: e['box'][0],
-        top: e['box'][1],
-        right: e['box'][2],
-        bottom: e['box'][3],
-        imageHeight: image.height,
-        imageWidth: image.width,
-      );
-
-      return ObjectDetectionOutput(
-        label,
-        confidence,
-        rect,
-      );
-    }).toList();
+    return results
+        .map((result) => DetectedObject(
+              label: result['tag'],
+              // This is an api bug which returns confidence
+              // and doesn't make sense
+              confidence: result['box'][4],
+              box: BoundingBoxUtil.toPercentList(
+                left: result['box'][0],
+                top: result['box'][1],
+                right: result['box'][2],
+                bottom: result['box'][3],
+                imageHeight: image.height,
+                imageWidth: image.width,
+              ),
+            ))
+        .toList();
   }
 
   Future<FlutterVision> getModel() async {
