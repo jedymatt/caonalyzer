@@ -1,5 +1,6 @@
 import 'package:caonalyzer/app/features/settings/bloc/settings_bloc.dart';
 import 'package:caonalyzer/app/data/enums/preferred_mode.dart';
+import 'package:caonalyzer/app/features/theme/ui/theme_page.dart';
 import 'package:caonalyzer/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -41,6 +42,7 @@ class _SettingsPageState extends State<SettingsPage> {
             children: [
               // toggle online or offline mode
               SwitchListTile(
+                secondary: const Icon(Icons.cloud),
                 title: const Text('Online Inference'),
                 value: state.preferredMode == PreferredMode.online,
                 onChanged: (value) {
@@ -52,6 +54,7 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
               // Server, freely switch inputs for (host and port) or (domain)
               ListTile(
+                leading: const Icon(Icons.computer),
                 title: const Text('Server'),
                 subtitle: const Text('The server to use for online mode'),
                 trailing: const Icon(Icons.chevron_right),
@@ -97,6 +100,17 @@ class _SettingsPageState extends State<SettingsPage> {
                 },
               ),
               ListTile(
+                leading: const Icon(Icons.color_lens),
+                title: const Text('Theme'),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () {
+                  Navigator.of(context).push(MaterialPageRoute(
+                    builder: (_) => const ThemePage(),
+                  ));
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.info),
                 title: const Text('About'),
                 onTap: () {
                   showAboutDialog(
