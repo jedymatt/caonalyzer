@@ -47,7 +47,7 @@ flutter:
     # - ./assets/yolov8n.torchscript.pt
     - assets/yolov8n.tflite
     - assets/svgs/undraw_photograph_re_up3b.svg
-    - assets/logos/logos_transparent_cropped.png
+    - assets/logos/
 
 flutter_launcher_icons:
   android: true
