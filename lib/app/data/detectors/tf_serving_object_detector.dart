@@ -2,9 +2,10 @@ import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
-import 'package:caonalyzer/app/data/configs/object_detector_config.dart';
 import 'package:caonalyzer/app/data/models/models.dart';
+import 'package:caonalyzer/app/data/utils/object_detector_settings.dart';
 import 'package:caonalyzer/globals.dart';
+import 'package:caonalyzer/locator.dart';
 import 'package:tflite_flutter/tflite_flutter.dart';
 import 'package:http/http.dart' as http;
 
@@ -13,6 +14,9 @@ import 'package:image/image.dart'
     show ChannelOrder, Image, Interpolation, copyResize;
 
 class TfServingObjectDetector extends ObjectDetector<DetectedObject> {
+  final Uri _serverUri =
+      Uri.parse(locator.get<ObjectDetectorSettings>().serverUrl);
+
   final _client = http.Client();
 
   @override
@@ -44,12 +48,10 @@ class TfServingObjectDetector extends ObjectDetector<DetectedObject> {
         .getBytes(order: ChannelOrder.rgb)
         .reshape([1, image.height, image.width, 3]);
 
-    final uri = Uri.parse(ObjectDetectorConfig.serverUrl);
-
     http.Response response;
 
     try {
-      response = await requestTfServingPrediction(uri, reshaped);
+      response = await requestTfServingPrediction(_serverUri, reshaped);
     } on http.ClientException catch (_) {
       throw ObjectDetectorInferenceException(
         'Error connecting to inference server.',
