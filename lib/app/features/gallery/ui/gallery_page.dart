@@ -13,6 +13,7 @@ class GalleryPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: Image.asset('assets/logos/logos_transparent_cropped.png'),
         title: const Text('Cao-nalyzer'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         actions: [
