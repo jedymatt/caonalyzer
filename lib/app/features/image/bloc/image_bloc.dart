@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:bloc/bloc.dart';
-import 'package:caonalyzer/app/data/configs/object_detector_config.dart';
 import 'package:caonalyzer/app/data/services/detected_object_service.dart';
 import 'package:caonalyzer/app/data/detectors/detectors.dart';
+import 'package:caonalyzer/app/data/utils/object_detector_settings.dart';
 import 'package:caonalyzer/app/features/image/models/image.dart';
 import 'package:caonalyzer/locator.dart';
 import 'package:caonalyzer/object_detector/object_detector.dart';
@@ -19,8 +19,8 @@ class ImageBloc extends Bloc<ImageEvent, ImageState> {
   final PageController _pageController;
   final List<Image> _initialImages;
   final DetectedObjectService service = locator.get<DetectedObjectService>();
-  final ObjectDetector _objectDetector =
-      ObjectDetectorConfig.mode.value.makeObjectDetector;
+  final ObjectDetector _detector =
+      locator.get<ObjectDetectorSettings>().preferredMode.makeObjectDetector;
 
   ImageBloc({required List<Image> images, int initialIndex = 0})
       : _initialImages = List.from(images),
@@ -77,7 +77,7 @@ class ImageBloc extends Bloc<ImageEvent, ImageState> {
   @override
   Future<void> close() {
     _pageController.dispose();
-    _objectDetector.dispose();
+    _detector.dispose();
     return super.close();
   }
 
@@ -124,18 +124,17 @@ class ImageBloc extends Bloc<ImageEvent, ImageState> {
     final decodedImage = decodeJpg(
       File(state_.images[state_.index].path).readAsBytesSync(),
     )!;
-    final preprocessedImage = _objectDetector.preprocessImage(decodedImage);
+    final preprocessedImage = _detector.preprocessImage(decodedImage);
 
-    if (_objectDetector is TfServingObjectDetector) {
+    if (_detector is TfServingObjectDetector) {
       try {
-        detectedObjects =
-            (await _objectDetector.runInference(preprocessedImage))
-                .map((e) => DetectedObject(
-                      label: e.label,
-                      confidence: e.confidence,
-                      box: e.boundingBox.toLTRBList(),
-                    ))
-                .toList();
+        detectedObjects = (await _detector.runInference(preprocessedImage))
+            .map((e) => DetectedObject(
+                  label: e.label,
+                  confidence: e.confidence,
+                  box: e.boundingBox.toLTRBList(),
+                ))
+            .toList();
       } catch (e) {
         emit(state_.copyWith(
           showDetection: true,
@@ -144,7 +143,7 @@ class ImageBloc extends Bloc<ImageEvent, ImageState> {
         return;
       }
     } else {
-      detectedObjects = (await _objectDetector.runInference(preprocessedImage))
+      detectedObjects = (await _detector.runInference(preprocessedImage))
           .map((e) => DetectedObject(
                 label: e.label,
                 confidence: e.confidence,
