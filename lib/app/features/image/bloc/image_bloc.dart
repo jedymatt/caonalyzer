@@ -20,7 +20,7 @@ class ImageBloc extends Bloc<ImageEvent, ImageState> {
   final List<Image> _initialImages;
   final DetectedObjectService service = locator.get<DetectedObjectService>();
   final ObjectDetector _objectDetector =
-      ObjectDetectorConfig.mode.value.objectDetector;
+      ObjectDetectorConfig.mode.value.makeObjectDetector;
 
   ImageBloc({required List<Image> images, int initialIndex = 0})
       : _initialImages = List.from(images),
