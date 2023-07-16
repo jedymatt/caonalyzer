@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:bloc/bloc.dart';
-import 'package:caonalyzer/app/data/detectors/tf_serving_object_detector.dart';
 import 'package:caonalyzer/object_detector/object_detector.dart';
 import 'package:collection/collection.dart';
 import 'package:image/image.dart' show decodeImage;
@@ -17,6 +16,7 @@ part 'batch_insights_state.dart';
 
 class BatchInsightsBloc extends Bloc<BatchInsightsEvent, BatchInsightsState> {
   final service = locator.get<DetectedObjectService>();
+  final _detector = ObjectDetectorConfig.mode.value.makeObjectDetector;
 
   BatchInsightsBloc() : super(BatchInsightsInitial()) {
     on<BatchInsightsStarted>((event, emit) async {
@@ -29,34 +29,25 @@ class BatchInsightsBloc extends Bloc<BatchInsightsEvent, BatchInsightsState> {
 
         if (detectedObjects == null) {
           // detect objects
-          final objectDetector = ObjectDetectorConfig.mode.value.objectDetector;
-
           final decodedImage = (decodeImage(File(image).readAsBytesSync()))!;
 
-          final preprocessedImage =
-              objectDetector.preprocessImage(decodedImage);
+          final preprocessedImage = _detector.preprocessImage(decodedImage);
 
           List<ObjectDetectionOutput> outputs = [];
 
-          if (objectDetector is TfServingObjectDetector) {
-            try {
-              outputs = await objectDetector.runInference(preprocessedImage);
+          try {
+            outputs = await _detector.runInference(preprocessedImage);
 
-              detectedObjects = outputs
-                  .map((e) => DetectedObject(
-                        label: e.label,
-                        confidence: e.confidence,
-                        box: e.boundingBox.toLTRBList(),
-                      ))
-                  .toList();
-            } catch (e) {
-              emit(BatchInsightsFailure(
-                  'Online mode failed, no network connection or server is down.'));
-
-              return;
-            }
-          } else {
-            outputs = await objectDetector.runInference(preprocessedImage);
+            detectedObjects = outputs
+                .map((e) => DetectedObject(
+                      label: e.label,
+                      confidence: e.confidence,
+                      box: e.boundingBox.toLTRBList(),
+                    ))
+                .toList();
+          } on ObjectDetectorInferenceException catch (e) {
+            emit(BatchInsightsFailure(e.message));
+            return;
           }
 
           detectedObjects = outputs
@@ -91,5 +82,11 @@ class BatchInsightsBloc extends Bloc<BatchInsightsEvent, BatchInsightsState> {
         moldsCountPerImage: imagesDetectedObjects.map((e) => e.length).toList(),
       ));
     });
+  }
+
+  @override
+  Future<void> close() {
+    _detector.dispose();
+    return super.close();
   }
 }
