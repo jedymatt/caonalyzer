@@ -1,6 +1,8 @@
 import 'package:caonalyzer/app/features/gallery/bloc/gallery_bloc.dart';
 import 'package:caonalyzer/app/features/gallery/ui/gallery_page.dart';
 import 'package:caonalyzer/app/features/home/bloc/home_bloc.dart';
+import 'package:caonalyzer/app/features/theme/app_theme.dart';
+import 'package:caonalyzer/app/features/theme/bloc/theme_bloc.dart';
 import 'package:caonalyzer/globals.dart';
 import 'package:caonalyzer/locator.dart';
 import 'package:flutter/material.dart';
@@ -12,17 +14,25 @@ void main() async {
   await Globals.init();
   await Hive.initFlutter();
 
+  final settingsBox = await Hive.openBox('settings');
+  final themeIndex = settingsBox.get('theme', defaultValue: 0);
+
   setupLocator();
 
   Bloc.observer = AppBlocObserver();
 
-  runApp(const App());
+  runApp(App(
+    initialTheme: AppTheme.values[themeIndex],
+  ));
 }
 
 class App extends StatelessWidget {
   const App({
     super.key,
+    this.initialTheme = AppTheme.lightPrimary,
   });
+
+  final AppTheme initialTheme;
 
   @override
   Widget build(BuildContext context) {
@@ -31,17 +41,19 @@ class App extends StatelessWidget {
         BlocProvider(
           create: (context) => GalleryBloc()..add(GalleryStarted()),
         ),
+        BlocProvider(create: (context) => HomeBloc()),
         BlocProvider(
-          create: (context) => HomeBloc(),
+          create: (context) => ThemeBloc(initialTheme: initialTheme),
         ),
       ],
-      child: MaterialApp(
-        title: 'Cao-nalyzer',
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-          useMaterial3: true,
-        ),
-        home: const GalleryPage(),
+      child: BlocBuilder<ThemeBloc, ThemeState>(
+        builder: (context, state) {
+          return MaterialApp(
+            title: 'Cao-nalyzer',
+            theme: state.theme.themeData,
+            home: const GalleryPage(),
+          );
+        },
       ),
     );
   }
