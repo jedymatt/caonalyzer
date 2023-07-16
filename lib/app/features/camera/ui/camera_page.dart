@@ -98,13 +98,10 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
                 SnackBar(
                   content: Text(state.message),
                   behavior: SnackBarBehavior.floating,
-                  onVisible: () {
-                    Future.delayed(const Duration(seconds: 2), () {
-                      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                    });
-                  },
                 ),
               );
+
+              cameraBloc.controller.stopImageStream();
             }
           },
         ),

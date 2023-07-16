@@ -21,9 +21,20 @@ class ImageUtilsIsolate {
     print("ImageUtilsIsolate initialization");
     ImageUtilsIsolate.initiated = true;
     ImageUtilsIsolate.converterFromCameraToBytesIsolate = IsolateManager.create(
-        _convertCameraImageToBytes,
-        concurrent: 1,
-        isDebug: false);
+      _convertCameraImageToBytes,
+      concurrent: 1,
+      isDebug: false,
+    );
+  }
+
+  static void dispose() async {
+    if (!ImageUtilsIsolate.initiated) {
+      return;
+    }
+    // ignore: avoid_print
+    print("ImageUtilsIsolate dispose");
+    initiated = false;
+    await ImageUtilsIsolate.converterFromCameraToBytesIsolate.stop();
   }
 
   /// Converts a [CameraImage] in YUV420 format to [Image] in RGB format and encodes to jpg and return bytes

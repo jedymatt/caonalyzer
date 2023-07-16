@@ -10,7 +10,7 @@ class PytorchObjectDetector extends ObjectDetector {
 
   @override
   Image preprocessImage(Image image) {
-    if (image.width <= 640 || image.height <= 640) {
+    if (image.width <= 640 && image.height <= 640) {
       return image;
     }
 
@@ -77,5 +77,10 @@ class PytorchObjectDetector extends ObjectDetector {
     }
 
     return _model!;
+  }
+
+  @override
+  void dispose() {
+    _model?.closeYoloModel();
   }
 }

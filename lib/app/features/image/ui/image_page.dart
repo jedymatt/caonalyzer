@@ -30,6 +30,12 @@ class _ImagePageState extends State<ImagePage> {
   }
 
   @override
+  void dispose() {
+    super.dispose();
+    imageBloc.close();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return BlocProvider.value(
       value: imageBloc,

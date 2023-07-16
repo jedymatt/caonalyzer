@@ -12,8 +12,14 @@ import 'package:image/image.dart'
     show ChannelOrder, Image, Interpolation, copyResize;
 
 class TfServingObjectDetector extends ObjectDetector {
+  final _client = http.Client();
+
   @override
   Image preprocessImage(Image image) {
+    if (image.width <= 640 && image.height <= 640) {
+      return image;
+    }
+
     if (image.width > image.height) {
       image = copyResize(
         image,
@@ -37,12 +43,22 @@ class TfServingObjectDetector extends ObjectDetector {
         .getBytes(order: ChannelOrder.rgb)
         .reshape([1, image.height, image.width, 3]);
 
-    http.Response response = await requestTfServingPrediction(reshaped);
+    final uri = Uri.parse(ObjectDetectorConfig.serverUrl);
+
+    http.Response response;
+
+    try {
+      response = await requestTfServingPrediction(uri, reshaped);
+    } on http.ClientException catch (_) {
+      throw ObjectDetectorInferenceException(
+        'Error connecting to inference server.',
+      );
+    }
 
     if (response.statusCode != HttpStatus.ok) {
       log(jsonDecode(response.body)['message']);
 
-      throw Exception(
+      throw ObjectDetectorInferenceException(
         'Error running inference HTTP request. See logs for details.',
       );
     }
@@ -56,11 +72,10 @@ class TfServingObjectDetector extends ObjectDetector {
   }
 
   Future<http.Response> requestTfServingPrediction(
+    Uri uri,
     List<dynamic> reshaped,
   ) async {
-    final uri = Uri.parse(ObjectDetectorConfig.serverUrl);
-
-    final response = await http.post(
+    final response = await _client.post(
       uri,
       headers: {
         'content-type': 'application/json',
@@ -71,6 +86,11 @@ class TfServingObjectDetector extends ObjectDetector {
     );
 
     return response;
+  }
+
+  @override
+  void dispose() {
+    _client.close();
   }
 }
 
