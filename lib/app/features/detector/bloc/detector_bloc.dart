@@ -12,9 +12,10 @@ part 'detector_event.dart';
 part 'detector_state.dart';
 
 class DetectorBloc extends Bloc<DetectorEvent, DetectorState> {
-  final ObjectDetector _objectDetector;
+  final ObjectDetector _detector =
+      ObjectDetectorConfig.mode.value.makeObjectDetector;
 
-  DetectorBloc(this._objectDetector) : super(DetectorInitial()) {
+  DetectorBloc() : super(DetectorInitial()) {
     ImageUtilsIsolate.init();
 
     on<DetectorStarted>(_onStarted);
@@ -28,14 +29,12 @@ class DetectorBloc extends Bloc<DetectorEvent, DetectorState> {
 
     var image = (await ImageUtilsIsolate.convertCameraImage(event.image))!;
 
-    final detector = ObjectDetectorConfig.mode.value.objectDetector;
-
-    image = detector.preprocessImage(image);
+    image = _detector.preprocessImage(image);
 
     List<ObjectDetectionOutput> detectedObjects = [];
 
     try {
-      detectedObjects = await detector.runInference(image);
+      detectedObjects = await _detector.runInference(image);
     } on ObjectDetectorInferenceException catch (e) {
       emit(DetectorFailure(message: e.message));
     }
@@ -53,7 +52,7 @@ class DetectorBloc extends Bloc<DetectorEvent, DetectorState> {
 
   @override
   Future<void> close() {
-    _objectDetector.dispose();
+    _detector.dispose();
     ImageUtilsIsolate.dispose();
     return super.close();
   }
