@@ -1,4 +1,4 @@
-import 'package:caonalyzer/enums/preferred_mode.dart';
+import 'package:caonalyzer/app/data/enums/preferred_mode.dart';
 import 'package:hive/hive.dart';
 
 abstract class ObjectDetectorConfig {

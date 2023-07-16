@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:caonalyzer/app/data/configs/object_detector_config.dart';
-import 'package:caonalyzer/enums/preferred_mode.dart';
+import 'package:caonalyzer/app/data/enums/preferred_mode.dart';
 import 'package:meta/meta.dart';
 
 part 'settings_event.dart';

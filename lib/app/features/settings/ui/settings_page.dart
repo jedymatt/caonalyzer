@@ -1,5 +1,5 @@
 import 'package:caonalyzer/app/features/settings/bloc/settings_bloc.dart';
-import 'package:caonalyzer/enums/preferred_mode.dart';
+import 'package:caonalyzer/app/data/enums/preferred_mode.dart';
 import 'package:caonalyzer/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
