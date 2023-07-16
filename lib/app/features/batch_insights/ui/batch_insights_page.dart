@@ -41,6 +41,12 @@ class _BatchInsightsPageState extends State<BatchInsightsPage> {
             );
           }
 
+          if (state is BatchInsightsFailure) {
+            return Center(
+              child: Text(state.message),
+            );
+          }
+
           if (state is! BatchInsightsSuccess) {
             return const Center(
               child: Text('Something went wrong'),
