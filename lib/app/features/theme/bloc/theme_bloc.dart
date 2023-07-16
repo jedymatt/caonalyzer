@@ -9,6 +9,7 @@ part 'theme_state.dart';
 
 class ThemeBloc extends Bloc<ThemeEvent, ThemeState> {
   final Box _box = Hive.box('settings');
+
   ThemeBloc({AppTheme? initialTheme})
       : super(ThemeState(initialTheme ?? AppTheme.lightPrimary)) {
     on<ThemeChanged>((event, emit) {
