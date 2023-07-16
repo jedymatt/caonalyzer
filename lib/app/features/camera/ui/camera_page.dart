@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:camera/camera.dart';
+import 'package:caonalyzer/app/data/configs/object_detector_config.dart';
 import 'package:caonalyzer/app/features/batch_confirmation/bloc/batch_confirmation_bloc.dart';
 import 'package:caonalyzer/app/features/batch_confirmation/ui/batch_confirmation_page.dart';
 import 'package:caonalyzer/app/features/camera/bloc/camera_bloc.dart';
@@ -44,7 +45,7 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
     cameraPermissionBloc = CameraPermissionBloc()
       ..add(CameraPermissionRequested());
     batchConfirmationBloc = BlocProvider.of<BatchConfirmationBloc>(context);
-    detectorBloc = DetectorBloc();
+    detectorBloc = DetectorBloc(ObjectDetectorConfig.mode.value.objectDetector);
   }
 
   @override
@@ -98,13 +99,10 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
                 SnackBar(
                   content: Text(state.message),
                   behavior: SnackBarBehavior.floating,
-                  onVisible: () {
-                    Future.delayed(const Duration(seconds: 2), () {
-                      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                    });
-                  },
                 ),
               );
+
+              cameraBloc.controller.stopImageStream();
             }
           },
         ),
