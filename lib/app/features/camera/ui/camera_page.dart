@@ -8,7 +8,7 @@ import 'package:caonalyzer/app/features/camera/ui/action_bars.dart';
 import 'package:caonalyzer/app/features/camera/ui/buttons.dart';
 import 'package:caonalyzer/app/features/camera/ui/camera_mode_selector.dart';
 import 'package:caonalyzer/app/features/camera_permission/bloc/camera_permission_bloc.dart';
-import 'package:caonalyzer/app/features/detector/bloc/detector_bloc.dart';
+import 'package:caonalyzer/app/features/camera_detector/bloc/camera_detector_bloc.dart';
 import 'package:caonalyzer/app/global_widgets/bounding_box_painter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -32,7 +32,7 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
   late final CameraBloc cameraBloc;
   late final CameraPermissionBloc cameraPermissionBloc;
   late final BatchConfirmationBloc batchConfirmationBloc;
-  late final DetectorBloc detectorBloc;
+  late final CameraDetectorBloc detectorBloc;
   String? batchPath;
   DateTime? lastTimeDetected;
 
@@ -44,7 +44,7 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
     cameraPermissionBloc = CameraPermissionBloc()
       ..add(CameraPermissionRequested());
     batchConfirmationBloc = BlocProvider.of<BatchConfirmationBloc>(context);
-    detectorBloc = DetectorBloc();
+    detectorBloc = CameraDetectorBloc();
   }
 
   @override
@@ -83,16 +83,18 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
             }
           },
         ),
-        BlocListener<DetectorBloc, DetectorState>(
+        BlocListener<CameraDetectorBloc, CameraDetectorState>(
           bloc: detectorBloc,
           listenWhen: (previous, current) =>
-              current is DetectorSuccess || current is DetectorFailure,
+              current is CameraDetectorSuccess ||
+              current is CameraDetectorFailure,
           listener: (context, state) {
-            if (state is DetectorSuccess && state.detectedObjects.isNotEmpty) {
+            if (state is CameraDetectorSuccess &&
+                state.detectedObjects.isNotEmpty) {
               lastTimeDetected = DateTime.now();
             }
 
-            if (state is DetectorFailure) {
+            if (state is CameraDetectorFailure) {
               // snackbar
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -154,7 +156,7 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
                   await cameraBloc.controller.stopImageStream();
                 } else {
                   await cameraBloc.controller.startImageStream(
-                    (image) => detectorBloc.add(DetectorStarted(
+                    (image) => detectorBloc.add(CameraDetectorStarted(
                       image: image,
                     )),
                   );
@@ -215,7 +217,7 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
               return const SizedBox.shrink();
             }
 
-            return BlocBuilder<DetectorBloc, DetectorState>(
+            return BlocBuilder<CameraDetectorBloc, CameraDetectorState>(
               bloc: detectorBloc,
               buildWhen: (previous, current) {
                 if (current.detectedObjects.isNotEmpty) {
@@ -254,7 +256,7 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     if (state.displayMode == CameraDisplayMode.analysis)
-                      BlocBuilder<DetectorBloc, DetectorState>(
+                      BlocBuilder<CameraDetectorBloc, CameraDetectorState>(
                         bloc: detectorBloc,
                         buildWhen: (previous, current) {
                           if (current.detectedObjects.isNotEmpty) {

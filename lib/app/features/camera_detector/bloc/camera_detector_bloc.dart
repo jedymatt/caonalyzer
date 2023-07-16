@@ -8,24 +8,26 @@ import 'package:caonalyzer/app/data/utils/image_utils_isolate.dart';
 import 'package:caonalyzer/object_detector/object_detector.dart';
 import 'package:meta/meta.dart';
 
-part 'detector_event.dart';
-part 'detector_state.dart';
+part 'camera_detector_event.dart';
+part 'camera_detector_state.dart';
 
-class DetectorBloc extends Bloc<DetectorEvent, DetectorState> {
+class CameraDetectorBloc
+    extends Bloc<CameraDetectorEvent, CameraDetectorState> {
   final ObjectDetector _detector =
       ObjectDetectorConfig.mode.value.makeObjectDetector;
 
-  DetectorBloc() : super(DetectorInitial()) {
+  CameraDetectorBloc() : super(CameraDetectorInitial()) {
     ImageUtilsIsolate.init();
 
-    on<DetectorStarted>(_onStarted);
+    on<CameraDetectorStarted>(_onStarted);
   }
 
   FutureOr<void> _onStarted(
-      DetectorStarted event, Emitter<DetectorState> emit) async {
-    if (state is DetectorInProgress || state is DetectorFailure) return;
+      CameraDetectorStarted event, Emitter<CameraDetectorState> emit) async {
+    if (state is CameraDetectorInProgress || state is CameraDetectorFailure)
+      return;
 
-    emit(DetectorInProgress());
+    emit(CameraDetectorInProgress());
 
     var image = (await ImageUtilsIsolate.convertCameraImage(event.image))!;
 
@@ -36,10 +38,10 @@ class DetectorBloc extends Bloc<DetectorEvent, DetectorState> {
     try {
       detectedObjects = await _detector.runInference(image);
     } on ObjectDetectorInferenceException catch (e) {
-      emit(DetectorFailure(message: e.message));
+      emit(CameraDetectorFailure(message: e.message));
     }
 
-    emit(DetectorSuccess(
+    emit(CameraDetectorSuccess(
       detectedObjects: detectedObjects
           .map((e) => DetectedObject(
                 label: e.label,
