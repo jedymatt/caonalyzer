@@ -114,19 +114,20 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
               cameraBloc.add(CameraStarted(mode: widget.mode));
             }
 
-            if (state is CameraPermissionDenied) {
-              openAppSettings();
-            }
-
-            if (state is CameraPermissionPermanentlyDenied) {
-              // snackbar
+            if (state is CameraPermissionDenied ||
+                state is CameraPermissionPermanentlyDenied) {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
-                  content: Text('Camera permission permanently denied'),
-                  behavior: SnackBarBehavior.floating,
+                  content: Text(
+                    'Camera permission denied.'
+                    ' Please try again or enable it in the app settings.',
+                  ),
+                  action: SnackBarAction(
+                    label: 'Settings',
+                    onPressed: openAppSettings,
+                  ),
                 ),
               );
-
               Navigator.of(context).pop();
             }
           },
