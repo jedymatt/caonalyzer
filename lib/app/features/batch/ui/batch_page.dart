@@ -234,6 +234,7 @@ class BatchAppBar extends StatelessWidget implements PreferredSizeWidget {
         if (state.selectionEnabled) {
           return AppBar(
             title: Text('${state.selectedImages.length} selected'),
+            backgroundColor: Theme.of(context).colorScheme.inversePrimary,
             leading: IconButton(
               onPressed: () {
                 batchBloc.add(BatchImageSelectionDisabled());
@@ -258,14 +259,18 @@ class BatchAppBar extends StatelessWidget implements PreferredSizeWidget {
           );
         }
 
-        return AppBar(title: Text(title), actions: [
-          IconButton(
-            onPressed: () {
-              batchBloc.add(BatchImageSelectionEnabled());
-            },
-            icon: const Icon(Icons.checklist),
-          )
-        ]);
+        return AppBar(
+          title: Text(title),
+          backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+          actions: [
+            IconButton(
+              onPressed: () {
+                batchBloc.add(BatchImageSelectionEnabled());
+              },
+              icon: const Icon(Icons.checklist),
+            )
+          ],
+        );
       },
     );
   }
