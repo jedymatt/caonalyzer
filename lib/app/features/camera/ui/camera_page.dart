@@ -412,6 +412,27 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
               ],
             ),
           ),
+        ),
+        BlocBuilder<CameraBloc, CameraState>(
+          bloc: cameraBloc,
+          buildWhen: (previous, current) =>
+              current is CameraCaptureInProgress ||
+              current is CameraCaptureSuccess ||
+              current is CameraCaptureFailure,
+          builder: (context, state) {
+            if (state is! CameraCaptureInProgress) {
+              return const SizedBox.shrink();
+            }
+
+            return Expanded(
+              child: Container(
+                color: Colors.black.withOpacity(0.5),
+                child: const Center(
+                  child: CircularProgressIndicator(),
+                ),
+              ),
+            );
+          },
         )
       ],
     );
