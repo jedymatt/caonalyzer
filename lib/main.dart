@@ -7,6 +7,7 @@ import 'package:caonalyzer/globals.dart';
 import 'package:caonalyzer/locator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 void main() async {
@@ -20,6 +21,8 @@ void main() async {
   setupLocator();
 
   Bloc.observer = AppBlocObserver();
+
+  FlutterNativeSplash.remove();
 
   runApp(App(
     initialTheme: AppTheme.values[themeIndex],
