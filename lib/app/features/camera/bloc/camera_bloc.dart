@@ -95,9 +95,9 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
 
     // resume/pause preview
     if (state_.displayPaused) {
-      await _cameraController?.resumePreview();
+      await _cameraController!.resumePreview();
     } else {
-      await _cameraController?.pausePreview();
+      await _cameraController!.pausePreview();
     }
 
     emit(state_.copyWith(displayPaused: !state_.displayPaused));
@@ -109,6 +109,15 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
 
     if (state_ is! CameraReady) return;
 
-    emit(state_.copyWith(displayMode: event.displayMode));
+    if (event.displayMode == state_.displayMode) return;
+
+    if (event.displayMode == CameraDisplayMode.photo) {
+      await _cameraController!.resumePreview();
+    }
+
+    emit(state_.copyWith(
+      displayMode: event.displayMode,
+      displayPaused: _cameraController!.value.isPreviewPaused,
+    ));
   }
 }
