@@ -332,7 +332,10 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
                           onPressed: () {
                             cameraBloc.add(CameraCaptured());
                           },
-                          child: const Icon(Icons.camera_alt),
+                          child: const Icon(
+                            Icons.camera_alt,
+                            color: Colors.black,
+                          ),
                         ),
                         // media button display the last image captured from the batch confirmation
                         right: state.captureMode == CameraCaptureMode.batch
@@ -398,9 +401,10 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
                         onPressed: () {
                           cameraBloc.add(CameraDetectionPauseToggled());
                         },
-                        child: Icon(state.displayPaused
-                            ? Icons.play_arrow
-                            : Icons.pause),
+                        child: Icon(
+                          state.displayPaused ? Icons.play_arrow : Icons.pause,
+                          color: Colors.black,
+                        ),
                       ),
                     );
                   },
