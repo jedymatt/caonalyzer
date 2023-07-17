@@ -35,6 +35,7 @@ class BatchConfirmationPage extends StatefulWidget {
 
 class _BatchConfirmationPageState extends State<BatchConfirmationPage> {
   late final BatchConfirmationBloc batchConfirmationBloc;
+  bool isPageNumberVisible = true;
 
   @override
   void initState() {
@@ -81,6 +82,7 @@ class _BatchConfirmationPageState extends State<BatchConfirmationPage> {
         child: Scaffold(
           appBar: AppBar(
             title: const Text('Confirm Batch'),
+            backgroundColor: Theme.of(context).colorScheme.inversePrimary,
           ),
           body: BlocBuilder<BatchConfirmationBloc, BatchConfirmationState>(
             bloc: batchConfirmationBloc,
@@ -89,24 +91,61 @@ class _BatchConfirmationPageState extends State<BatchConfirmationPage> {
                 return const SizedBox.shrink();
               }
 
-              return PhotoViewGallery(
-                  pageOptions: state.images
-                      .map(
-                        (image) => PhotoViewGalleryPageOptions(
-                          imageProvider: FileImage(File(image)),
-                          heroAttributes: PhotoViewHeroAttributes(tag: image),
-                          minScale: PhotoViewComputedScale.contained,
-                          maxScale: PhotoViewComputedScale.covered * 2.0,
-                        ),
-                      )
-                      .toList(),
-                  backgroundDecoration: BoxDecoration(
-                    color: Theme.of(context).canvasColor,
+              return Stack(
+                fit: StackFit.expand,
+                children: [
+                  PhotoViewGallery(
+                    pageOptions: state.images
+                        .map(
+                          (image) => PhotoViewGalleryPageOptions(
+                            imageProvider: FileImage(File(image)),
+                            heroAttributes: PhotoViewHeroAttributes(tag: image),
+                            minScale: PhotoViewComputedScale.contained,
+                            maxScale: PhotoViewComputedScale.covered * 2.0,
+                          ),
+                        )
+                        .toList(),
+                    backgroundDecoration: BoxDecoration(
+                      color: Theme.of(context).canvasColor,
+                    ),
+                    onPageChanged: (index) {
+                      batchConfirmationBloc
+                          .add(BatchConfirmationImagePageChanged(index: index));
+                    },
+                    scaleStateChangedCallback: (value) {
+                      setState(() {
+                        isPageNumberVisible =
+                            value != PhotoViewScaleState.zoomedIn;
+                      });
+                    },
                   ),
-                  onPageChanged: (index) {
-                    batchConfirmationBloc
-                        .add(BatchConfirmationImagePageChanged(index: index));
-                  });
+                  Align(
+                      alignment: Alignment.bottomCenter,
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            if (isPageNumberVisible)
+                              Container(
+                                padding: const EdgeInsets.all(8.0),
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context)
+                                      .canvasColor
+                                      .withOpacity(0.5),
+                                  borderRadius: BorderRadius.circular(8.0),
+                                ),
+                                child: Text(
+                                  '${state.currentIndex + 1}/${state.images.length}',
+                                  style:
+                                      Theme.of(context).textTheme.titleMedium,
+                                ),
+                              ),
+                          ],
+                        ),
+                      )),
+                ],
+              );
             },
           ),
           bottomNavigationBar:
