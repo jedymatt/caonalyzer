@@ -221,6 +221,10 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
             return BlocBuilder<CameraDetectorBloc, CameraDetectorState>(
               bloc: detectorBloc,
               buildWhen: (previous, current) {
+                if (current is CameraDetectorInProgress) {
+                  return false;
+                }
+
                 if (current.detectedObjects.isNotEmpty) {
                   return true;
                 }
