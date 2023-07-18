@@ -133,6 +133,7 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
           },
         ),
         BlocListener<CameraBloc, CameraState>(
+          bloc: cameraBloc,
           listener: (context, state) async {
             if (state is CameraCaptureSuccess) {
               if (state.mode == CameraCaptureMode.batch) {
@@ -191,14 +192,14 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
               );
             }
 
-            return _buildBody();
+            return _buildBody(context, state);
           },
         ),
       ),
     );
   }
 
-  Widget _buildBody() {
+  Widget _buildBody(BuildContext context, CameraState state) {
     return Stack(
       fit: StackFit.expand,
       children: [
@@ -207,49 +208,9 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
           child: CameraPreview(cameraBloc.controller),
         ),
         // show bounding box
-        BlocBuilder<CameraBloc, CameraState>(
-          bloc: cameraBloc,
-          buildWhen: (previous, current) =>
-              current is CameraReady &&
-              previous is CameraReady &&
-              (current.displayMode != previous.displayMode),
-          builder: (context, state) {
-            final state_ = state as CameraReady;
-
-            if (state_.displayMode == CameraDisplayMode.photo) {
-              return const SizedBox.shrink();
-            }
-
-            return BlocBuilder<CameraDetectorBloc, CameraDetectorState>(
-              bloc: detectorBloc,
-              buildWhen: (previous, current) {
-                if (current is CameraDetectorInProgress) {
-                  return false;
-                }
-
-                if (current.detectedObjects.isNotEmpty) {
-                  return true;
-                }
-                // only show empty detection when there is no detection for the last 2 seconds
-                if (lastTimeDetected == null) {
-                  return false;
-                }
-
-                return DateTime.now().difference(lastTimeDetected!) >
-                    const Duration(seconds: 1);
-              },
-              builder: (context, state) {
-                return AspectRatio(
-                  aspectRatio: cameraBloc.controller.value.aspectRatio,
-                  child: CustomPaint(
-                    foregroundPainter:
-                        BoundingBoxPainter(state.detectedObjects),
-                  ),
-                );
-              },
-            );
-          },
-        ),
+        if (state is CameraReady &&
+            state.displayMode == CameraDisplayMode.analysis)
+          _buildBoundingBox(),
         // top action bar
         SafeArea(
           child: Align(
@@ -441,6 +402,36 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
           },
         )
       ],
+    );
+  }
+
+  Widget _buildBoundingBox() {
+    return BlocBuilder<CameraDetectorBloc, CameraDetectorState>(
+      bloc: detectorBloc,
+      buildWhen: (previous, current) {
+        if (current is CameraDetectorInProgress) {
+          return false;
+        }
+
+        if (current.detectedObjects.isNotEmpty) {
+          return true;
+        }
+        // only show empty detection when there is no detection for the last 2 seconds
+        if (lastTimeDetected == null) {
+          return false;
+        }
+
+        return DateTime.now().difference(lastTimeDetected!) >
+            const Duration(seconds: 1);
+      },
+      builder: (context, state) {
+        return AspectRatio(
+          aspectRatio: cameraBloc.controller.value.aspectRatio,
+          child: CustomPaint(
+            foregroundPainter: BoundingBoxPainter(state.detectedObjects),
+          ),
+        );
+      },
     );
   }
 }
