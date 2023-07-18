@@ -19,7 +19,7 @@ class ImageBloc extends Bloc<ImageEvent, ImageState> {
   final PageController _pageController;
   final List<Image> _initialImages;
   final DetectedObjectService service = locator.get<DetectedObjectService>();
-  final ObjectDetector _detector =
+  final ObjectDetector<DetectedObject> _detector =
       locator.get<ObjectDetectorSettings>().preferredMode.makeObjectDetector;
 
   ImageBloc({required List<Image> images, int initialIndex = 0})
@@ -128,13 +128,7 @@ class ImageBloc extends Bloc<ImageEvent, ImageState> {
 
     if (_detector is TfServingObjectDetector) {
       try {
-        detectedObjects = (await _detector.runInference(preprocessedImage))
-            .map((e) => DetectedObject(
-                  label: e.label,
-                  confidence: e.confidence,
-                  box: e.boundingBox.toLTRBList(),
-                ))
-            .toList();
+        detectedObjects = await _detector.runInference(preprocessedImage);
       } catch (e) {
         emit(state_.copyWith(
           showDetection: true,
@@ -143,13 +137,7 @@ class ImageBloc extends Bloc<ImageEvent, ImageState> {
         return;
       }
     } else {
-      detectedObjects = (await _detector.runInference(preprocessedImage))
-          .map((e) => DetectedObject(
-                label: e.label,
-                confidence: e.confidence,
-                box: e.boundingBox.toLTRBList(),
-              ))
-          .toList();
+      detectedObjects = await _detector.runInference(preprocessedImage);
     }
 
     service.putAll(
