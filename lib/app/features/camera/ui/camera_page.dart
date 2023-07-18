@@ -174,11 +174,15 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
       child: Scaffold(
         body: BlocBuilder<CameraBloc, CameraState>(
           bloc: cameraBloc,
-          buildWhen: (previous, current) =>
-              previous.runtimeType != current.runtimeType ||
-              (previous is CameraReady &&
-                  current is CameraReady &&
-                  previous.displayMode != current.displayMode),
+          buildWhen: (previous, current) {
+            if (current is CameraCaptureInProgress ||
+                current is CameraCaptureSuccess ||
+                current is CameraCaptureFailure) {
+              return false;
+            }
+
+            return true;
+          },
           builder: (context, state) {
             if (state is CameraInitial) {
               return const Center(
@@ -238,27 +242,6 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
             ),
           ),
         ),
-        BlocBuilder<CameraBloc, CameraState>(
-          bloc: cameraBloc,
-          buildWhen: (previous, current) =>
-              current is CameraCaptureInProgress ||
-              current is CameraCaptureSuccess ||
-              current is CameraCaptureFailure,
-          builder: (context, state) {
-            if (state is! CameraCaptureInProgress) {
-              return const SizedBox.shrink();
-            }
-
-            return Expanded(
-              child: Container(
-                color: Colors.black.withOpacity(0.5),
-                child: const Center(
-                  child: CircularProgressIndicator(),
-                ),
-              ),
-            );
-          },
-        )
       ],
     );
   }
@@ -277,14 +260,14 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
 
   BottomActionBar _buildPhotoBottomActionBar(CameraReady state) {
     return BottomActionBar(
-      center: CenterButton(
-        onPressed: () {
-          cameraBloc.add(CameraCaptured());
+      center: BlocBuilder<CameraBloc, CameraState>(
+        bloc: cameraBloc,
+        builder: (context, state) {
+          return CaptureButton(
+            onPressed: () => cameraBloc.add(CameraCaptured()),
+            disabled: state is CameraCaptureInProgress,
+          );
         },
-        child: const Icon(
-          Icons.camera_alt,
-          color: Colors.black,
-        ),
       ),
       // media button display the last image captured from the batch confirmation
       right: state.captureMode == CameraCaptureMode.batch
