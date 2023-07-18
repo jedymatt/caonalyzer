@@ -53,10 +53,10 @@ packages:
     dependency: transitive
     description:
       name: camera_android
-      sha256: f43d07f9d7228ea1ca87d22e30881bd68da4b78484a1fbd1f1408b412a41cefb
+      sha256: cac448df2567b35e2bd70b8c66368fcba4923f88bc898723516c2ce553765db6
       url: "https://pub.dev"
     source: hosted
-    version: "0.10.8+3"
+    version: "0.10.8+4"
   camera_avfoundation:
     dependency: transitive
     description:
@@ -189,10 +189,10 @@ packages:
     dependency: transitive
     description:
       name: file
-      sha256: "1b92bec4fc2a72f59a8e15af5f52cd441e4a7860b49499d69dfa817af20e925d"
+      sha256: "5fc22d7c25582e38ad9a8515372cd9a93834027aacf1801cf01164dac0ffa08c"
       url: "https://pub.dev"
     source: hosted
-    version: "6.1.4"
+    version: "7.0.0"
   fl_chart:
     dependency: "direct main"
     description:
@@ -460,10 +460,10 @@ packages:
     dependency: transitive
     description:
       name: path_provider_foundation
-      sha256: "1995d88ec2948dac43edf8fe58eb434d35d22a2940ecee1a9fefcd62beee6eb3"
+      sha256: "916731ccbdce44d545414dd9961f26ba5fbaa74bcbb55237d8e65a623a8c7297"
       url: "https://pub.dev"
     source: hosted
-    version: "2.2.3"
+    version: "2.2.4"
   path_provider_linux:
     dependency: transitive
     description:
@@ -492,10 +492,10 @@ packages:
     dependency: "direct main"
     description:
       name: permission_handler
-      sha256: "415af30ba76a84faccfe1eb251fe1e4fdc790f876924c65ad7d6ed7a1404bcd6"
+      sha256: "63e5216aae014a72fe9579ccd027323395ce7a98271d9defa9d57320d001af81"
       url: "https://pub.dev"
     source: hosted
-    version: "10.4.2"
+    version: "10.4.3"
   permission_handler_android:
     dependency: transitive
     description:
@@ -508,18 +508,18 @@ packages:
     dependency: transitive
     description:
       name: permission_handler_apple
-      sha256: "7a187b671a39919462af2b5e813148365b71a615979165a119868d667fe90c03"
+      sha256: "99e220bce3f8877c78e4ace901082fb29fa1b4ebde529ad0932d8d664b34f3f5"
       url: "https://pub.dev"
     source: hosted
-    version: "9.1.3"
+    version: "9.1.4"
   permission_handler_platform_interface:
     dependency: transitive
     description:
       name: permission_handler_platform_interface
-      sha256: a9b692bf17926d02a88b1baebcaaa0a997b1cbfa3b09a7b9261ebf440a2328a4
+      sha256: "7c6b1500385dd1d2ca61bb89e2488ca178e274a69144d26bbd65e33eae7c02a9"
       url: "https://pub.dev"
     source: hosted
-    version: "3.11.2"
+    version: "3.11.3"
   permission_handler_windows:
     dependency: transitive
     description:
@@ -568,14 +568,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.7.3"
-  process:
-    dependency: transitive
-    description:
-      name: process
-      sha256: "53fd8db9cec1d37b0574e12f07520d582019cb6c44abf5479a01505099a34a09"
-      url: "https://pub.dev"
-    source: hosted
-    version: "4.2.4"
   provider:
     dependency: transitive
     description:
@@ -721,10 +713,10 @@ packages:
     dependency: transitive
     description:
       name: xdg_directories
-      sha256: ee1505df1426458f7f60aac270645098d318a8b4766d85fde75f76f2e21807d1
+      sha256: e0b1147eec179d3911f1f19b59206448f78195ca1d20514134e10641b7d7fbff
       url: "https://pub.dev"
     source: hosted
-    version: "1.0.0"
+    version: "1.0.1"
   xml:
     dependency: transitive
     description:
