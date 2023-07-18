@@ -131,11 +131,8 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
               Navigator.of(context).pop();
             }
           },
-        )
-      ],
-      child: Scaffold(
-        body: BlocConsumer<CameraBloc, CameraState>(
-          bloc: cameraBloc,
+        ),
+        BlocListener<CameraBloc, CameraState>(
           listener: (context, state) async {
             if (state is CameraCaptureSuccess) {
               if (state.mode == CameraCaptureMode.batch) {
@@ -171,6 +168,11 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
               }
             }
           },
+        )
+      ],
+      child: Scaffold(
+        body: BlocBuilder<CameraBloc, CameraState>(
+          bloc: cameraBloc,
           buildWhen: (previous, current) =>
               previous.runtimeType != current.runtimeType ||
               (previous is CameraReady &&
