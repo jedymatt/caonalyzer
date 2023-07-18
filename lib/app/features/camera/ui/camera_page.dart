@@ -226,15 +226,7 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                CameraModePage(
-                  availableModes: const [
-                    CameraDisplayMode.photo,
-                    CameraDisplayMode.analysis
-                  ],
-                  onChangeCameraMode: (displayMode) {
-                    cameraBloc.add(CameraDisplayModeChanged(displayMode));
-                  },
-                ),
+                _buildDisplayModePageOptions(),
                 const SizedBox(height: 16),
                 if (state is CameraReady &&
                     state.displayMode == CameraDisplayMode.photo)
@@ -268,6 +260,18 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
           },
         )
       ],
+    );
+  }
+
+  CameraModePage _buildDisplayModePageOptions() {
+    return CameraModePage(
+      availableModes: const [
+        CameraDisplayMode.photo,
+        CameraDisplayMode.analysis
+      ],
+      onChangeCameraMode: (displayMode) {
+        cameraBloc.add(CameraDisplayModeChanged(displayMode));
+      },
     );
   }
 
