@@ -22,3 +22,9 @@ class CameraDisplayModeChanged extends CameraEvent {
 
   CameraDisplayModeChanged(this.displayMode);
 }
+
+class CameraFlashModeChanged extends CameraEvent {
+  final CameraFlashMode flashMode;
+
+  CameraFlashModeChanged(this.flashMode);
+}

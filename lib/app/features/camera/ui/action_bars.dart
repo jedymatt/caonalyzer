@@ -14,23 +14,25 @@ class BottomActionBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          if (left != null)
-            Align(
-              alignment: Alignment.centerLeft,
-              child: left!,
-            ),
-          if (center != null) center! else Container(),
-          if (right != null)
-            Align(
-              alignment: Alignment.centerRight,
-              child: right!,
-            ),
-        ],
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            if (left != null)
+              Align(
+                alignment: Alignment.centerLeft,
+                child: left!,
+              ),
+            if (center != null) center! else Container(),
+            if (right != null)
+              Align(
+                alignment: Alignment.centerRight,
+                child: right!,
+              ),
+          ],
+        ),
       ),
     );
   }
