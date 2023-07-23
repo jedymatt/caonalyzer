@@ -154,11 +154,13 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
                 if (state.displayPaused) {
                   await cameraBloc.controller.stopImageStream();
                 } else {
-                  await cameraBloc.controller.startImageStream(
-                    (image) => detectorBloc.add(CameraDetectorStarted(
-                      image: image,
-                    )),
-                  );
+                  if (!cameraBloc.controller.value.isStreamingImages) {
+                    await cameraBloc.controller.startImageStream(
+                      (image) => detectorBloc.add(CameraDetectorStarted(
+                        image: image,
+                      )),
+                    );
+                  }
                 }
               }
 
@@ -220,6 +222,10 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
             state.displayMode == CameraDisplayMode.analysis)
           _buildAnalysisTopActionBar(),
         // bottom action bar
+        if (state is CameraReady &&
+            state.displayMode == CameraDisplayMode.photo)
+          _buildPhotoTopActionBar(),
+
         Align(
           alignment: Alignment.bottomCenter,
           child: Container(
@@ -338,42 +344,99 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
     return SafeArea(
       child: Align(
         alignment: Alignment.topCenter,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            BlocBuilder<CameraDetectorBloc, CameraDetectorState>(
-              bloc: detectorBloc,
-              buildWhen: (previous, current) {
-                if (current.detectedObjects.isNotEmpty) {
-                  return true;
-                }
-                // only show empty detection when there is no detection for the last 2 seconds
-                if (lastTimeDetected == null) {
-                  return false;
-                }
+            Stack(
+              alignment: Alignment.center,
+              children: [
+                Align(
+                  alignment: Alignment.center,
+                  child: BlocBuilder<CameraDetectorBloc, CameraDetectorState>(
+                    bloc: detectorBloc,
+                    buildWhen: (previous, current) {
+                      if (current.detectedObjects.isNotEmpty) {
+                        return true;
+                      }
+                      // only show empty detection when there is no detection for the last 2 seconds
+                      if (lastTimeDetected == null) {
+                        return false;
+                      }
 
-                return DateTime.now().difference(lastTimeDetected!) >
-                    const Duration(seconds: 1);
-              },
-              builder: (context, state) {
-                return Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
+                      return DateTime.now().difference(lastTimeDetected!) >
+                          const Duration(seconds: 1);
+                    },
+                    builder: (context, state) {
+                      return Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.red.withOpacity(0.5),
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(10)),
+                        ),
+                        child: Text(
+                          '${state.detectedObjects.length}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 24,
+                            // fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      );
+                    },
                   ),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.5),
-                    borderRadius: const BorderRadius.all(Radius.circular(10)),
+                ),
+                // flash torch/off
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: Builder(
+                    builder: (context) {
+                      final state = cameraBloc.state as CameraReady;
+
+                      IconData iconData = Icons.flash_auto;
+
+                      switch (state.flashMode) {
+                        case CameraFlashMode.torch:
+                          iconData = Icons.flashlight_on;
+                        case CameraFlashMode.off:
+                          iconData = Icons.flashlight_off;
+                          break;
+                        default:
+                          iconData = Icons.flashlight_off;
+                      }
+
+                      return IconButton(
+                        onPressed: () {
+                          switch (state.flashMode) {
+                            case CameraFlashMode.off:
+                              cameraBloc.add(CameraFlashModeChanged(
+                                  CameraFlashMode.torch));
+                              break;
+                            case CameraFlashMode.torch:
+                              cameraBloc.add(
+                                  CameraFlashModeChanged(CameraFlashMode.off));
+                            default:
+                              cameraBloc.add(CameraFlashModeChanged(
+                                  CameraFlashMode.torch));
+                          }
+                        },
+                        icon: Icon(
+                          iconData,
+                          color: Colors.white,
+                          shadows: const [
+                            Shadow(
+                              color: Colors.black,
+                              blurRadius: 2,
+                            ),
+                          ],
+                        ),
+                      );
+                    },
                   ),
-                  child: Text(
-                    '${state.detectedObjects.length}',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      // fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                );
-              },
+                ),
+              ],
             ),
           ],
         ),
@@ -408,6 +471,63 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildPhotoTopActionBar() {
+    final state = cameraBloc.state as CameraReady;
+
+    IconData iconData = Icons.flash_auto;
+
+    switch (state.flashMode) {
+      case CameraFlashMode.auto:
+        iconData = Icons.flash_auto;
+        break;
+      case CameraFlashMode.on:
+        iconData = Icons.flash_on;
+        break;
+      case CameraFlashMode.off:
+        iconData = Icons.flash_off;
+        break;
+      case CameraFlashMode.torch:
+        iconData = Icons.flashlight_on;
+        break;
+    }
+
+    return SafeArea(
+      child: Align(
+        alignment: Alignment.topCenter,
+        child: Row(children: [
+          const Spacer(),
+          IconButton(
+            onPressed: () {
+              switch (state.flashMode) {
+                case CameraFlashMode.auto:
+                  cameraBloc.add(CameraFlashModeChanged(CameraFlashMode.on));
+                  break;
+                case CameraFlashMode.on:
+                  cameraBloc.add(CameraFlashModeChanged(CameraFlashMode.off));
+                  break;
+                case CameraFlashMode.off:
+                  cameraBloc.add(CameraFlashModeChanged(CameraFlashMode.torch));
+                  break;
+                case CameraFlashMode.torch:
+                  cameraBloc.add(CameraFlashModeChanged(CameraFlashMode.auto));
+              }
+            },
+            icon: Icon(
+              iconData,
+              color: Colors.white,
+              shadows: const [
+                Shadow(
+                  color: Colors.black,
+                  blurRadius: 2,
+                ),
+              ],
+            ),
+          ),
+        ]),
+      ),
     );
   }
 }
