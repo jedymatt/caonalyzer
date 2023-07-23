@@ -68,10 +68,11 @@ class TfServingObjectDetector extends ObjectDetector<DetectedObject> {
 
     final output = ObjectDetectionResponse.fromJson(response.body);
 
-    return output.mapToDetectedObjects(
-      image.height,
-      image.width,
-    );
+    return output
+        .mapToDetectedObjects(image.height, image.width)
+        .where((element) => element.confidence >= confidenceThreshold)
+        .take(15)
+        .toList();
   }
 
   Future<http.Response> requestTfServingPrediction(

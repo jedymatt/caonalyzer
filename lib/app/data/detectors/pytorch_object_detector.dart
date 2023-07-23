@@ -41,6 +41,7 @@ class PytorchObjectDetector extends ObjectDetector<DetectedObject> {
       bytesList: encodeJpg(image),
       imageHeight: image.height,
       imageWidth: image.width,
+      confThreshold: confidenceThreshold,
     );
 
     log(results.toString());
@@ -60,6 +61,8 @@ class PytorchObjectDetector extends ObjectDetector<DetectedObject> {
                 imageWidth: image.width,
               ),
             ))
+        .where((element) => element.confidence >= confidenceThreshold)
+        .take(15)
         .toList();
   }
 
