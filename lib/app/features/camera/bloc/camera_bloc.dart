@@ -18,6 +18,7 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
     on<CameraCaptured>(_onCaptured);
     on<CameraDetectionPauseToggled>(_onDetectionPauseToggled);
     on<CameraDisplayModeChanged>(_onDisplayModeChanged);
+    on<CameraFlashModeChanged>(_onFlashModeChanged);
   }
 
   CameraController get controller => _cameraController!;
@@ -67,7 +68,7 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
       final image = await _cameraController!.takePicture();
 
       emit(CameraCaptureSuccess(path: image.path, mode: state_.captureMode));
-      emit(CameraReady(captureMode: state_.captureMode));
+      emit(state_.copyWith());
     } on CameraException catch (e) {
       emit(CameraCaptureFailure(message: e.description!));
     }
@@ -119,5 +120,33 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
       displayMode: event.displayMode,
       displayPaused: _cameraController!.value.isPreviewPaused,
     ));
+  }
+
+  FutureOr<void> _onFlashModeChanged(
+      CameraFlashModeChanged event, Emitter<CameraState> emit) async {
+    final state_ = state;
+
+    if (state_ is! CameraReady) return;
+
+    if (event.flashMode == state_.flashMode) return;
+
+    switch (event.flashMode) {
+      case CameraFlashMode.auto:
+        await _cameraController!.setFlashMode(FlashMode.auto);
+        break;
+      case CameraFlashMode.on:
+        await _cameraController!.setFlashMode(FlashMode.always);
+        break;
+      case CameraFlashMode.off:
+        await _cameraController!.setFlashMode(FlashMode.off);
+        break;
+      case CameraFlashMode.torch:
+        await _cameraController!.setFlashMode(FlashMode.torch);
+        break;
+      default:
+        await _cameraController!.setFlashMode(FlashMode.auto);
+    }
+
+    emit(state_.copyWith(flashMode: event.flashMode));
   }
 }

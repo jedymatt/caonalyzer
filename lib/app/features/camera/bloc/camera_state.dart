@@ -4,6 +4,8 @@ enum CameraCaptureMode { single, batch }
 
 enum CameraDisplayMode { photo, analysis }
 
+enum CameraFlashMode { auto, on, off, torch }
+
 @immutable
 abstract class CameraState {}
 
@@ -20,22 +22,26 @@ class CameraInitial extends CameraState {
 class CameraReady extends CameraState {
   final CameraCaptureMode captureMode;
   final CameraDisplayMode displayMode;
+  final CameraFlashMode flashMode;
   final bool displayPaused;
 
   CameraReady({
     required this.captureMode,
     this.displayMode = CameraDisplayMode.photo,
+    this.flashMode = CameraFlashMode.auto,
     this.displayPaused = false,
   });
 
   CameraReady copyWith({
     CameraCaptureMode? captureMode,
     CameraDisplayMode? displayMode,
+    CameraFlashMode? flashMode,
     bool? displayPaused,
   }) {
     return CameraReady(
       captureMode: captureMode ?? this.captureMode,
       displayMode: displayMode ?? this.displayMode,
+      flashMode: flashMode ?? this.flashMode,
       displayPaused: displayPaused ?? this.displayPaused,
     );
   }
