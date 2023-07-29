@@ -44,11 +44,9 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/labels.txt
-    # - ./assets/yolov8n.torchscript.pt
-    - assets/yolov8n.tflite
-    - assets/svgs/undraw_photograph_re_up3b.svg
+    - assets/
     - assets/logos/
+    - assets/svgs/
 
 flutter_launcher_icons:
   android: true
