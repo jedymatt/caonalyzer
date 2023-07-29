@@ -9,7 +9,7 @@ class ObjectDetectorSettings {
 
     preferredMode = PreferredMode.values[_box.get(
       'preferredMode',
-      defaultValue: 0,
+      defaultValue: 1,
     )];
 
     serverHost = _box.get('serverHost', defaultValue: '192.168.1.8:8501');
