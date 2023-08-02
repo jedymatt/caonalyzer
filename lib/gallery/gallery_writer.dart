@@ -37,43 +37,14 @@ class GalleryWriter {
     return path_lib.join(dirPath, batchDirName);
   }
 
-  static Future<String> appendImage(
-      String source, String destinationDir) async {
-    final fileType = path_lib.extension(source);
-    final filesCount = (await _getFiles(destinationDir)).length;
-    final filename = '$filesCount$fileType';
-
-    final copiedFile = File(source).copySync('$destinationDir/$filename');
-
-    debugPrint('Image copied: ${copiedFile.path}');
-
-    return copiedFile.path;
-  }
-
-  static Future<List<String>> appendImages(
+  static Future<void> appendImages(
       List<String> sources, String destinationDir) async {
-    final fileType = path_lib.extension(sources.first);
-    final filesCount = (await _getFiles(destinationDir)).length;
-    final filenames = List<String>.generate(
-      sources.length,
-      (index) => '${filesCount + index}$fileType',
-    );
-
     for (var i = 0; i < sources.length; i++) {
-      final copiedFile = File(sources[i]).copySync(
-        path_lib.join(destinationDir, filenames[i]),
-      );
+      var newSourcePath =
+          path_lib.join(destinationDir, path_lib.basename(sources[i]));
 
-      debugPrint('Image copied: ${copiedFile.path}');
+      await File(sources[i]).copy(newSourcePath);
     }
-
-    return filenames.map((e) => path_lib.join(destinationDir, e)).toList();
-  }
-
-  static Future<List<FileSystemEntity>> _getFiles(String path) async {
-    final dir = Directory(path);
-
-    return dir.listSync();
   }
 
   static void removeImages(List<String> images) {
