@@ -3,9 +3,7 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:caonalyzer/app/data/models/models.dart';
-import 'package:caonalyzer/app/data/utils/object_detector_settings.dart';
 import 'package:caonalyzer/globals.dart';
-import 'package:caonalyzer/locator.dart';
 import 'package:tflite_flutter/tflite_flutter.dart';
 import 'package:http/http.dart' as http;
 
@@ -15,7 +13,7 @@ import 'package:image/image.dart'
 
 class TfServingObjectDetector extends ObjectDetector<DetectedObject> {
   final Uri _serverUri =
-      Uri.parse(locator.get<ObjectDetectorSettings>().serverUrl);
+      Uri.parse('http://localhost/8501/v1/models/faster_rcnn:predict');
 
   final _client = http.Client();
 
