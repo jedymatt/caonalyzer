@@ -102,19 +102,18 @@ class BatchBloc extends Bloc<BatchEvent, BatchState> {
 
       if (remainingImages.isEmpty) {
         GalleryWriter.deleteDirectory(batchPath);
-        emit(BatchNavigateToParentPageActionState());
+        emit(BatchDeletedState());
         return;
+      }
+
+      if (remainingImages[0] != state_.images[0]) {
+        emit(BatchCoverImageChangedState());
       }
 
       emit(BatchSuccess(
         images: remainingImages,
         selectionEnabled: false,
       ));
-
-      if (remainingImages.isEmpty) {
-        GalleryWriter.deleteDirectory(batchPath);
-        emit(BatchNavigateToParentPageActionState());
-      }
     }
   }
 

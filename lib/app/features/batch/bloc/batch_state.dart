@@ -35,4 +35,6 @@ class BatchSuccess extends BatchState {
 
 class BatchDeletingImagesState extends BatchState {}
 
-class BatchNavigateToParentPageActionState extends BatchActionState {}
+class BatchDeletedState extends BatchActionState {}
+
+class BatchCoverImageChangedState extends BatchActionState {}

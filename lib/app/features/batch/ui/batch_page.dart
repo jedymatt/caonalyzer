@@ -47,11 +47,16 @@ class _BatchPageState extends State<BatchPage> {
         listenWhen: (previous, current) => current is BatchActionState,
         buildWhen: (previous, current) => current is! BatchActionState,
         listener: (context, state) {
-          if (state is BatchNavigateToParentPageActionState) {
+          if (state is BatchDeletedState) {
             BlocProvider.of<GalleryBloc>(context)
                 .add(GalleryBatchesRefreshed());
 
             Navigator.of(context).pop();
+          }
+
+          if (state is BatchCoverImageChangedState) {
+            BlocProvider.of<GalleryBloc>(context)
+                .add(GalleryBatchesRefreshed());
           }
         },
         builder: (context, state) {
